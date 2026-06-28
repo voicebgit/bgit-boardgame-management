@@ -339,8 +339,8 @@
   </div>
 
   <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbxhAOekzTK_vI0D0gasBzYRsF82HqUBX055xZo37CgaT5dEN2J2Hj4Ubd-hcaWIYq19/exec';
-    const ADMIN_PASSWORD = '24148283';
+const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev';
+const ADMIN_PASSWORD = '24148283';
 
     const state = {
       games: [],
@@ -385,14 +385,23 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxhAOekzTK_vI0D0gasBzYR
       return res.json();
     }
 
-    async function apiPost(payload) {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      return res.json();
-    }
+async function apiPost(action, payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action,
+      ...payload
+    })
+  });
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    console.error('Response is not JSON:', text);
+    throw err;
+  }
+}
 
     async function loadGames() {
       try {
@@ -573,7 +582,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxhAOekzTK_vI0D0gasBzYR
 
       try {
         saveStatus.textContent = '儲存中⋯⋯';
-        const json = await apiPost({ action: 'saveGame', game, items });
+const json = await apiPost('saveGame', { game, items });
         if (!json.ok) throw new Error(json.error || 'saveGame failed');
         saveStatus.textContent = '已儲存，前台桌遊列表已更新。';
         await loadGames();
