@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BG Board Game 借用系統</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f3ea;
+      --surface: #fbfaf7;
+      --surface-strong: #ffffff;
+      --border-soft: rgba(40,37,29,0.08);
+      --border-strong: rgba(40,37,29,0.12);
+      --accent: #01696f;
+      --accent-soft: #d8ebe9;
+      --accent-strong: #0c4e54;
+      --text-main: #26231b;
+      --text-muted: #747069;
+      --text-soft: #a09b93;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 18px 40px rgba(18,16,12,0.14);
+      --shadow-card: 0 10px 24px rgba(18,16,12,0.10);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh;
+      font-family:'Satoshi','system-ui','-apple-system',BlinkMacSystemFont,'Segoe UI',sans-serif;
+      background:radial-gradient(circle at top left,#fdfaef 0,#f5f3ea 42%,#f0efe6 100%);
+      color:var(--text-main);
+    }
+    img{max-width:100%;display:block}
+    button{font-family:inherit}
+    .app{
+      max-width:1100px;
+      margin:0 auto;
+      padding:20px 16px 40px;
+    }
+    .shell{
+      border-radius:32px;
+      background:linear-gradient(135deg,#fefcf8,rgba(255,255,255,0.72));
+      box-shadow:var(--shadow-soft);
+      padding:18px 20px 22px;
+      border:1px solid rgba(255,255,255,0.9);
+    }
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:18px;
+      margin-bottom:14px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:42px;height:42px;border-radius:16px;
+      background:radial-gradient(circle at 30% 20%,#ffe9b5,#ffc7a4 40%,#f3a6c0 75%,#9bd3cf 100%);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 10px 20px rgba(0,0,0,0.12);
+    }
+    .logo span{font-size:0.78rem;font-weight:700;color:#43251a;letter-spacing:0.04em;}
+    h1{
+      font-size:1.15rem;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      font-weight:700;
+    }
+    .subtitle{
+      font-size:0.8rem;
+      color:var(--text-soft);
+      margin-top:2px;
+    }
+    .header-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .pill-btn{
+      border-radius:var(--radius-pill);
+      border:1px solid var(--border-soft);
+      background:rgba(250,248,243,0.9);
+      padding:7px 13px;
+      font-size:0.8rem;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.08s ease;
+    }
+    .pill-btn.primary{
+      background:var(--accent);
+      color:white;
+      border-color:transparent;
+      box-shadow:0 10px 20px rgba(1,105,111,0.25);
+    }
+    .pill-btn.primary:hover{background:var(--accent-strong);transform:translateY(-1px);}
+    .pill-btn.secondary:hover{background:#f2efe8;}
+    .pill-btn span.icon{
+      width:18px;height:18px;border-radius:999px;
+      background:rgba(255,255,255,0.8);
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.7rem;
+      color:var(--accent-strong);
+    }
+    .tabs{
+      display:flex;gap:6px;margin:8px 0 14px;
+      background:rgba(247,245,238,0.9);
+      border-radius:var(--radius-pill);
+      padding:4px;
+    }
+    .tab{
+      flex:1;
+      border-radius:var(--radius-pill);
+      padding:8px 10px;
+      font-size:0.8rem;
+      border:none;
+      background:transparent;
+      color:var(--text-muted);
+      cursor:pointer;
+      transition:background 0.15s ease,color 0.15s ease;
+    }
+    .tab.active{
+      background:var(--surface-strong);
+      color:var(--accent-strong);
+      box-shadow:0 6px 16px rgba(0,0,0,0.08);
+    }
+    .views{
+      border-radius:24px;
+      background:var(--surface);
+      border:1px solid var(--border-soft);
+      padding:16px 16px 18px;
+    }
+    .view{display:none;}
+    .view.active{display:block;}
+    .hint{
+      font-size:0.8rem;
+      color:var(--text-muted);
+      margin-bottom:10px;
+    }
+    .status-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:12px;
+      font-size:0.78rem;
+    }
+    .status-pill-main{
+      padding:5px 9px;
+      border-radius:var(--radius-pill);
+      background:#eef6f5;
+      color:#2b5c57;
+    }
+    .game-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:12px;
+    }
+    .game-card{
+      border-radius:18px;
+      background:var(--surface-strong);
+      border:1px solid var(--border-soft);
+      box-shadow:var(--shadow-card);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      cursor:pointer;
+      transition:transform 0.1s ease,box-shadow 0.12s ease,border-color 0.12s ease;
+    }
+    .game-card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 14px 30px rgba(18,16,12,0.18);
+      border-color:var(--border-strong);
+    }
+    .game-cover{
+      border-radius:14px;
+      background:linear-gradient(135deg,#f6e8ff,#fde7c4);
+      aspect-ratio:4/3;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:0.8rem;
+      color:#5c5244;
+    }
+    .game-cover img{width:100%;height:100%;object-fit:cover;}
+    .game-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:6px;
+    }
+    .game-title{font-size:0.95rem;font-weight:600;}
+    .game-short{font-size:0.8rem;color:var(--text-muted);margin-top:2px;}
+    .game-meta{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:0.78rem;
+      color:var(--text-soft);
+    }
+    .status-chip{
+      padding:4px 8px;
+      border-radius:var(--radius-pill);
+      font-size:0.76rem;
+    }
+    .status-available{background:#e5f5e2;color:#286f24;}
+    .status-borrowed{background:#ffe0cc;color:#a35424;}
+    .status-pending_handover{background:#fff3d1;color:#906220;}
+    .status-maintenance{background:#f7d9ee;color:#9a2563;}
+    .action-row{
+      display:flex;gap:6px;margin-top:4px;
+    }
+    .btn-small{
+      flex:1;
+      border-radius:var(--radius-pill);
+      border:none;
+      padding:6px 10px;
+      font-size:0.78rem;
+      cursor:pointer;
+    }
+    .btn-main{background:var(--accent);color:white;}
+    .btn-ghost{background:#f4f1eb;color:var(--text-main);}
+    .detail-panel{
+      margin-top:14px;
+      border-radius:16px;
+      background:var(--surface-strong);
+      border:1px dashed rgba(40,37,29,0.12);
+      padding:10px 12px 11px;
+      font-size:0.85rem;
+    }
+    .detail-title{font-weight:600;margin-bottom:4px;}
+    .detail-block{margin-bottom:8px;}
+    .detail-block h3{font-size:0.82rem;margin-bottom:3px;}
+    .detail-block ul{padding-left:18px;}
+    .detail-block li{margin-bottom:3px;}
+    .yt-link a{color:var(--accent-strong);text-decoration:none;font-size:0.82rem;}
+    .yt-link a:hover{text-decoration:underline;}
+    .form{
+      display:grid;
+      gap:9px;
+      margin-top:6px;
+      font-size:0.86rem;
+    }
+    .field{display:flex;flex-direction:column;gap:4px;}
+    label{font-size:0.8rem;color:var(--text-muted);}
+    input,select,textarea{
+      border-radius:12px;
+      border:1px solid rgba(40,37,29,0.16);
+      padding:7px 10px;
+      font-size:0.86rem;
+      background:#fdfcf9;
+    }
+    textarea{min-height:80px;resize:vertical;}
+    .submit-btn{
+      margin-top:2px;
+      border-radius:var(--radius-pill);
+      border:none;
+      background:var(--accent);
+      color:white;
+      padding:8px 14px;
+      font-size:0.86rem;
+      cursor:pointer;
+      box-shadow:0 10px 22px rgba(1,105,111,0.3);
+    }
+    .submit-btn:hover{background:var(--accent-strong);}
+    .result-box{
+      margin-top:8px;
+      border-radius:14px;
+      background:#e4f3e6;
+      padding:9px 11px;
+      font-size:0.8rem;
+      color:#295334;
+    }
+    .confirm-area{display:grid;gap:8px;margin-top:6px;font-size:0.86rem;}
+    .small-text{font-size:0.8rem;color:var(--text-muted);}
+    @media (max-width:720px){
+      .shell{border-radius:24px;padding:14px 13px 18px;}
+      header{flex-direction:column;align-items:flex-start;}
+      .header-actions{width:100%;}
+      .pill-btn{flex:1;justify-content:center;}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="shell">
+      <header>
+        <div class="brand">
+          <div class="logo"><span>BG</span></div>
+          <div>
+            <h1>BG Board Game 借用系統</h1>
+            <p class="subtitle">同一頁面完成桌遊瀏覽、預約與限時代碼確認</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="pill-btn primary" data-action="open-borrow"><span class="icon">➕</span>預約借用</button>
+          <button class="pill-btn secondary" data-action="open-confirm"><span class="icon">✔</span>確認借用（輸入限時代碼）</button>
+        </div>
+      </header>
+
+      <div class="tabs">
+        <button class="tab active" data-view="games">桌遊列表</button>
+        <button class="tab" data-view="borrow">預約借用</button>
+        <button class="tab" data-view="confirm">確認借用</button>
+      </div>
+
+      <section class="views">
+        <!-- 桌遊列表 + 詳情 -->
+        <div id="view-games" class="view active">
+          <div class="hint">先在下方選擇桌遊卡片查看玩法與配件，如要借用可隨時按「預約借用」。</div>
+          <div class="status-row">
+            <span class="status-pill-main">可借桌遊：<span id="statAvailable">0</span> 款</span>
+            <span class="small-text">借出中：<span id="statBorrowed">0</span>｜維修：<span id="statMaintenance">0</span></span>
+          </div>
+          <div id="gameGrid" class="game-grid"></div>
+          <div id="gameDetail" class="detail-panel" hidden></div>
+        </div>
+
+        <!-- 預約借用表單 -->
+        <div id="view-borrow" class="view">
+          <div class="hint">選好桌遊後，填寫借用時間與聯絡資料，提交後到中心由同事完成交接。</div>
+          <form id="borrowForm" class="form">
+            <div class="field">
+              <label for="borrowGame">選擇桌遊</label>
+              <select id="borrowGame" required></select>
+            </div>
+            <div class="field">
+              <label>借用時間</label>
+              <select id="borrowWeeks">
+                <option value="1">借用 1 星期</option>
+                <option value="2">借用 2 星期</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="memberId">會員號碼</label>
+              <input id="memberId" type="text" placeholder="例如 BG1234A" required />
+            </div>
+            <div class="field">
+              <label for="phone">電話號碼</label>
+              <input id="phone" type="text" placeholder="用作聯絡" />
+            </div>
+            <div class="field">
+              <label for="borrowNote">借用者備註</label>
+              <textarea id="borrowNote" placeholder="有特別情況可在此填寫"></textarea>
+            </div>
+            <button type="submit" class="submit-btn">提交預約</button>
+          </form>
+          <div id="borrowResult" class="result-box" hidden></div>
+        </div>
+
+        <!-- 確認借用（限時代碼） -->
+        <div id="view-confirm" class="view">
+          <div class="hint">到中心拿桌遊前，請在同事在場下輸入會員號碼與限時代碼，再完成共同檢查與簽名。</div>
+          <div class="confirm-area">
+            <div class="field">
+              <label for="confirmMember">會員號碼</label>
+              <input id="confirmMember" type="text" placeholder="BG1234A" />
+            </div>
+            <div class="field">
+              <label for="confirmCode">限時代碼</label>
+              <input id="confirmCode" type="text" placeholder="例如 Q7M4K2" />
+            </div>
+            <button id="loadConfirm" class="submit-btn" type="button">確認借用</button>
+            <div id="confirmInfo" class="detail-panel" hidden></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev'; // 換成你的 Worker 或 Apps Script URL
+
+    const state = {
+      games: [],
+      currentGameId: null
+    };
+
+    function switchView(name) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('view-' + name).classList.add('active');
+      document.querySelector(`.tab[data-view="${name}"]`).classList.add('active');
+    }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => switchView(tab.dataset.view));
+    });
+
+    document.querySelector('[data-action="open-borrow"]').addEventListener('click', () => switchView('borrow'));
+    document.querySelector('[data-action="open-confirm"]').addEventListener('click', () => switchView('confirm'));
+
+    async function apiGet(params) {
+      const url = new URL(API_URL);
+      Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+      const res = await fetch(url.toString());
+      return res.json();
+    }
+
+    async function apiPost(payload) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      return res.json();
+    }
+
+    async function loadGames() {
+      try {
+        const json = await apiGet({ action: 'listGames' });
+        if (!json.ok) throw new Error(json.error || 'loadGames failed');
+        state.games = json.games || [];
+        renderGameGrid();
+        populateBorrowSelect();
+        updateStats();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('gameGrid').innerHTML = '<div class="small-text">載入桌遊資料時出現問題。</div>';
+      }
+    }
+
+    function updateStats() {
+      let available = 0, borrowed = 0, maintenance = 0;
+      state.games.forEach(g => {
+        if (g.status === 'available') available++;
+        if (g.status === 'borrowed') borrowed++;
+        if (g.status === 'maintenance') maintenance++;
+      });
+      document.getElementById('statAvailable').textContent = available;
+      document.getElementById('statBorrowed').textContent = borrowed;
+      document.getElementById('statMaintenance').textContent = maintenance;
+    }
+
+    function renderGameGrid() {
+      const grid = document.getElementById('gameGrid');
+      if (!state.games.length) {
+        grid.innerHTML = '<div class="small-text">目前尚未有桌遊資料。</div>';
+        return;
+      }
+      grid.innerHTML = state.games.map(g => {
+        const statusClass = 'status-' + (g.status || 'available');
+        const statusLabel = ({
+          available: '可借',
+          borrowed: '借出中',
+          pending_handover: '待交收',
+          maintenance: '維修中',
+          inactive: '已下架'
+        })[g.status] || g.status;
+        return `
+          <article class="game-card" data-game-id="${g.gameId}">
+            <div class="game-cover">${g.coverImageUrl ? `<img src="${g.coverImageUrl}" alt="${g.name}"/>` : '尚未上載圖片'}</div>
+            <div class="game-head">
+              <div>
+                <div class="game-title">${g.name}</div>
+                <div class="game-short">${g.shortPlay || ''}</div>
+              </div>
+            </div>
+            <div class="game-meta">
+              <span>累計借用：${g.borrowCount || 0} 次</span>
+              <span class="status-chip ${statusClass}">${statusLabel}</span>
+            </div>
+            <div class="action-row">
+              <button type="button" class="btn-small btn-main" data-action="card-borrow">預約借用</button>
+              <button type="button" class="btn-small btn-ghost" data-action="card-detail">查看詳情</button>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      grid.querySelectorAll('.game-card').forEach(card => {
+        const gameId = card.dataset.gameId;
+        card.querySelector('[data-action="card-detail"]').addEventListener('click', () => showGameDetail(gameId));
+        card.querySelector('[data-action="card-borrow"]').addEventListener('click', () => {
+          state.currentGameId = gameId;
+          populateBorrowSelect();
+          switchView('borrow');
+        });
+      });
+    }
+
+    async function showGameDetail(gameId) {
+      try {
+        const json = await apiGet({ action: 'gameDetail', gameId });
+        if (!json.ok) throw new Error(json.error || 'gameDetail failed');
+        const { game, items } = json;
+        const panel = document.getElementById('gameDetail');
+        panel.hidden = false;
+        const itemHtml = (items || []).length
+          ? items.map(i => `<li>${i.itemName}：${i.qty}${i.unit}${i.isKeyItem ? '（重點配件）' : ''}</li>`).join('')
+          : '<li>尚未設定配件資料。</li>';
+        panel.innerHTML = `
+          <div class="detail-block">
+            <div class="detail-title">${game.name}</div>
+            <div>${game.detailPlay || ''}</div>
+          </div>
+          <div class="detail-block">
+            <h3>配件清單</h3>
+            <ul>${itemHtml}</ul>
+          </div>
+          <div class="detail-block yt-link">
+            ${game.youtubeUrl ? `<a href="${game.youtubeUrl}" target="_blank" rel="noopener noreferrer">前往 YouTube 觀看玩法教學</a>` : '尚未設定教學影片連結。'}
+          </div>
+        `;
+      } catch (err) {
+        console.error(err);
+        alert('載入桌遊詳情時出現問題。');
+      }
+    }
+
+    function populateBorrowSelect() {
+      const select = document.getElementById('borrowGame');
+      if (!state.games.length) {
+        select.innerHTML = '<option>尚未有桌遊</option>';
+        select.disabled = true;
+        return;
+      }
+      select.disabled = false;
+      select.innerHTML = state.games.map(g => `<option value="${g.gameId}">${g.name}</option>`).join('');
+      if (state.currentGameId) {
+        select.value = state.currentGameId;
+      }
+    }
+
+    document.getElementById('borrowForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const gameId = document.getElementById('borrowGame').value;
+      const weeks = document.getElementById('borrowWeeks').value;
+      const memberId = document.getElementById('memberId').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const note = document.getElementById('borrowNote').value.trim();
+      if (!gameId || !memberId) {
+        alert('請選擇桌遊並填寫會員號碼');
+        return;
+      }
+      try {
+        const json = await apiPost({
+          action: 'createLoan',
+          gameId,
+          weeks,
+          memberId,
+          phone,
+          borrowerNote: note
+        });
+        if (!json.ok) throw new Error(json.error || 'createLoan failed');
+        const box = document.getElementById('borrowResult');
+        box.hidden = false;
+        const due = new Date(json.dueDate);
+        box.innerHTML = `
+          <div>預約已建立，請截圖此畫面並到中心由同事完成交接。</div>
+          <div>桌遊：${json.gameName}</div>
+          <div>會員號碼：${json.memberId}</div>
+          <div>到期日期：${due.toLocaleString()}</div>
+        `;
+        e.target.reset();
+        state.currentGameId = null;
+        await loadGames();
+      } catch (err) {
+        console.error(err);
+        alert('提交預約時出現問題。');
+      }
+    });
+
+    document.getElementById('loadConfirm').addEventListener('click', async () => {
+      const memberId = document.getElementById('confirmMember').value.trim();
+      const code = document.getElementById('confirmCode').value.trim();
+      if (!memberId || !code) {
+        alert('請填寫會員號碼與代碼');
+        return;
+      }
+      try {
+        const json = await apiPost({
+          action: 'submitSignature',
+          memberId,
+          handoverCode: code,
+          signatureData: '',
+          note: ''
+        });
+        if (!json.ok) throw new Error(json.error || 'submitSignature failed');
+        const box = document.getElementById('confirmInfo');
+        box.hidden = false;
+        box.innerHTML = '<div class="result-box">已完成確認流程，桌遊已正式借出（簽名與詳細檢查之後可再加）。</div>';
+        await loadGames();
+      } catch (err) {
+        console.error(err);
+        alert('確認借用時出現問題。');
+      }
+    });
+
+    loadGames();
+  </script>
+</body>
+</html>
