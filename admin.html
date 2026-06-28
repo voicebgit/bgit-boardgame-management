@@ -7,167 +7,169 @@
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #151515;
-      --surface: #1f2023;
-      --surface-soft: #232427;
-      --surface-strong: #26272b;
-      --border-soft: rgba(255,255,255,0.06);
-      --border-strong: rgba(255,255,255,0.14);
-      --accent: #3fb6c7;
-      --accent-strong: #2f92a1;
-      --accent-soft: rgba(63,182,199,0.16);
-      --text-main: #f5f3ee;
-      --text-muted: #9b9ea5;
-      --text-soft: #70737b;
-      --danger: #f0719b;
+      --bg: #f4f3ee;
+      --surface: #ffffff;
+      --surface-soft: #f8f7f3;
+      --surface-strong: #ffffff;
+      --border-soft: rgba(40,37,29,0.10);
+      --border-strong: rgba(40,37,29,0.18);
+      --accent: #01696f;
+      --accent-strong: #0c4e54;
+      --accent-soft: #d8ebe9;
+      --text-main: #26231b;
+      --text-muted: #6f6b64;
+      --text-soft: #9b9891;
+      --danger: #c13b73;
       --radius-pill: 999px;
       --radius-lg: 18px;
       --radius-md: 12px;
-      --shadow-soft: 0 22px 60px rgba(0,0,0,0.65);
+      --shadow-soft: 0 16px 40px rgba(18,16,12,0.12);
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
       min-height:100vh;
       font-family:'Satoshi','system-ui','-apple-system',BlinkMacSystemFont,'Segoe UI',sans-serif;
-      background:radial-gradient(circle at top left,#252733 0,#151515 45%,#090909 100%);
+      background:radial-gradient(circle at top,#fcfaf5 0,#f4f3ee 45%,#eceae4 100%);
       color:var(--text-main);
+      font-size:16px;
     }
     img{max-width:100%;display:block}
     button{font-family:inherit}
-    .app{max-width:1100px;margin:0 auto;padding:22px 16px 40px;}
+    .app{max-width:1100px;margin:0 auto;padding:24px 18px 42px;}
     .shell{
-      border-radius:28px;
-      background:radial-gradient(circle at top,#313644,#202226 55%,#18191c 100%);
+      border-radius:32px;
+      background:linear-gradient(135deg,#fefcf8,rgba(255,255,255,0.85));
       box-shadow:var(--shadow-soft);
-      padding:18px 18px 22px;
-      border:1px solid rgba(255,255,255,0.03);
+      padding:20px 20px 24px;
+      border:1px solid rgba(255,255,255,0.9);
     }
-    header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px;}
-    .brand{display:flex;align-items:center;gap:10px;}
+    header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:18px;}
+    .brand{display:flex;align-items:center;gap:12px;}
     .logo{
-      width:40px;height:40px;border-radius:16px;
-      background:conic-gradient(from 200deg,#3fb6c7,#f0719b,#f3c969,#3fb6c7);
+      width:46px;height:46px;border-radius:18px;
+      background:radial-gradient(circle at 30% 20%,#ffe9b5,#ffc7a4 40%,#f3a6c0 75%,#9bd3cf 100%);
       display:flex;align-items:center;justify-content:center;
+      box-shadow:0 10px 20px rgba(0,0,0,0.12);
     }
-    .logo span{font-size:0.78rem;font-weight:700;color:#081015;letter-spacing:0.06em;}
-    h1{font-size:1.1rem;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;}
-    .subtitle{font-size:0.8rem;color:var(--text-soft);}
-    .header-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+    .logo span{font-size:0.9rem;font-weight:700;color:#43251a;letter-spacing:0.06em;}
+    h1{font-size:1.3rem;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;}
+    .subtitle{font-size:0.95rem;color:var(--text-soft);margin-top:4px;}
+    .header-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
     .pill{
       border-radius:var(--radius-pill);
-      padding:6px 12px;
-      font-size:0.78rem;
+      padding:8px 14px;
+      font-size:0.95rem;
       border:1px solid var(--border-soft);
-      background:rgba(18,19,22,0.72);
+      background:rgba(250,248,243,0.9);
       color:var(--text-muted);
     }
     .pill strong{color:var(--accent);}
     .login-box{
-      border-radius:20px;
+      border-radius:22px;
       background:var(--surface);
       border:1px solid var(--border-soft);
-      padding:12px 14px;
-      margin-bottom:14px;
+      padding:14px 16px;
+      margin-bottom:18px;
       display:flex;
       justify-content:space-between;
       align-items:center;
-      gap:10px;
+      gap:12px;
     }
-    .login-info{font-size:0.82rem;color:var(--text-muted);}
-    .login-controls{display:flex;gap:8px;align-items:center;}
+    .login-info{font-size:0.95rem;color:var(--text-muted);}
+    .login-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     input[type="password"],input[type="text"]{
       border-radius:var(--radius-pill);
       border:1px solid var(--border-soft);
-      background:rgba(9,10,13,0.9);
+      background:#faf7f3;
       color:var(--text-main);
-      padding:7px 11px;
-      font-size:0.82rem;
-      min-width:160px;
+      padding:8px 13px;
+      font-size:0.95rem;
+      min-width:190px;
     }
     .btn{
       border-radius:var(--radius-pill);
       border:none;
-      padding:7px 13px;
-      font-size:0.8rem;
+      padding:8px 15px;
+      font-size:0.95rem;
       cursor:pointer;
       display:inline-flex;
       align-items:center;
       gap:6px;
     }
-    .btn-primary{background:var(--accent);color:#081015;}
+    .btn-primary{background:var(--accent);color:#fdfcf9;}
     .btn-primary:hover{background:var(--accent-strong);}
-    .btn-ghost{background:rgba(10,11,15,0.9);color:var(--text-main);}
-    .btn-ghost:hover{background:rgba(32,34,40,0.9);}
-    .locked{color:var(--danger);font-size:0.8rem;}
-    .layout{display:grid;grid-template-columns:1.25fr 0.9fr;gap:16px;}
+    .btn-ghost{background:#f5f2eb;color:var(--text-main);}
+    .btn-ghost:hover{background:#ece8df;}
+    .locked{color:var(--danger);font-size:0.9rem;margin-top:6px;}
+    .success-text{color:#2b7a37;font-size:0.9rem;margin-top:6px;}
+    .layout{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;}
     .panel{
-      border-radius:20px;
+      border-radius:22px;
       background:var(--surface);
       border:1px solid var(--border-soft);
-      padding:14px 15px 15px;
+      padding:16px 17px 18px;
     }
-    .panel-title{font-size:0.9rem;font-weight:600;margin-bottom:4px;}
-    .panel-sub{font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;}
-    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px;font-size:0.82rem;}
-    .field{display:flex;flex-direction:column;gap:4px;}
+    .panel-title{font-size:1rem;font-weight:600;margin-bottom:4px;}
+    .panel-sub{font-size:0.9rem;color:var(--text-muted);margin-bottom:12px;}
+    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:4px;font-size:0.95rem;}
+    .field{display:flex;flex-direction:column;gap:5px;}
     .field.full{grid-column:1/-1;}
-    label{font-size:0.78rem;color:var(--text-muted);}
+    label{font-size:0.9rem;color:var(--text-muted);}
     select,textarea{
       border-radius:var(--radius-md);
       border:1px solid var(--border-soft);
       background:var(--surface-soft);
       color:var(--text-main);
-      padding:7px 10px;
-      font-size:0.82rem;
+      padding:8px 11px;
+      font-size:0.95rem;
     }
-    textarea{min-height:80px;resize:vertical;}
+    textarea{min-height:90px;resize:vertical;}
     .input-dark{
       border-radius:var(--radius-md);
       border:1px solid var(--border-soft);
       background:var(--surface-soft);
       color:var(--text-main);
-      padding:7px 10px;
-      font-size:0.82rem;
+      padding:8px 11px;
+      font-size:0.95rem;
     }
-    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font-size:0.8rem;}
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;font-size:0.95rem;}
     .pill-tab{
       border-radius:var(--radius-pill);
-      padding:6px 10px;
-      font-size:0.78rem;
+      padding:7px 12px;
+      font-size:0.9rem;
       border:none;
-      background:rgba(15,16,20,0.9);
+      background:#f5f2eb;
       color:var(--text-muted);
       cursor:pointer;
     }
-    .pill-tab.active{background:var(--accent-soft);color:var(--accent);}
-    .list{display:flex;flex-direction:column;gap:8px;font-size:0.8rem;}
+    .pill-tab.active{background:var(--accent-soft);color:var(--accent-strong);}
+    .list{display:flex;flex-direction:column;gap:9px;font-size:0.95rem;}
     .list-row{
-      border-radius:14px;
+      border-radius:16px;
       background:var(--surface-soft);
       border:1px solid var(--border-soft);
-      padding:8px 9px;
+      padding:9px 11px;
       display:flex;
       justify-content:space-between;
-      gap:8px;
+      gap:10px;
     }
-    .list-main strong{font-size:0.9rem;}
-    .list-main span{color:var(--text-soft);font-size:0.78rem;}
+    .list-main strong{font-size:1rem;}
+    .list-main span{color:var(--text-soft);font-size:0.9rem;}
     .badge{
       border-radius:var(--radius-pill);
-      padding:3px 8px;
-      font-size:0.76rem;
-      background:rgba(255,255,255,0.06);
+      padding:4px 9px;
+      font-size:0.85rem;
+      background:#f0ede6;
       color:var(--text-muted);
     }
-    .danger-text{color:var(--danger);}
-    .success-text{color:#8fd8aa;}
-    .small{font-size:0.78rem;color:var(--text-muted);}
+    .small{font-size:0.88rem;color:var(--text-muted);}
+    #saveStatus{font-size:0.9rem;}
     .hidden{display:none !important;}
     @media (max-width:840px){
       .layout{grid-template-columns:1fr;}
     }
     @media (max-width:640px){
-      .shell{border-radius:22px;padding:14px 12px 18px;}
+      .shell{border-radius:26px;padding:16px 14px 20px;}
       header{flex-direction:column;align-items:flex-start;}
       .login-box{flex-direction:column;align-items:flex-start;}
     }
@@ -181,11 +183,11 @@
           <div class="logo"><span>BG</span></div>
           <div>
             <h1>BG Board Game 內部管理</h1>
-            <p class="subtitle">新增桌遊、更新配件、處理預約與歸還（需密碼登入）</p>
+            <p class="subtitle">新增桌遊、更新配件，支援前台預約與借用流程</p>
           </div>
         </div>
         <div class="header-actions">
-          <div class="pill">目前資料來自 <strong>Google Sheets</strong></div>
+          <div class="pill">資料來源：<strong>Google Sheets</strong></div>
         </div>
       </header>
 
@@ -208,7 +210,7 @@
 
           <div class="toolbar">
             <div class="small">選擇既有桌遊：</div>
-            <select id="existingGameSelect" class="input-dark" style="min-width:200px;"></select>
+            <select id="existingGameSelect" class="input-dark" style="min-width:220px;"></select>
           </div>
 
           <form id="gameForm" class="form-grid">
@@ -260,14 +262,14 @@
               <label for="itemsInput">配件清單（每行一項，格式：名稱|數量|單位|是否重點）</label>
               <textarea id="itemsInput" placeholder="角色卡|15|張|TRUE&#10;投票牌|10|片|TRUE&#10;木 token|30|枚|FALSE"></textarea>
             </div>
-            <div class="field full" style="margin-top:4px;">
+            <div class="field full" style="margin-top:4px;display:flex;align-items:center;gap:10px;">
               <button type="submit" class="btn btn-primary">儲存桌遊資料</button>
-              <span id="saveStatus" class="small" style="margin-left:8px;"></span>
+              <span id="saveStatus" class="small"></span>
             </div>
           </form>
         </section>
 
-        <!-- 右側：桌遊列表概覽 + 借用狀態摘要 -->
+        <!-- 右側：桌遊列表概覽 -->
         <aside class="panel">
           <div class="panel-title">桌遊概覽</div>
           <p class="panel-sub">顯示所有桌遊的基本資料與目前狀態，方便快速檢查是否已下架或維修中。</p>
@@ -288,8 +290,8 @@
   </div>
 
   <script>
-const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev';
-    const ADMIN_PASSWORD = '24148283'; // 先用簡單密碼，可之後改
+    const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev';
+    const ADMIN_PASSWORD = '24148283';
 
     const state = {
       games: [],
@@ -302,13 +304,11 @@ const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev';
       const area = document.getElementById('protectedArea');
       if (ok) {
         status.textContent = '已登入內部管理頁';
-        status.classList.remove('locked');
-        status.classList.add('success-text');
+        status.className = 'success-text';
         area.classList.remove('hidden');
       } else {
         status.textContent = '尚未登入';
-        status.classList.remove('success-text');
-        status.classList.add('locked');
+        status.className = 'locked';
         area.classList.add('hidden');
       }
     }
@@ -365,7 +365,7 @@ const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev';
       }
       sel.innerHTML = '<option value="">選擇桌遊或手動輸入 Game ID</option>' +
         state.games.map(g => `<option value="${g.gameId}">${g.gameId}｜${g.name}</option>`).join('');
-      sel.addEventListener('change', () => {
+      sel.onchange = () => {
         const id = sel.value;
         if (!id) return;
         const g = state.games.find(x => x.gameId === id);
@@ -380,8 +380,8 @@ const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev';
         document.getElementById('gameYoutube').value = g.youtubeUrl || '';
         document.getElementById('gamePublicNote').value = g.publicNote || '';
         document.getElementById('gameInternalNote').value = g.internalNote || '';
-        // Items 之後可以接 gameDetail API 讀出來再填入。
-      });
+        // Items 可之後接 gameDetail API 讀出來填入
+      };
     }
 
     function renderGamesList(filter = 'all') {
