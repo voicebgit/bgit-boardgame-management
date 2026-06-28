@@ -10,7 +10,6 @@
       --bg: #f4f3ee;
       --surface: #ffffff;
       --surface-soft: #f8f7f3;
-      --surface-strong: #ffffff;
       --border-soft: rgba(40,37,29,0.10);
       --border-strong: rgba(40,37,29,0.18);
       --accent: #01696f;
@@ -164,6 +163,41 @@
     }
     .small{font-size:0.88rem;color:var(--text-muted);}
     #saveStatus{font-size:0.9rem;}
+    .items-table{
+      width:100%;
+      border-radius:16px;
+      border:1px solid var(--border-soft);
+      background:var(--surface-soft);
+      padding:8px 10px;
+    }
+    .items-header,
+    .items-row{
+      display:grid;
+      grid-template-columns:2fr 1fr 1fr 1fr;
+      gap:8px;
+      align-items:center;
+      margin-bottom:6px;
+    }
+    .items-header span{font-size:0.85rem;color:var(--text-muted);font-weight:600;}
+    .items-row input[type="text"],
+    .items-row input[type="number"]{
+      width:100%;
+      border-radius:10px;
+      border:1px solid var(--border-soft);
+      padding:6px 8px;
+      font-size:0.9rem;
+      background:#fdfbf7;
+    }
+    .items-row label{display:flex;align-items:center;gap:4px;font-size:0.85rem;color:var(--text-muted);}
+    .items-actions{display:flex;justify-content:flex-end;margin-top:6px;}
+    .items-add{
+      font-size:0.9rem;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border-soft);
+      background:#f5f2eb;
+      cursor:pointer;
+    }
     .hidden{display:none !important;}
     @media (max-width:840px){
       .layout{grid-template-columns:1fr;}
@@ -172,6 +206,8 @@
       .shell{border-radius:26px;padding:16px 14px 20px;}
       header{flex-direction:column;align-items:flex-start;}
       .login-box{flex-direction:column;align-items:flex-start;}
+      .items-header,
+      .items-row{grid-template-columns:2fr 1fr 1fr;grid-auto-rows:auto;}
     }
   </style>
 </head>
@@ -258,10 +294,23 @@
               <label for="gameInternalNote">內部備註</label>
               <textarea id="gameInternalNote" placeholder="只供同事查看，例如：需補卡 / 優先保養等"></textarea>
             </div>
+
             <div class="field full">
-              <label for="itemsInput">配件清單（每行一項，格式：名稱|數量|單位|是否重點）</label>
-              <textarea id="itemsInput" placeholder="角色卡|15|張|TRUE&#10;投票牌|10|片|TRUE&#10;木 token|30|枚|FALSE"></textarea>
+              <label>配件清單</label>
+              <div class="items-table">
+                <div class="items-header">
+                  <span>名稱</span>
+                  <span>數量</span>
+                  <span>單位</span>
+                  <span>重點配件</span>
+                </div>
+                <div id="itemsContainer"></div>
+                <div class="items-actions">
+                  <button type="button" class="items-add" id="addItemBtn">新增一項配件</button>
+                </div>
+              </div>
             </div>
+
             <div class="field full" style="margin-top:4px;display:flex;align-items:center;gap:10px;">
               <button type="submit" class="btn btn-primary">儲存桌遊資料</button>
               <span id="saveStatus" class="small"></span>
@@ -322,6 +371,7 @@
       if (pwd === ADMIN_PASSWORD) {
         setLoginStatus(true);
         loadGames();
+        ensureOneItemRow();
       } else {
         alert('密碼不正確');
         setLoginStatus(false);
@@ -365,7 +415,7 @@
       }
       sel.innerHTML = '<option value="">選擇桌遊或手動輸入 Game ID</option>' +
         state.games.map(g => `<option value="${g.gameId}">${g.gameId}｜${g.name}</option>`).join('');
-      sel.onchange = () => {
+      sel.onchange = async () => {
         const id = sel.value;
         if (!id) return;
         const g = state.games.find(x => x.gameId === id);
@@ -380,7 +430,19 @@
         document.getElementById('gameYoutube').value = g.youtubeUrl || '';
         document.getElementById('gamePublicNote').value = g.publicNote || '';
         document.getElementById('gameInternalNote').value = g.internalNote || '';
-        // Items 可之後接 gameDetail API 讀出來填入
+
+        // 讀取配件
+        try {
+          const json = await apiGet({ action: 'gameDetail', gameId: g.gameId });
+          if (json.ok && Array.isArray(json.items)) {
+            loadItemsIntoForm(json.items);
+          } else {
+            clearItemsForm();
+          }
+        } catch (err) {
+          console.error(err);
+          clearItemsForm();
+        }
       };
     }
 
@@ -422,6 +484,43 @@
       });
     });
 
+    function clearItemsForm() {
+      const container = document.getElementById('itemsContainer');
+      container.innerHTML = '';
+      ensureOneItemRow();
+    }
+
+    function ensureOneItemRow() {
+      const container = document.getElementById('itemsContainer');
+      if (!container.children.length) {
+        addItemRow();
+      }
+    }
+
+    function addItemRow(item = {}) {
+      const container = document.getElementById('itemsContainer');
+      const row = document.createElement('div');
+      row.className = 'items-row';
+      row.innerHTML = `
+        <input type="text" placeholder="例如：身分卡" value="${item.itemName || ''}">
+        <input type="number" min="0" placeholder="數量" value="${item.qty || ''}">
+        <input type="text" placeholder="單位，如張/枚" value="${item.unit || '張'}">
+        <label><input type="checkbox" ${item.isKeyItem ? 'checked' : ''}> 重點</label>
+      `;
+      container.appendChild(row);
+    }
+
+    document.getElementById('addItemBtn').addEventListener('click', () => {
+      addItemRow();
+    });
+
+    function loadItemsIntoForm(items) {
+      const container = document.getElementById('itemsContainer');
+      container.innerHTML = '';
+      items.forEach(it => addItemRow(it));
+      ensureOneItemRow();
+    }
+
     document.getElementById('gameForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const saveStatus = document.getElementById('saveStatus');
@@ -446,17 +545,32 @@
         lastBorrowAt: '',
         lastReturnAt: ''
       };
-      const itemsLines = document.getElementById('itemsInput').value.split('\n').map(s => s.trim()).filter(Boolean);
-      const items = itemsLines.map((line, idx) => {
-        const [name, qty, unit, key] = line.split('|').map(s => (s || '').trim());
-        return {
+
+      const itemsNodes = document.getElementById('itemsContainer').querySelectorAll('.items-row');
+      const items = [];
+      itemsNodes.forEach((row, idx) => {
+        const inputs = row.querySelectorAll('input');
+        const nameInput = inputs[0];
+        const qtyInput = inputs[1];
+        const unitInput = inputs[2];
+        const keyCheckbox = inputs[3];
+
+        const name = nameInput.value.trim();
+        const qty = Number(qtyInput.value || 0);
+        const unit = unitInput.value.trim() || '件';
+        const isKey = keyCheckbox.checked;
+
+        if (!name && qty === 0) return; // 空行略過
+
+        items.push({
           itemName: name,
-          qty: Number(qty || 0),
-          unit: unit || '件',
+          qty,
+          unit,
           sortOrder: idx + 1,
-          isKeyItem: String(key).toUpperCase() === 'TRUE'
-        };
+          isKeyItem: isKey
+        });
       });
+
       try {
         saveStatus.textContent = '儲存中⋯⋯';
         const json = await apiPost({ action: 'saveGame', game, items });
