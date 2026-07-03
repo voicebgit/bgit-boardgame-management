@@ -1,270 +1,1007 @@
-<script>
-const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev';
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BG Board Game 內部管理</title>
+  <style>
+    :root {
+      --bg: #f4f3ee;
+      --surface: #ffffff;
+      --surface-soft: #f8f7f3;
+      --border-soft: rgba(40, 37, 29, 0.10);
+      --border-strong: rgba(40, 37, 29, 0.18);
+      --accent: #01696f;
+      --accent-strong: #0c4e54;
+      --accent-soft: #d8ebe9;
+      --text-main: #26231b;
+      --text-muted: #6f6b64;
+      --text-soft: #9b9891;
+      --danger: #c13b73;
+      --danger-soft: #f8dfe9;
+      --success: #2f7d4c;
+      --success-soft: #dff3e6;
+      --radius-pill: 999px;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-soft: 0 16px 40px rgba(18, 16, 12, 0.12);
+    }
 
-const state = {
-  games: [],
-  loggedIn: false,
-  activeFilter: 'all',
-  editingGameId: ''
-};
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-function escapeHtml(value = '') {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+    body {
+      min-height: 100vh;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: linear-gradient(180deg, #f6f4ef 0%, #ece9e1 100%);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
 
-function safeValue(value = '') {
-  return String(value ?? '');
-}
+    .wrap {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
 
-function setLoginStatus(ok) {
-  state.loggedIn = ok;
-  const status = document.getElementById('loginStatus');
-  const area = document.getElementById('protectedArea');
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 28px;
+      box-shadow: var(--shadow-soft);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
 
-  if (ok) {
-    status.textContent = '已登入內部管理頁';
-    status.className = 'success-text';
-    area.classList.remove('hidden');
-  } else {
-    status.textContent = '尚未登入';
-    status.className = 'locked';
-    area.classList.add('hidden');
-  }
-}
+    .hero-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
 
-async function apiPost(action, payload = {}) {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, ...payload })
-  });
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      border-radius: var(--radius-pill);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
 
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok || json.ok === false) {
-    throw new Error(json.error || 'request failed');
-  }
-  return json;
-}
+    .hero h1 {
+      font-size: clamp(30px, 5vw, 46px);
+      line-height: 1.08;
+      margin-bottom: 10px;
+    }
 
-async function adminLogin(password) {
-  return apiPost('adminLogin', { password });
-}
+    .hero p {
+      color: var(--text-muted);
+      max-width: 780px;
+      font-size: 15px;
+    }
 
-function getStatusLabel(status) {
-  switch (status) {
-    case 'available': return '可借';
-    case 'borrowed': return '借出中';
-    case 'maintenance': return '維修 / 缺件';
-    case 'inactive': return '已下架';
-    default: return '未設定';
-  }
-}
+    .status-line {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
 
-function resetForm() {
-  state.editingGameId = '';
-  document.getElementById('gameId').value = '';
-  document.getElementById('gameName').value = '';
-  document.getElementById('gameCategory').value = '';
-  document.getElementById('gameStatus').value = 'available';
-  document.getElementById('gameCover').value = '';
-  document.getElementById('gameShort').value = '';
-  document.getElementById('gameDetail').value = '';
-  document.getElementById('gameYoutube').value = '';
-  document.getElementById('gamePublicNote').value = '';
-  document.getElementById('gameInternalNote').value = '';
-  document.getElementById('itemsContainer').innerHTML = '';
-  ensureOneItemRow();
-  document.getElementById('saveStatus').textContent = '';
-}
+    .locked,
+    .success-text {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 700;
+    }
 
-function addItemRow(item = {}) {
-  const row = document.createElement('div');
-  row.className = 'items-row';
-  row.innerHTML = `
-    <input type="text" class="item-name" placeholder="例如：角色板塊" value="${escapeHtml(item.itemName || '')}">
-    <input type="number" class="item-qty" placeholder="數量" min="0" step="1" value="${escapeHtml(item.quantity ?? '')}">
-    <input type="text" class="item-unit" placeholder="例如：塊 / 張 / 個" value="${escapeHtml(item.unit || '')}">
-    <label class="item-key-wrap">
-      <input type="checkbox" class="item-key" ${item.isKeyItem ? 'checked' : ''}>
-      <span>重點</span>
-    </label>
-    <button type="button" class="item-remove">移除</button>
-  `;
+    .locked {
+      background: #ece9e2;
+      color: #6d685f;
+    }
 
-  row.querySelector('.item-remove').addEventListener('click', () => {
-    row.remove();
-    ensureOneItemRow();
-  });
+    .success-text {
+      background: var(--success-soft);
+      color: var(--success);
+    }
 
-  document.getElementById('itemsContainer').appendChild(row);
-}
+    .layout {
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
 
-function ensureOneItemRow() {
-  const container = document.getElementById('itemsContainer');
-  if (!container.children.length) addItemRow();
-}
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 24px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
 
-function collectItems() {
-  return [...document.querySelectorAll('#itemsContainer .items-row')]
-    .map(row => ({
-      itemName: row.querySelector('.item-name').value.trim(),
-      quantity: Number(row.querySelector('.item-qty').value || 0),
-      unit: row.querySelector('.item-unit').value.trim(),
-      isKeyItem: row.querySelector('.item-key').checked
-    }))
-    .filter(item => item.itemName);
-}
+    .panel-head {
+      padding: 22px 22px 0;
+    }
 
-function fillForm(game) {
-  state.editingGameId = game.gameId || '';
-  document.getElementById('gameId').value = safeValue(game.gameId);
-  document.getElementById('gameName').value = safeValue(game.name);
-  document.getElementById('gameCategory').value = safeValue(game.category);
-  document.getElementById('gameStatus').value = safeValue(game.status || 'available');
-  document.getElementById('gameCover').value = safeValue(game.coverImageUrl);
-  document.getElementById('gameShort').value = safeValue(game.shortPlay);
-  document.getElementById('gameDetail').value = safeValue(game.detailPlay);
-  document.getElementById('gameYoutube').value = safeValue(game.youtubeUrl);
-  document.getElementById('gamePublicNote').value = safeValue(game.publicNote);
-  document.getElementById('gameInternalNote').value = safeValue(game.internalNote);
+    .panel-head h2 {
+      font-size: 22px;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
 
-  const container = document.getElementById('itemsContainer');
-  container.innerHTML = '';
-  (game.items || []).forEach(addItemRow);
-  ensureOneItemRow();
-  document.getElementById('saveStatus').textContent = '';
-}
+    .panel-head p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
 
-function renderGamesList() {
-  const list = document.getElementById('gamesList');
-  const games = state.activeFilter === 'all'
-    ? state.games
-    : state.games.filter(g => g.status === state.activeFilter);
+    .panel-body {
+      padding: 22px;
+    }
 
-  if (!games.length) {
-    list.innerHTML = `<div class="empty-state">目前沒有符合條件的桌遊資料</div>`;
-    return;
-  }
+    .form-stack {
+      display: grid;
+      gap: 14px;
+    }
 
-  list.innerHTML = games.map(game => `
-    <article class="game-row">
-      <div class="game-row-main">
-        <div class="game-row-title">${escapeHtml(game.name || '未命名桌遊')}</div>
-        <div class="game-row-meta">
-          <span>${escapeHtml(game.gameId || '')}</span>
-          <span>・</span>
-          <span>${escapeHtml(game.category || '未分類')}</span>
-          <span>・</span>
-          <span>${escapeHtml(getStatusLabel(game.status))}</span>
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--text-main);
+      font-size: 14px;
+      padding: 12px 14px;
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(1, 105, 111, 0.08);
+    }
+
+    .login-row,
+    .action-row,
+    .filter-row,
+    .game-row-actions,
+    .item-row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn,
+    .btn-secondary,
+    .btn-danger,
+    .btn-ghost {
+      appearance: none;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn:hover {
+      background: var(--accent-strong);
+    }
+
+    .btn-secondary {
+      background: #f3f1eb;
+      color: var(--text-main);
+      border: 1px solid var(--border-soft);
+    }
+
+    .btn-secondary:hover {
+      background: #ece8df;
+    }
+
+    .btn-danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border: 1px solid rgba(193, 59, 115, 0.16);
+    }
+
+    .btn-danger:hover {
+      background: #f4d2e1;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--accent-strong);
+      border: 1px solid rgba(1, 105, 111, 0.16);
+    }
+
+    .btn-ghost:hover {
+      background: #f3fbfa;
+    }
+
+    .pill-tab {
+      appearance: none;
+      border: 1px solid var(--border-soft);
+      background: #f5f3ee;
+      color: var(--text-muted);
+      border-radius: var(--radius-pill);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .pill-tab.active {
+      background: var(--accent-soft);
+      border-color: rgba(1, 105, 111, 0.18);
+      color: var(--accent-strong);
+    }
+
+    .muted-note,
+    .save-status {
+      color: var(--text-soft);
+      font-size: 12px;
+    }
+
+    .save-status {
+      min-height: 18px;
+    }
+
+    .items-wrap {
+      display: grid;
+      gap: 10px;
+    }
+
+    .items-row {
+      display: grid;
+      grid-template-columns: 1.8fr 90px 110px auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--border-soft);
+      background: var(--surface-soft);
+      border-radius: 16px;
+    }
+
+    .item-key-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .item-remove {
+      appearance: none;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 9px 12px;
+      background: #f0ebe8;
+      color: var(--text-main);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .item-remove:hover {
+      background: #e8e0da;
+    }
+
+    .game-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .game-row {
+      border: 1px solid var(--border-soft);
+      background: var(--surface-soft);
+      border-radius: 18px;
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .game-row-main {
+      display: grid;
+      gap: 6px;
+    }
+
+    .game-row-title {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .game-row-meta {
+      color: var(--text-muted);
+      font-size: 13px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--border-strong);
+      border-radius: 18px;
+      background: #fcfbf8;
+      color: var(--text-muted);
+      padding: 28px 18px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1060px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .wrap {
+        width: min(100% - 20px, 1240px);
+        padding: 18px 0 34px;
+      }
+
+      .hero,
+      .panel-body {
+        padding: 18px;
+      }
+
+      .panel-head {
+        padding: 18px 18px 0;
+      }
+
+      .hero h1 {
+        font-size: 30px;
+      }
+
+      .items-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-top">
+        <span class="brand-badge">BG Board Game Admin</span>
+      </div>
+      <h1>內部桌遊資料管理</h1>
+      <p>
+        用來管理桌遊資料、配件、借還狀態與資料匯出。
+        正式資料來源為 Cloudflare Worker；如有需要，可一鍵備份到 Google Sheets。
+      </p>
+      <div class="status-line">
+        <span id="loginStatus" class="locked">尚未登入</span>
+      </div>
+    </section>
+
+    <section class="layout">
+      <aside class="panel">
+        <div class="panel-head">
+          <h2>管理登入</h2>
+          <p>請先輸入管理密碼，登入後才可儲存、歸還或匯出資料。</p>
         </div>
-      </div>
-      <div class="game-row-actions">
-        <button type="button" class="btn btn-secondary" data-edit="${escapeHtml(game.gameId || '')}">編輯</button>
-      </div>
-    </article>
-  `).join('');
+        <div class="panel-body">
+          <div class="form-stack">
+            <div class="field">
+              <label for="adminPassword">管理密碼</label>
+              <input id="adminPassword" type="password" placeholder="請輸入管理密碼">
+            </div>
 
-  list.querySelectorAll('[data-edit]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const gameId = btn.getAttribute('data-edit');
-      const found = state.games.find(g => g.gameId === gameId);
-      if (found) fillForm(found);
+            <div class="login-row">
+              <button id="loginBtn" type="button" class="btn">登入</button>
+              <button id="reloadBtn" type="button" class="btn-secondary">重新載入資料</button>
+            </div>
+
+            <div id="protectedArea" class="form-stack hidden">
+              <hr style="border:none;border-top:1px solid rgba(40,37,29,0.08);margin:4px 0;">
+
+              <div class="action-row">
+                <button id="newGameBtn" type="button" class="btn-secondary">新增空白資料</button>
+                <button id="exportExcelBtn" type="button" class="btn-secondary">匯出 Excel</button>
+                <button id="backupSheetsBtn" type="button" class="btn-secondary">備份到 Google Sheets</button>
+              </div>
+
+              <p class="muted-note">如未使用 Google Sheets 備份，可把程式內 GAS_BACKUP_URL 留空。</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>桌遊清單與編輯</h2>
+          <p>可篩選狀態、查看資料，並對單一桌遊進行新增或修改。</p>
+        </div>
+        <div class="panel-body">
+          <div class="filter-row" style="margin-bottom:16px;">
+            <button class="pill-tab active" type="button" data-filter="all">全部</button>
+            <button class="pill-tab" type="button" data-filter="available">可借</button>
+            <button class="pill-tab" type="button" data-filter="borrowed">借出中</button>
+            <button class="pill-tab" type="button" data-filter="maintenance">維修 / 缺件</button>
+            <button class="pill-tab" type="button" data-filter="inactive">已下架</button>
+          </div>
+
+          <div id="gamesList" class="game-list" style="margin-bottom:22px;"></div>
+
+          <form id="gameForm" class="form-stack">
+            <div class="field">
+              <label for="gameId">桌遊編號</label>
+              <input id="gameId" type="text" placeholder="例如：G001" required>
+            </div>
+
+            <div class="field">
+              <label for="gameName">桌遊名稱</label>
+              <input id="gameName" type="text" placeholder="請輸入桌遊名稱" required>
+            </div>
+
+            <div class="field">
+              <label for="gameCategory">分類</label>
+              <input id="gameCategory" type="text" placeholder="例如：策略 / 家庭 / 派對">
+            </div>
+
+            <div class="field">
+              <label for="gameStatus">狀態</label>
+              <select id="gameStatus">
+                <option value="available">可借</option>
+                <option value="borrowed">借出中</option>
+                <option value="maintenance">維修 / 缺件</option>
+                <option value="inactive">已下架</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="gameCover">封面圖片 URL</label>
+              <input id="gameCover" type="url" placeholder="https://...">
+            </div>
+
+            <div class="field">
+              <label for="gameShort">短簡介</label>
+              <textarea id="gameShort" placeholder="卡片列表中顯示的短描述"></textarea>
+            </div>
+
+            <div class="field">
+              <label for="gameDetail">詳細玩法</label>
+              <textarea id="gameDetail" placeholder="詳情頁顯示的玩法介紹"></textarea>
+            </div>
+
+            <div class="field">
+              <label for="gameYoutube">YouTube 教學連結</label>
+              <input id="gameYoutube" type="url" placeholder="https://www.youtube.com/...">
+            </div>
+
+            <div class="field">
+              <label for="gamePublicNote">公開備註</label>
+              <textarea id="gamePublicNote" placeholder="前台可見備註"></textarea>
+            </div>
+
+            <div class="field">
+              <label for="gameInternalNote">內部備註</label>
+              <textarea id="gameInternalNote" placeholder="僅管理頁使用"></textarea>
+            </div>
+
+            <div class="field">
+              <label>配件清單</label>
+              <div id="itemsContainer" class="items-wrap"></div>
+              <div class="item-row-actions">
+                <button id="addItemBtn" type="button" class="btn-ghost">新增配件列</button>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button type="submit" class="btn">儲存桌遊資料</button>
+              <button id="returnGameBtn" type="button" class="btn-danger">標記為已歸還</button>
+            </div>
+
+            <div id="saveStatus" class="save-status"></div>
+          </form>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script>
+    const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev';
+    const GAS_BACKUP_URL = '';
+
+    const state = {
+      games: [],
+      loggedIn: false,
+      activeFilter: 'all',
+      editingGameId: ''
+    };
+
+    function escapeHtml(value = '') {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function safeValue(value = '') {
+      return String(value ?? '');
+    }
+
+    function currentPassword() {
+      return document.getElementById('adminPassword').value.trim();
+    }
+
+    function setLoginStatus(ok) {
+      state.loggedIn = ok;
+      const status = document.getElementById('loginStatus');
+      const area = document.getElementById('protectedArea');
+
+      if (ok) {
+        status.textContent = '已登入內部管理頁';
+        status.className = 'success-text';
+        area.classList.remove('hidden');
+      } else {
+        status.textContent = '尚未登入';
+        status.className = 'locked';
+        area.classList.add('hidden');
+      }
+    }
+
+    async function apiPost(action, payload = {}) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, ...payload })
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.ok === false) {
+        throw new Error(json.error || 'request failed');
+      }
+      return json;
+    }
+
+    async function adminLogin(password) {
+      return apiPost('adminLogin', { password });
+    }
+
+    function getStatusLabel(status) {
+      switch (status) {
+        case 'available': return '可借';
+        case 'borrowed': return '借出中';
+        case 'maintenance': return '維修 / 缺件';
+        case 'inactive': return '已下架';
+        default: return '未設定';
+      }
+    }
+
+    function resetForm() {
+      state.editingGameId = '';
+      document.getElementById('gameId').value = '';
+      document.getElementById('gameName').value = '';
+      document.getElementById('gameCategory').value = '';
+      document.getElementById('gameStatus').value = 'available';
+      document.getElementById('gameCover').value = '';
+      document.getElementById('gameShort').value = '';
+      document.getElementById('gameDetail').value = '';
+      document.getElementById('gameYoutube').value = '';
+      document.getElementById('gamePublicNote').value = '';
+      document.getElementById('gameInternalNote').value = '';
+      document.getElementById('itemsContainer').innerHTML = '';
+      ensureOneItemRow();
+      document.getElementById('saveStatus').textContent = '';
+    }
+
+    function addItemRow(item = {}) {
+      const row = document.createElement('div');
+      row.className = 'items-row';
+      row.innerHTML = `
+        <input type="text" class="item-name" placeholder="例如：角色板塊" value="${escapeHtml(item.itemName || '')}">
+        <input type="number" class="item-qty" placeholder="數量" min="0" step="1" value="${escapeHtml(item.quantity ?? '')}">
+        <input type="text" class="item-unit" placeholder="例如：塊 / 張 / 個" value="${escapeHtml(item.unit || '')}">
+        <label class="item-key-wrap">
+          <input type="checkbox" class="item-key" ${item.isKeyItem ? 'checked' : ''}>
+          <span>重點</span>
+        </label>
+        <button type="button" class="item-remove">移除</button>
+      `;
+
+      row.querySelector('.item-remove').addEventListener('click', () => {
+        row.remove();
+        ensureOneItemRow();
+      });
+
+      document.getElementById('itemsContainer').appendChild(row);
+    }
+
+    function ensureOneItemRow() {
+      const container = document.getElementById('itemsContainer');
+      if (!container.children.length) addItemRow();
+    }
+
+    function collectItems() {
+      return [...document.querySelectorAll('#itemsContainer .items-row')]
+        .map(row => ({
+          itemName: row.querySelector('.item-name').value.trim(),
+          quantity: Number(row.querySelector('.item-qty').value || 0),
+          unit: row.querySelector('.item-unit').value.trim(),
+          isKeyItem: row.querySelector('.item-key').checked
+        }))
+        .filter(item => item.itemName);
+    }
+
+    function fillForm(game) {
+      state.editingGameId = game.gameId || '';
+      document.getElementById('gameId').value = safeValue(game.gameId);
+      document.getElementById('gameName').value = safeValue(game.name);
+      document.getElementById('gameCategory').value = safeValue(game.category);
+      document.getElementById('gameStatus').value = safeValue(game.status || 'available');
+      document.getElementById('gameCover').value = safeValue(game.coverImageUrl);
+      document.getElementById('gameShort').value = safeValue(game.shortPlay);
+      document.getElementById('gameDetail').value = safeValue(game.detailPlay);
+      document.getElementById('gameYoutube').value = safeValue(game.youtubeUrl);
+      document.getElementById('gamePublicNote').value = safeValue(game.publicNote);
+      document.getElementById('gameInternalNote').value = safeValue(game.internalNote);
+
+      const container = document.getElementById('itemsContainer');
+      container.innerHTML = '';
+      (game.items || []).forEach(addItemRow);
+      ensureOneItemRow();
+      document.getElementById('saveStatus').textContent = '';
+    }
+
+    function renderGamesList() {
+      const list = document.getElementById('gamesList');
+      const games = state.activeFilter === 'all'
+        ? state.games
+        : state.games.filter(g => g.status === state.activeFilter);
+
+      if (!games.length) {
+        list.innerHTML = '<div class="empty-state">目前沒有符合條件的桌遊資料</div>';
+        return;
+      }
+
+      list.innerHTML = games.map(game => `
+        <article class="game-row">
+          <div class="game-row-main">
+            <div class="game-row-title">${escapeHtml(game.name || '未命名桌遊')}</div>
+            <div class="game-row-meta">
+              <span>${escapeHtml(game.gameId || '')}</span>
+              <span>・</span>
+              <span>${escapeHtml(game.category || '未分類')}</span>
+              <span>・</span>
+              <span>${escapeHtml(getStatusLabel(game.status))}</span>
+              ${game.borrowerName ? `<span>・ 借用人：${escapeHtml(game.borrowerName)}</span>` : ''}
+            </div>
+          </div>
+
+          <div class="game-row-actions">
+            <button type="button" class="btn-secondary" data-edit="${escapeHtml(game.gameId || '')}">編輯</button>
+          </div>
+        </article>
+      `).join('');
+
+      list.querySelectorAll('[data-edit]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const gameId = btn.getAttribute('data-edit');
+          const found = state.games.find(g => g.gameId === gameId);
+          if (found) fillForm(found);
+        });
+      });
+    }
+
+    async function loadGames() {
+      const json = await apiPost('listGames');
+      state.games = Array.isArray(json.games) ? json.games : [];
+      renderGamesList();
+    }
+
+    async function exportExcel() {
+      try {
+        const password = currentPassword();
+        if (!password) {
+          alert('請先輸入管理密碼');
+          return;
+        }
+
+        const exportRes = await apiPost('exportData', { password });
+        const games = Array.isArray(exportRes.data?.games) ? exportRes.data.games : [];
+
+        const gamesSheetRows = games.map(g => ({
+          gameId: g.gameId || '',
+          name: g.name || '',
+          category: g.category || '',
+          status: g.status || '',
+          coverImageUrl: g.coverImageUrl || '',
+          shortPlay: g.shortPlay || '',
+          detailPlay: g.detailPlay || '',
+          youtubeUrl: g.youtubeUrl || '',
+          borrowCount: g.borrowCount || 0,
+          lastBorrowAt: g.lastBorrowAt || '',
+          lastReturnAt: g.lastReturnAt || '',
+          publicNote: g.publicNote || '',
+          internalNote: g.internalNote || '',
+          borrowerName: g.borrowerName || '',
+          borrowerContact: g.borrowerContact || '',
+          dueDate: g.dueDate || '',
+          createdAt: g.createdAt || '',
+          updatedAt: g.updatedAt || ''
+        }));
+
+        const itemsSheetRows = games.flatMap(g =>
+          (Array.isArray(g.items) ? g.items : []).map((item, idx) => ({
+            gameId: g.gameId || '',
+            gameName: g.name || '',
+            sortOrder: idx + 1,
+            itemName: item.itemName || '',
+            quantity: item.quantity || 0,
+            unit: item.unit || '',
+            isKeyItem: item.isKeyItem ? 'TRUE' : 'FALSE'
+          }))
+        );
+
+        const wb = XLSX.utils.book_new();
+        const wsGames = XLSX.utils.json_to_sheet(gamesSheetRows.length ? gamesSheetRows : [{
+          gameId: '',
+          name: '',
+          category: '',
+          status: '',
+          coverImageUrl: '',
+          shortPlay: '',
+          detailPlay: '',
+          youtubeUrl: '',
+          borrowCount: '',
+          lastBorrowAt: '',
+          lastReturnAt: '',
+          publicNote: '',
+          internalNote: '',
+          borrowerName: '',
+          borrowerContact: '',
+          dueDate: '',
+          createdAt: '',
+          updatedAt: ''
+        }]);
+
+        const wsItems = XLSX.utils.json_to_sheet(itemsSheetRows.length ? itemsSheetRows : [{
+          gameId: '',
+          gameName: '',
+          sortOrder: '',
+          itemName: '',
+          quantity: '',
+          unit: '',
+          isKeyItem: ''
+        }]);
+
+        XLSX.utils.book_append_sheet(wb, wsGames, 'Games');
+        XLSX.utils.book_append_sheet(wb, wsItems, 'Items');
+
+        const d = new Date();
+        const filename = `bgit-boardgame-export-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.xlsx`;
+        XLSX.writeFile(wb, filename);
+      } catch (err) {
+        console.error(err);
+        alert('匯出 Excel 失敗：' + err.message);
+      }
+    }
+
+    async function backupToSheets() {
+      try {
+        if (!GAS_BACKUP_URL) {
+          alert('目前未設定 GAS_BACKUP_URL');
+          return;
+        }
+
+        const password = currentPassword();
+        if (!password) {
+          alert('請先輸入管理密碼');
+          return;
+        }
+
+        const exportRes = await apiPost('exportData', { password });
+        const res = await fetch(GAS_BACKUP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'backupData',
+            data: exportRes.data
+          })
+        });
+
+        const json = await res.json();
+        if (!json.ok) {
+          throw new Error(json.error || '備份失敗');
+        }
+
+        alert(`已備份到 Google Sheets，桌遊 ${json.gameCount} 筆，配件 ${json.itemCount} 筆`);
+      } catch (err) {
+        console.error(err);
+        alert('備份失敗：' + err.message);
+      }
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const pwd = currentPassword();
+
+      if (!pwd) {
+        alert('請輸入管理密碼');
+        return;
+      }
+
+      try {
+        await adminLogin(pwd);
+        setLoginStatus(true);
+        await loadGames();
+        ensureOneItemRow();
+      } catch (err) {
+        console.error(err);
+        setLoginStatus(false);
+        alert('密碼不正確或登入失敗');
+      }
     });
-  });
-}
 
-async function loadGames() {
-  const json = await apiPost('listGames');
-  state.games = Array.isArray(json.games) ? json.games : [];
-  renderGamesList();
-}
+    document.getElementById('reloadBtn').addEventListener('click', async () => {
+      try {
+        await loadGames();
+        alert('資料已重新載入');
+      } catch (err) {
+        console.error(err);
+        alert('重新載入失敗：' + err.message);
+      }
+    });
 
-document.getElementById('loginBtn').addEventListener('click', async () => {
-  const pwd = document.getElementById('adminPassword').value.trim();
+    document.getElementById('newGameBtn').addEventListener('click', () => {
+      resetForm();
+    });
 
-  if (!pwd) {
-    alert('請輸入管理密碼');
-    return;
-  }
+    document.getElementById('addItemBtn').addEventListener('click', () => addItemRow());
 
-  try {
-    await adminLogin(pwd);
-    setLoginStatus(true);
-    await loadGames();
-    ensureOneItemRow();
-  } catch (err) {
-    console.error(err);
+    document.getElementById('exportExcelBtn').addEventListener('click', exportExcel);
+    document.getElementById('backupSheetsBtn').addEventListener('click', backupToSheets);
+
+    document.querySelectorAll('.pill-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.pill-tab').forEach(x => x.classList.remove('active'));
+        btn.classList.add('active');
+        state.activeFilter = btn.dataset.filter || 'all';
+        renderGamesList();
+      });
+    });
+
+    document.getElementById('gameForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!state.loggedIn) {
+        alert('請先登入');
+        return;
+      }
+
+      const gameId = document.getElementById('gameId').value.trim();
+      const gameName = document.getElementById('gameName').value.trim();
+
+      if (!gameId || !gameName) {
+        alert('請至少填寫桌遊編號與桌遊名稱');
+        return;
+      }
+
+      const existing = state.games.find(g => g.gameId === gameId) || {};
+
+      const game = {
+        gameId,
+        name: gameName,
+        category: document.getElementById('gameCategory').value.trim(),
+        status: document.getElementById('gameStatus').value,
+        coverImageUrl: document.getElementById('gameCover').value.trim(),
+        shortPlay: document.getElementById('gameShort').value.trim(),
+        detailPlay: document.getElementById('gameDetail').value.trim(),
+        youtubeUrl: document.getElementById('gameYoutube').value.trim(),
+        publicNote: document.getElementById('gamePublicNote').value.trim(),
+        internalNote: document.getElementById('gameInternalNote').value.trim(),
+        items: collectItems(),
+        borrowCount: existing.borrowCount || 0,
+        lastBorrowAt: existing.lastBorrowAt || '',
+        lastReturnAt: existing.lastReturnAt || '',
+        borrowerName: existing.borrowerName || '',
+        borrowerContact: existing.borrowerContact || '',
+        dueDate: existing.dueDate || '',
+        createdAt: existing.createdAt || ''
+      };
+
+      const saveStatus = document.getElementById('saveStatus');
+      saveStatus.textContent = '儲存中...';
+
+      try {
+        await apiPost('saveGame', {
+          password: currentPassword(),
+          game
+        });
+        saveStatus.textContent = '已成功儲存';
+        await loadGames();
+        fillForm(game);
+      } catch (err) {
+        console.error(err);
+        saveStatus.textContent = '儲存失敗';
+        alert('儲存失敗：' + err.message);
+      }
+    });
+
+    document.getElementById('returnGameBtn').addEventListener('click', async () => {
+      if (!state.loggedIn) {
+        alert('請先登入');
+        return;
+      }
+
+      const gameId = document.getElementById('gameId').value.trim();
+      if (!gameId) {
+        alert('請先選擇或輸入要歸還的桌遊編號');
+        return;
+      }
+
+      try {
+        await apiPost('returnGame', {
+          password: currentPassword(),
+          gameId
+        });
+        alert('已標記為歸還');
+        await loadGames();
+
+        const updated = state.games.find(g => g.gameId === gameId);
+        if (updated) fillForm(updated);
+      } catch (err) {
+        console.error(err);
+        alert('歸還失敗：' + err.message);
+      }
+    });
+
     setLoginStatus(false);
-    alert('密碼不正確或登入失敗');
-  }
-});
-
-document.getElementById('addItemBtn').addEventListener('click', () => addItemRow());
-
-document.querySelectorAll('.pill-tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.pill-tab').forEach(x => x.classList.remove('active'));
-    btn.classList.add('active');
-    state.activeFilter = btn.dataset.filter || 'all';
-    renderGamesList();
-  });
-});
-
-document.getElementById('gameForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  if (!state.loggedIn) {
-    alert('請先登入');
-    return;
-  }
-
-  const gameId = document.getElementById('gameId').value.trim();
-  const gameName = document.getElementById('gameName').value.trim();
-
-  if (!gameId || !gameName) {
-    alert('請至少填寫桌遊編號與桌遊名稱');
-    return;
-  }
-
-  const existing = state.games.find(g => g.gameId === gameId) || {};
-
-  const game = {
-    gameId,
-    name: gameName,
-    category: document.getElementById('gameCategory').value.trim(),
-    status: document.getElementById('gameStatus').value,
-    coverImageUrl: document.getElementById('gameCover').value.trim(),
-    shortPlay: document.getElementById('gameShort').value.trim(),
-    detailPlay: document.getElementById('gameDetail').value.trim(),
-    youtubeUrl: document.getElementById('gameYoutube').value.trim(),
-    publicNote: document.getElementById('gamePublicNote').value.trim(),
-    internalNote: document.getElementById('gameInternalNote').value.trim(),
-    items: collectItems(),
-    borrowCount: existing.borrowCount || 0,
-    lastBorrowAt: existing.lastBorrowAt || '',
-    lastReturnAt: existing.lastReturnAt || ''
-  };
-
-  const saveStatus = document.getElementById('saveStatus');
-  saveStatus.textContent = '儲存中...';
-
-  try {
-    await apiPost('saveGame', { game });
-    saveStatus.textContent = '已成功儲存';
-    await loadGames();
-    fillForm(game);
-  } catch (err) {
-    console.error(err);
-    saveStatus.textContent = '儲存失敗';
-    alert('儲存失敗：' + err.message);
-  }
-});
-
-setLoginStatus(false);
-resetForm();
-</script>
+    resetForm();
+    loadGames().catch(err => {
+      console.error(err);
+      document.getElementById('gamesList').innerHTML =
+        '<div class="empty-state">資料載入失敗，請稍後再試。</div>';
+    });
+  </script>
+</body>
+</html>
