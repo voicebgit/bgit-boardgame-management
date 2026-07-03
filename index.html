@@ -1,237 +1,766 @@
-<script>
-const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev';
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BG Board Game 借用平台</title>
+  <style>
+    :root {
+      --bg: #f4f3ee;
+      --surface: #ffffff;
+      --surface-soft: #f8f7f3;
+      --border-soft: rgba(40, 37, 29, 0.1);
+      --border-strong: rgba(40, 37, 29, 0.18);
+      --accent: #01696f;
+      --accent-strong: #0c4e54;
+      --accent-soft: #d8ebe9;
+      --text-main: #26231b;
+      --text-muted: #6f6b64;
+      --text-soft: #9b9891;
+      --danger: #c13b73;
+      --radius-pill: 999px;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-soft: 0 16px 40px rgba(18, 16, 12, 0.12);
+    }
 
-const state = {
-  games: [],
-  currentGameId: '',
-  currentBorrowRecord: null
-};
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-function escapeHtml(value = '') {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+    body {
+      min-height: 100vh;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: linear-gradient(180deg, #f6f4ef 0%, #ece9e1 100%);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
 
-async function apiPost(action, payload = {}) {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, ...payload })
-  });
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
 
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok || json.ok === false) {
-    throw new Error(json.error || 'request failed');
-  }
-  return json;
-}
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 28px;
+      box-shadow: var(--shadow-soft);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
 
-function getStatusLabel(status) {
-  switch (status) {
-    case 'available': return '可借';
-    case 'borrowed': return '借出中';
-    case 'maintenance': return '維修 / 缺件';
-    case 'inactive': return '已下架';
-    default: return '未設定';
-  }
-}
+    .hero-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
 
-function formatDateTime(value) {
-  if (!value) return '—';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString('zh-HK', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      border-radius: var(--radius-pill);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
 
-function populateBorrowSelect() {
-  const select = document.getElementById('borrowGameId');
-  const availableGames = state.games.filter(g => g.status === 'available');
+    .hero h1 {
+      font-size: clamp(30px, 5vw, 48px);
+      line-height: 1.08;
+      margin-bottom: 10px;
+    }
 
-  if (!availableGames.length) {
-    select.innerHTML = '<option value="">目前沒有可借桌遊</option>';
-    select.disabled = true;
-    return;
-  }
+    .hero p {
+      max-width: 760px;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
 
-  select.disabled = false;
-  select.innerHTML = availableGames.map(g => `
-    <option value="${escapeHtml(g.gameId || '')}">
-      ${escapeHtml(g.name || '未命名桌遊')}
-    </option>
-  `).join('');
+    .hero-note {
+      margin-top: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #f6faf9;
+      border: 1px solid rgba(1, 105, 111, 0.14);
+      color: var(--accent-strong);
+      border-radius: var(--radius-pill);
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+    }
 
-  if (state.currentGameId && availableGames.some(g => g.gameId === state.currentGameId)) {
-    select.value = state.currentGameId;
-  }
-}
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 24px;
+      align-items: start;
+    }
 
-function renderGameGrid() {
-  const grid = document.getElementById('gameGrid');
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 24px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
 
-  if (!state.games.length) {
-    grid.innerHTML = `<div class="empty-state">目前未有桌遊資料</div>`;
-    return;
-  }
+    .panel-head {
+      padding: 22px 22px 0;
+    }
 
-  grid.innerHTML = state.games.map(g => {
-    const canBorrow = g.status === 'available';
-    return `
-      <article class="game-card">
-        <div class="game-card-body">
-          <div class="game-card-top">
-            <span class="status-chip status-${escapeHtml(g.status || '')}">
-              ${escapeHtml(getStatusLabel(g.status))}
-            </span>
-          </div>
+    .panel-head h2 {
+      font-size: 22px;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
 
-          <h3 class="game-card-title">${escapeHtml(g.name || '未命名桌遊')}</h3>
-          <p class="game-card-meta">${escapeHtml(g.category || '未分類')}</p>
-          <p class="game-card-desc">${escapeHtml(g.shortPlay || '')}</p>
+    .panel-head p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
 
-          <div class="game-card-actions">
-            <button type="button" class="btn-small btn-ghost" data-detail="${escapeHtml(g.gameId || '')}">
-              查看詳情
-            </button>
-            <button
-              type="button"
-              class="btn-small btn-main"
-              data-borrow="${escapeHtml(g.gameId || '')}"
-              ${canBorrow ? '' : 'disabled'}
-            >
-              ${canBorrow ? '預約借用' : '暫不可借'}
-            </button>
-          </div>
+    .panel-body {
+      padding: 22px;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 16px;
+    }
+
+    .game-card {
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      background: var(--surface-soft);
+      overflow: hidden;
+      min-height: 100%;
+    }
+
+    .game-card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 12px;
+    }
+
+    .game-card-top {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: var(--radius-pill);
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .status-available {
+      background: #dff3e6;
+      color: #25663a;
+    }
+
+    .status-borrowed {
+      background: #f8ead7;
+      color: #8c5b11;
+    }
+
+    .status-maintenance {
+      background: #f8dfe9;
+      color: #93305e;
+    }
+
+    .status-inactive {
+      background: #e9e7e2;
+      color: #6c665d;
+    }
+
+    .game-card-title {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .game-card-meta {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .game-card-desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .game-card-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-small,
+    .btn-main,
+    .btn-ghost {
+      appearance: none;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .btn-main {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-main:hover {
+      background: var(--accent-strong);
+    }
+
+    .btn-main:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--accent-strong);
+      border: 1px solid rgba(1, 105, 111, 0.2);
+    }
+
+    .btn-ghost:hover {
+      background: #f3fbfa;
+    }
+
+    .form-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--text-main);
+      font-size: 14px;
+      padding: 12px 14px;
+      outline: none;
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(1, 105, 111, 0.08);
+    }
+
+    .submit-btn {
+      appearance: none;
+      border: none;
+      border-radius: 16px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .submit-btn:hover {
+      background: var(--accent-strong);
+    }
+
+    .muted-note {
+      color: var(--text-soft);
+      font-size: 12px;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--border-strong);
+      border-radius: 18px;
+      background: #fcfbf8;
+      color: var(--text-muted);
+      padding: 28px 18px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(25, 22, 18, 0.48);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .modal-card {
+      width: min(680px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      background: #fff;
+      border-radius: 24px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 24px 64px rgba(18, 16, 12, 0.2);
+    }
+
+    .modal-head {
+      padding: 20px 22px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal-head h3 {
+      font-size: 22px;
+    }
+
+    .modal-close {
+      appearance: none;
+      border: none;
+      background: #f3f1eb;
+      color: var(--text-main);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 20px 22px 24px;
+    }
+
+    .detail-block + .detail-block {
+      margin-top: 18px;
+    }
+
+    .detail-block h4 {
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .detail-items {
+      padding-left: 18px;
+    }
+
+    .detail-items li + li {
+      margin-top: 6px;
+    }
+
+    @media (max-width: 920px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .wrap {
+        width: min(100% - 20px, 1120px);
+        padding: 18px 0 32px;
+      }
+
+      .hero,
+      .panel-body {
+        padding: 18px;
+      }
+
+      .panel-head {
+        padding: 18px 18px 0;
+      }
+
+      .hero h1 {
+        font-size: 30px;
+      }
+
+      .game-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-top">
+        <span class="brand-badge">BG Board Game</span>
+      </div>
+      <h1>桌遊借用與資料查閱平台</h1>
+      <p>
+        查看桌遊狀態、閱讀簡介與配件資訊，並提交借用申請。
+        系統會自動限制不可借出的桌遊，避免重複借用。
+      </p>
+      <div class="hero-note">只可借用目前狀態為「可借」的桌遊</div>
+    </section>
+
+    <section class="layout">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>桌遊列表</h2>
+          <p>查看目前桌遊資料與狀態，點擊可查看更多詳情。</p>
         </div>
-      </article>
-    `;
-  }).join('');
+        <div class="panel-body">
+          <div id="gameGrid" class="game-grid"></div>
+        </div>
+      </div>
 
-  grid.querySelectorAll('[data-detail]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const gameId = btn.getAttribute('data-detail');
-      showGameDetail(gameId);
-    });
-  });
+      <aside id="borrowSection" class="panel">
+        <div class="panel-head">
+          <h2>提交借用申請</h2>
+          <p>請填寫基本資料，系統只會接受可借桌遊。</p>
+        </div>
+        <div class="panel-body">
+          <form id="borrowForm" class="form-stack">
+            <div class="field">
+              <label for="borrowGameId">選擇桌遊</label>
+              <select id="borrowGameId" required></select>
+            </div>
 
-  grid.querySelectorAll('[data-borrow]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const gameId = btn.getAttribute('data-borrow');
+            <div class="field">
+              <label for="borrowerName">借用人姓名</label>
+              <input id="borrowerName" type="text" placeholder="請輸入姓名" required>
+            </div>
+
+            <div class="field">
+              <label for="borrowerContact">聯絡方式</label>
+              <input id="borrowerContact" type="text" placeholder="電話或 WhatsApp" required>
+            </div>
+
+            <button type="submit" class="submit-btn">送出借用申請</button>
+            <p class="muted-note">送出後，該桌遊狀態會更新為借出中。</p>
+          </form>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div id="gameDetailModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>桌遊詳情</h3>
+        <button id="closeGameDetail" class="modal-close" type="button" aria-label="關閉">×</button>
+      </div>
+      <div id="gameDetailBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://bgit-boardgame-management.voicebgit.workers.dev';
+
+    const state = {
+      games: [],
+      currentGameId: '',
+      currentBorrowRecord: null
+    };
+
+    function escapeHtml(value = '') {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    async function apiPost(action, payload = {}) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, ...payload })
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.ok === false) {
+        throw new Error(json.error || 'request failed');
+      }
+      return json;
+    }
+
+    function getStatusLabel(status) {
+      switch (status) {
+        case 'available': return '可借';
+        case 'borrowed': return '借出中';
+        case 'maintenance': return '維修 / 缺件';
+        case 'inactive': return '已下架';
+        default: return '未設定';
+      }
+    }
+
+    function formatDateTime(value) {
+      if (!value) return '—';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleString('zh-HK', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function populateBorrowSelect() {
+      const select = document.getElementById('borrowGameId');
+      const availableGames = state.games.filter(g => g.status === 'available');
+
+      if (!availableGames.length) {
+        select.innerHTML = '<option value="">目前沒有可借桌遊</option>';
+        select.disabled = true;
+        return;
+      }
+
+      select.disabled = false;
+      select.innerHTML = availableGames.map(g => `
+        <option value="${escapeHtml(g.gameId || '')}">
+          ${escapeHtml(g.name || '未命名桌遊')}
+        </option>
+      `).join('');
+
+      if (state.currentGameId && availableGames.some(g => g.gameId === state.currentGameId)) {
+        select.value = state.currentGameId;
+      }
+    }
+
+    function renderGameGrid() {
+      const grid = document.getElementById('gameGrid');
+
+      if (!state.games.length) {
+        grid.innerHTML = '<div class="empty-state">目前未有桌遊資料</div>';
+        return;
+      }
+
+      grid.innerHTML = state.games.map(g => {
+        const canBorrow = g.status === 'available';
+        return `
+          <article class="game-card">
+            <div class="game-card-body">
+              <div class="game-card-top">
+                <span class="status-chip status-${escapeHtml(g.status || '')}">
+                  ${escapeHtml(getStatusLabel(g.status))}
+                </span>
+              </div>
+
+              <h3 class="game-card-title">${escapeHtml(g.name || '未命名桌遊')}</h3>
+              <p class="game-card-meta">${escapeHtml(g.category || '未分類')}</p>
+              <p class="game-card-desc">${escapeHtml(g.shortPlay || '')}</p>
+
+              <div class="game-card-actions">
+                <button type="button" class="btn-ghost" data-detail="${escapeHtml(g.gameId || '')}">
+                  查看詳情
+                </button>
+                <button
+                  type="button"
+                  class="btn-main"
+                  data-borrow="${escapeHtml(g.gameId || '')}"
+                  ${canBorrow ? '' : 'disabled'}
+                >
+                  ${canBorrow ? '預約借用' : '暫不可借'}
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      grid.querySelectorAll('[data-detail]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const gameId = btn.getAttribute('data-detail');
+          showGameDetail(gameId);
+        });
+      });
+
+      grid.querySelectorAll('[data-borrow]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const gameId = btn.getAttribute('data-borrow');
+          const game = state.games.find(g => g.gameId === gameId);
+
+          if (!game || game.status !== 'available') {
+            alert('此桌遊目前不可借用');
+            return;
+          }
+
+          state.currentGameId = gameId;
+          populateBorrowSelect();
+          document.getElementById('borrowGameId').value = gameId;
+          document.getElementById('borrowSection').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        });
+      });
+    }
+
+    function showGameDetail(gameId) {
       const game = state.games.find(g => g.gameId === gameId);
+      const modalBody = document.getElementById('gameDetailBody');
 
+      if (!game) {
+        modalBody.innerHTML = '<p>找不到桌遊資料</p>';
+        return;
+      }
+
+      const items = Array.isArray(game.items) && game.items.length
+        ? `<ul class="detail-items">${game.items.map(item => `
+            <li>
+              ${escapeHtml(item.itemName || '')}
+              ${item.quantity ? ` × ${escapeHtml(String(item.quantity))}` : ''}
+              ${item.unit ? ` ${escapeHtml(item.unit)}` : ''}
+              ${item.isKeyItem ? '（重點）' : ''}
+            </li>
+          `).join('')}</ul>`
+        : '<p>暫無配件資料</p>';
+
+      const yt = game.youtubeUrl
+        ? `<p><a href="${escapeHtml(game.youtubeUrl)}" target="_blank" rel="noopener noreferrer">觀看教學影片</a></p>`
+        : '';
+
+      const borrowInfo = game.status === 'borrowed'
+        ? `
+          <div class="detail-block">
+            <h4>借用狀態</h4>
+            <p>借用人：${escapeHtml(game.borrowerName || '—')}</p>
+            <p>聯絡方式：${escapeHtml(game.borrowerContact || '—')}</p>
+            <p>到期日：${escapeHtml(formatDateTime(game.dueDate))}</p>
+          </div>
+        `
+        : '';
+
+      modalBody.innerHTML = `
+        <div class="detail-block">
+          <h3>${escapeHtml(game.name || '未命名桌遊')}</h3>
+          <p>${escapeHtml(game.category || '未分類')}・${escapeHtml(getStatusLabel(game.status))}</p>
+        </div>
+
+        <div class="detail-block">
+          <h4>玩法簡介</h4>
+          <p>${escapeHtml(game.detailPlay || game.shortPlay || '暫無介紹')}</p>
+        </div>
+
+        <div class="detail-block">
+          <h4>配件清單</h4>
+          ${items}
+        </div>
+
+        <div class="detail-block">
+          <h4>公開備註</h4>
+          <p>${escapeHtml(game.publicNote || '暫無')}</p>
+        </div>
+
+        ${borrowInfo}
+        ${yt}
+      `;
+
+      document.getElementById('gameDetailModal').classList.remove('hidden');
+      document.getElementById('gameDetailModal').setAttribute('aria-hidden', 'false');
+    }
+
+    async function loadGames() {
+      const json = await apiPost('listGames');
+      state.games = Array.isArray(json.games) ? json.games : [];
+      renderGameGrid();
+      populateBorrowSelect();
+    }
+
+    document.getElementById('borrowForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const gameId = document.getElementById('borrowGameId').value.trim();
+      const borrowerName = document.getElementById('borrowerName').value.trim();
+      const borrowerContact = document.getElementById('borrowerContact').value.trim();
+
+      if (!gameId || !borrowerName || !borrowerContact) {
+        alert('請填寫完整借用資料');
+        return;
+      }
+
+      const game = state.games.find(g => g.gameId === gameId);
       if (!game || game.status !== 'available') {
         alert('此桌遊目前不可借用');
         return;
       }
 
-      state.currentGameId = gameId;
-      populateBorrowSelect();
-      document.getElementById('borrowGameId').value = gameId;
-      document.getElementById('borrowSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  });
-}
+      try {
+        const json = await apiPost('borrowGame', {
+          gameId,
+          borrowerName,
+          borrowerContact
+        });
 
-function showGameDetail(gameId) {
-  const game = state.games.find(g => g.gameId === gameId);
-  const modalBody = document.getElementById('gameDetailBody');
-
-  if (!game) {
-    modalBody.innerHTML = '<p>找不到桌遊資料</p>';
-    return;
-  }
-
-  const items = Array.isArray(game.items) && game.items.length
-    ? `<ul class="detail-items">${game.items.map(item => `
-        <li>
-          ${escapeHtml(item.itemName || '')}
-          ${item.quantity ? ` × ${escapeHtml(String(item.quantity))}` : ''}
-          ${item.unit ? ` ${escapeHtml(item.unit)}` : ''}
-          ${item.isKeyItem ? '（重點）' : ''}
-        </li>
-      `).join('')}</ul>`
-    : '<p>暫無配件資料</p>';
-
-  const yt = game.youtubeUrl
-    ? `<p><a href="${escapeHtml(game.youtubeUrl)}" target="_blank" rel="noopener noreferrer">觀看教學影片</a></p>`
-    : '';
-
-  modalBody.innerHTML = `
-    <div class="detail-block">
-      <h3>${escapeHtml(game.name || '未命名桌遊')}</h3>
-      <p>${escapeHtml(game.category || '未分類')}・${escapeHtml(getStatusLabel(game.status))}</p>
-    </div>
-    <div class="detail-block">
-      <p>${escapeHtml(game.detailPlay || game.shortPlay || '暫無介紹')}</p>
-    </div>
-    <div class="detail-block">
-      <h4>配件清單</h4>
-      ${items}
-    </div>
-    <div class="detail-block">
-      <h4>公開備註</h4>
-      <p>${escapeHtml(game.publicNote || '暫無')}</p>
-    </div>
-    ${yt}
-  `;
-
-  document.getElementById('gameDetailModal').classList.remove('hidden');
-}
-
-async function loadGames() {
-  const json = await apiPost('listGames');
-  state.games = Array.isArray(json.games) ? json.games : [];
-  renderGameGrid();
-  populateBorrowSelect();
-}
-
-document.getElementById('borrowForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const gameId = document.getElementById('borrowGameId').value.trim();
-  const borrowerName = document.getElementById('borrowerName').value.trim();
-  const borrowerContact = document.getElementById('borrowerContact').value.trim();
-
-  if (!gameId || !borrowerName || !borrowerContact) {
-    alert('請填寫完整借用資料');
-    return;
-  }
-
-  const game = state.games.find(g => g.gameId === gameId);
-  if (!game || game.status !== 'available') {
-    alert('此桌遊目前不可借用');
-    return;
-  }
-
-  try {
-    const json = await apiPost('borrowGame', {
-      gameId,
-      borrowerName,
-      borrowerContact
+        state.currentBorrowRecord = json.record || null;
+        alert('借用申請已提交');
+        document.getElementById('borrowForm').reset();
+        state.currentGameId = '';
+        await loadGames();
+      } catch (err) {
+        console.error(err);
+        alert('借用失敗：' + err.message);
+      }
     });
 
-    state.currentBorrowRecord = json.record || null;
-    alert('借用申請已提交');
-    document.getElementById('borrowForm').reset();
-    await loadGames();
-  } catch (err) {
-    console.error(err);
-    alert('借用失敗：' + err.message);
-  }
-});
+    document.getElementById('closeGameDetail').addEventListener('click', () => {
+      document.getElementById('gameDetailModal').classList.add('hidden');
+      document.getElementById('gameDetailModal').setAttribute('aria-hidden', 'true');
+    });
 
-document.getElementById('closeGameDetail').addEventListener('click', () => {
-  document.getElementById('gameDetailModal').classList.add('hidden');
-});
+    document.getElementById('gameDetailModal').addEventListener('click', (e) => {
+      if (e.target.id === 'gameDetailModal') {
+        document.getElementById('gameDetailModal').classList.add('hidden');
+        document.getElementById('gameDetailModal').setAttribute('aria-hidden', 'true');
+      }
+    });
 
-loadGames();
-</script>
+    loadGames().catch(err => {
+      console.error(err);
+      document.getElementById('gameGrid').innerHTML =
+        '<div class="empty-state">資料載入失敗，請稍後再試。</div>';
+    });
+  </script>
+</body>
+</html>
