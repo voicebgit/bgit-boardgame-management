@@ -190,11 +190,6 @@
       padding: 24px;
     }
 
-    .grid {
-      display: grid;
-      gap: 18px;
-    }
-
     .games-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -489,6 +484,15 @@
       font-size: 14px;
     }
 
+    .rule-box {
+      background: #f9f7f2;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
     @media (max-width: 980px) {
       .games-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -535,7 +539,7 @@
       <div class="top-actions">
         <article class="action-card">
           <h2>提交借用預約</h2>
-          <p>先填桌遊、會員編號、聯絡方式及備註，提交後會取得預約編號。</p>
+          <p>先填桌遊、會員編號、聯絡方式及借用天數，提交後會取得較短的預約編號。</p>
           <div class="btn-row">
             <button id="goReserveBtn" type="button" class="btn">前往預約表單</button>
             <button id="reloadGamesBtn" type="button" class="btn-secondary">重新載入桌遊列表</button>
@@ -556,7 +560,7 @@
     <section class="section-card" id="reserveSection">
       <div class="section-head">
         <h2>借用預約表單</h2>
-        <p>只需提交會員編號與聯絡方式，真正借出需等職員盤點及提供代碼後再確認。</p>
+        <p>每位會員同時間最多只可有 2 筆未完成借用。每次借用最長 14 天，請在提交前確認資料正確。</p>
       </div>
       <div class="section-body">
         <div id="reserveMessage" class="message-box message-info"></div>
@@ -581,9 +585,41 @@
             </div>
           </div>
 
+          <div class="two-col">
+            <div class="field">
+              <label for="reserveBorrowDays">借用天數</label>
+              <select id="reserveBorrowDays" required>
+                <option value="1">1 天</option>
+                <option value="2">2 天</option>
+                <option value="3">3 天</option>
+                <option value="4">4 天</option>
+                <option value="5">5 天</option>
+                <option value="6">6 天</option>
+                <option value="7" selected>7 天</option>
+                <option value="8">8 天</option>
+                <option value="9">9 天</option>
+                <option value="10">10 天</option>
+                <option value="11">11 天</option>
+                <option value="12">12 天</option>
+                <option value="13">13 天</option>
+                <option value="14">14 天（最多）</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="reserveDuePreview">預計到期日</label>
+              <input id="reserveDuePreview" type="text" readonly value="">
+            </div>
+          </div>
+
           <div class="field">
             <label for="reserveRemark">備註</label>
             <textarea id="reserveRemark" placeholder="例如：想今日下午到場、需先確認配件等（可留空）"></textarea>
+          </div>
+
+          <div class="rule-box">
+            規則提醒：每位會員最多同時借用 2 款桌遊，單次借用最長 14 天。
+            真正借出需等職員盤點及提供確認代碼後，會員再自行完成借用確認。
           </div>
 
           <div class="btn-row">
@@ -606,7 +642,7 @@
           <div class="two-col">
             <div class="field">
               <label for="confirmReservationId">預約編號</label>
-              <input id="confirmReservationId" type="text" placeholder="例如：R1720000000ABC123" required>
+              <input id="confirmReservationId" type="text" placeholder="例如：R-8K4P2M" required>
             </div>
 
             <div class="field">
@@ -724,6 +760,17 @@
       });
     }
 
+    function formatDateOnly(value) {
+      if (!value) return '—';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleDateString('zh-HK', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    }
+
     function showMessage(elId, type, text) {
       const el = document.getElementById(elId);
       el.className = `message-box show message-${type}`;
@@ -739,7 +786,7 @@
     async function apiPost(action, payload = {}) {
       const res = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        headers: { 'Content-Type': 'application/json;charset=utf-8' },
         body: JSON.stringify({ action, ...payload })
       });
 
@@ -748,6 +795,20 @@
         throw new Error(json.error || 'request failed');
       }
       return json;
+    }
+
+    function computeDuePreview(days) {
+      const n = Number(days || 7);
+      const safe = Number.isFinite(n) ? Math.max(1, Math.min(14, n)) : 7;
+      const d = new Date();
+      d.setDate(d.getDate() + safe);
+      d.setHours(23, 59, 59, 999);
+      return formatDateOnly(d.toISOString());
+    }
+
+    function updateBorrowDuePreview() {
+      document.getElementById('reserveDuePreview').value =
+        `${computeDuePreview(document.getElementById('reserveBorrowDays').value)} 前歸還`;
     }
 
     function populateGameSelect() {
@@ -817,7 +878,7 @@
           populateGameSelect();
           document.getElementById('reserveGameId').value = game.gameId;
           document.getElementById('reserveSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          showMessage('reserveMessage', 'info', `已選擇桌遊：${game.name}\n請填寫會員編號與聯絡方式後提交預約。`);
+          showMessage('reserveMessage', 'info', `已選擇桌遊：${game.name}\n請填寫會員編號、聯絡方式及借用天數後提交預約。`);
         });
       });
 
@@ -863,70 +924,54 @@
 
         const itemsWrap = document.getElementById('detailItems');
         const items = Array.isArray(game.items) ? game.items : [];
-
         itemsWrap.innerHTML = items.length
           ? items.map(item => `
               <div class="item-row">
-                <strong>${escapeHtml(item.itemName || '')}</strong>
-                <span>數量：${escapeHtml(String(item.quantity ?? 0))}</span>
+                <span class="item-key">${escapeHtml(item.name || '')}</span>
+                <span>數量：${escapeHtml(String(item.qty || 0))}</span>
                 ${item.unit ? `<span>單位：${escapeHtml(item.unit)}</span>` : ''}
-                ${item.isKeyItem ? `<span class="item-key">重點配件</span>` : ''}
+                ${item.important ? `<span>重點配件</span>` : ''}
               </div>
             `).join('')
-          : `<div class="empty-state">暫時未有配件資料</div>`;
+          : '<div class="empty-state">暫時未有配件資料</div>';
 
         const youtubeBtn = document.getElementById('detailYoutubeBtn');
         if (game.youtubeUrl) {
           youtubeBtn.href = game.youtubeUrl;
           youtubeBtn.classList.remove('hidden');
         } else {
-          youtubeBtn.href = '#';
           youtubeBtn.classList.add('hidden');
+          youtubeBtn.removeAttribute('href');
         }
 
         document.getElementById('detailUseThisBtn').onclick = () => {
+          document.getElementById('detailOverlay').classList.remove('show');
           state.selectedGameId = game.gameId || '';
           state.selectedGameName = game.name || '';
           populateGameSelect();
-          document.getElementById('reserveGameId').value = state.selectedGameId;
-          closeDetail();
+          document.getElementById('reserveGameId').value = game.gameId || '';
           document.getElementById('reserveSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          showMessage('reserveMessage', 'info', `已選擇桌遊：${game.name}\n請填寫會員編號與聯絡方式後提交預約。`);
+          showMessage('reserveMessage', 'info', `已選擇桌遊：${game.name}\n請填寫會員編號、聯絡方式及借用天數後提交預約。`);
         };
 
         document.getElementById('detailOverlay').classList.add('show');
       } catch (err) {
-        console.error(err);
-        alert('讀取桌遊詳情失敗：' + err.message);
+        alert(`載入桌遊詳情失敗：${err.message}`);
       }
     }
 
-    function closeDetail() {
-      document.getElementById('detailOverlay').classList.remove('show');
-    }
-
-    async function submitReservation(e) {
-      e.preventDefault();
+    async function submitReservation(event) {
+      event.preventDefault();
       clearMessage('reserveMessage');
 
       const gameId = document.getElementById('reserveGameId').value.trim();
-      const memberId = document.getElementById('reserveMemberId').value.trim();
+      const memberId = document.getElementById('reserveMemberId').value.trim().toUpperCase();
       const contact = document.getElementById('reserveContact').value.trim();
-      const reserveRemark = document.getElementById('reserveRemark').value.trim();
+      const borrowDays = Number(document.getElementById('reserveBorrowDays').value || 7);
+      const remark = document.getElementById('reserveRemark').value.trim();
 
       if (!gameId || !memberId || !contact) {
-        showMessage('reserveMessage', 'error', '請先填寫桌遊、會員編號及聯絡方式。');
-        return;
-      }
-
-      const game = state.games.find(g => g.gameId === gameId);
-      if (!game) {
-        showMessage('reserveMessage', 'error', '找不到所選桌遊，請重新載入後再試。');
-        return;
-      }
-
-      if (game.status !== 'available') {
-        showMessage('reserveMessage', 'warning', `「${game.name}」目前狀態為 ${getStatusLabel(game.status)}，暫時不能提交借用預約。`);
+        showMessage('reserveMessage', 'error', '請先完整填寫桌遊、會員編號及聯絡方式。');
         return;
       }
 
@@ -935,35 +980,43 @@
           gameId,
           memberId,
           contact,
-          reserveRemark
+          borrowDays,
+          remark
         });
 
-        state.lastReservationId = json.reservationId || '';
+        const reservation = json.reservation || {};
+        state.lastReservationId = reservation.reservationId || '';
 
         showMessage(
           'reserveMessage',
           'success',
-          `預約已提交成功。\n預約編號：${json.reservationId}\n\n請記下此編號，並向職員完成盤點。\n當職員提供借用碼後，可在下方「代碼確認借用」輸入。`
+          `預約已提交成功。\n預約編號：${reservation.reservationId || '—'}\n借用期限：${formatDateOnly(reservation.dueAt)}\n請記下此編號，待職員提供借用碼後，再到下方輸入確認。`
         );
 
-        document.getElementById('confirmReservationId').value = json.reservationId || '';
+        document.getElementById('confirmReservationId').value = reservation.reservationId || '';
         document.getElementById('reserveForm').reset();
+        updateBorrowDuePreview();
         state.selectedGameId = '';
         state.selectedGameName = '';
         populateGameSelect();
         await loadGames();
-        document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch (err) {
-        console.error(err);
-        showMessage('reserveMessage', 'error', '提交預約失敗：' + err.message);
+        const msg =
+          err.message === 'member reservation limit exceeded'
+            ? '此會員目前已有 2 筆未完成借用，暫時不能再新增預約。'
+            : err.message === 'game not available'
+            ? '此桌遊目前不可預約，請重新選擇。'
+            : `提交預約失敗：${err.message}`;
+
+        showMessage('reserveMessage', 'error', msg);
       }
     }
 
-    async function submitConfirm(e) {
-      e.preventDefault();
+    async function submitBorrowConfirm(event) {
+      event.preventDefault();
       clearMessage('confirmMessage');
 
-      const reservationId = document.getElementById('confirmReservationId').value.trim();
+      const reservationId = document.getElementById('confirmReservationId').value.trim().toUpperCase();
       const borrowCode = document.getElementById('confirmBorrowCode').value.trim();
       const confirmRemark = document.getElementById('confirmRemark').value.trim();
       const signature = document.getElementById('confirmSignature').value.trim();
@@ -981,95 +1034,111 @@
           signature
         });
 
+        const reservation = json.reservation || {};
         showMessage(
           'confirmMessage',
           'success',
-          `借用確認成功。\n預約編號：${json.reservationId}\n完成時間：${formatDateTime(json.confirmedAt)}`
+          `借用已確認完成。\n預約編號：${reservation.reservationId || '—'}\n狀態：${getStatusLabel(reservation.status)}\n到期日：${formatDateOnly(reservation.dueAt)}`
         );
 
-        await queryReservationStatus(reservationId, true);
+        renderReservationStatus(reservation);
         await loadGames();
       } catch (err) {
-        console.error(err);
-        showMessage('confirmMessage', 'error', '代碼確認失敗：' + err.message);
+        showMessage('confirmMessage', 'error', `確認借用失敗：${err.message}`);
       }
     }
 
-    async function queryReservationStatus(reservationIdFromArg = '', silent = false) {
-      const reservationId = reservationIdFromArg || document.getElementById('confirmReservationId').value.trim();
+    async function checkReservationStatus() {
+      const reservationId = (document.getElementById('confirmReservationId').value || state.lastReservationId || '').trim().toUpperCase();
 
       if (!reservationId) {
-        if (!silent) showMessage('confirmMessage', 'warning', '請先輸入預約編號。');
+        showMessage('confirmMessage', 'warning', '請先輸入預約編號，或先提交一次預約。');
         return;
       }
 
       try {
         const json = await apiPost('getReservationPublicStatus', { reservationId });
-        const r = json.reservation || {};
-        const panel = document.getElementById('reservationStatusPanel');
-
-        panel.classList.remove('hidden');
-        panel.innerHTML = `
-          <div class="status-title">${escapeHtml(r.gameName || '借用狀態')}</div>
-          <div class="chip-row">
-            <span class="chip status-${escapeHtml(r.status || '')}">${escapeHtml(getStatusLabel(r.status))}</span>
-            <span class="chip count-chip">預約編號：${escapeHtml(r.reservationId || '')}</span>
-          </div>
-          <div class="status-text">${escapeHtml(r.message || '—')}</div>
-          <div class="status-text">提交時間：${escapeHtml(formatDateTime(r.reservedAt))}</div>
-          <div class="status-text">借用碼建立時間：${escapeHtml(formatDateTime(r.borrowCodeCreatedAt))}</div>
-          <div class="status-text">確認借用時間：${escapeHtml(formatDateTime(r.confirmedAt))}</div>
-          <div class="status-text">完成歸還時間：${escapeHtml(formatDateTime(r.returnedAt))}</div>
-        `;
-
-        if (!silent) {
-          showMessage('confirmMessage', 'info', `已查詢預約狀態：${getStatusLabel(r.status)}`);
-        }
+        const reservation = json.reservation || {};
+        renderReservationStatus(reservation);
+        showMessage('confirmMessage', 'info', `已查詢預約狀態：${getStatusLabel(reservation.status)}。`);
       } catch (err) {
-        console.error(err);
-        document.getElementById('reservationStatusPanel').classList.add('hidden');
-        if (!silent) showMessage('confirmMessage', 'error', '查詢失敗：' + err.message);
+        showMessage('confirmMessage', 'error', `查詢狀態失敗：${err.message}`);
       }
     }
 
-    document.getElementById('goReserveBtn').addEventListener('click', () => {
-      document.getElementById('reserveSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    function renderReservationStatus(reservation) {
+      const panel = document.getElementById('reservationStatusPanel');
+      panel.classList.remove('hidden');
+      panel.innerHTML = `
+        <div class="status-title">${escapeHtml(reservation.gameName || '桌遊預約')}</div>
+        <div class="chip-row">
+          <span class="chip count-chip">預約編號：${escapeHtml(reservation.reservationId || '—')}</span>
+          <span class="chip count-chip">狀態：${escapeHtml(getStatusLabel(reservation.status))}</span>
+          <span class="chip count-chip">借用天數：${escapeHtml(String(reservation.borrowDays || 14))} 天</span>
+          <span class="chip count-chip">到期日：${escapeHtml(formatDateOnly(reservation.dueAt))}</span>
+        </div>
+        <div class="status-text">建立時間：${escapeHtml(formatDateTime(reservation.createdAt))}</div>
+        <div class="status-text">確認時間：${escapeHtml(formatDateTime(reservation.confirmedAt))}</div>
+        <div class="status-text">會員：${escapeHtml(reservation.memberIdMasked || '—')}</div>
+        <div class="status-text">是否已出碼：${reservation.codeReady ? '是' : '否'}</div>
+        <div class="status-text">借用碼有效至：${escapeHtml(formatDateTime(reservation.codeExpiresAt))}</div>
+      `;
+    }
 
-    document.getElementById('goConfirmBtn').addEventListener('click', () => {
-      document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-
-    document.getElementById('reloadGamesBtn').addEventListener('click', loadGames);
-
-    document.getElementById('checkStatusBtn').addEventListener('click', () => {
-      document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      queryReservationStatus();
-    });
-
-    document.getElementById('reserveForm').addEventListener('submit', submitReservation);
-    document.getElementById('confirmForm').addEventListener('submit', submitConfirm);
-
-    document.getElementById('clearReserveBtn').addEventListener('click', () => {
+    function clearReserveForm() {
       document.getElementById('reserveForm').reset();
-      state.selectedGameId = '';
-      state.selectedGameName = '';
-      populateGameSelect();
+      updateBorrowDuePreview();
       clearMessage('reserveMessage');
-    });
+    }
 
-    document.getElementById('clearConfirmBtn').addEventListener('click', () => {
+    function clearConfirmForm() {
       document.getElementById('confirmForm').reset();
       clearMessage('confirmMessage');
       document.getElementById('reservationStatusPanel').classList.add('hidden');
-    });
+      document.getElementById('reservationStatusPanel').innerHTML = '';
+    }
 
-    document.getElementById('closeDetailBtn').addEventListener('click', closeDetail);
-    document.getElementById('detailOverlay').addEventListener('click', (e) => {
-      if (e.target.id === 'detailOverlay') closeDetail();
-    });
+    function bindEvents() {
+      document.getElementById('reserveForm').addEventListener('submit', submitReservation);
+      document.getElementById('confirmForm').addEventListener('submit', submitBorrowConfirm);
 
-    loadGames();
+      document.getElementById('clearReserveBtn').addEventListener('click', clearReserveForm);
+      document.getElementById('clearConfirmBtn').addEventListener('click', clearConfirmForm);
+
+      document.getElementById('goReserveBtn').addEventListener('click', () => {
+        document.getElementById('reserveSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      document.getElementById('goConfirmBtn').addEventListener('click', () => {
+        document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      document.getElementById('checkStatusBtn').addEventListener('click', () => {
+        document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        checkReservationStatus();
+      });
+
+      document.getElementById('reloadGamesBtn').addEventListener('click', loadGames);
+      document.getElementById('closeDetailBtn').addEventListener('click', () => {
+        document.getElementById('detailOverlay').classList.remove('show');
+      });
+
+      document.getElementById('detailOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'detailOverlay') {
+          document.getElementById('detailOverlay').classList.remove('show');
+        }
+      });
+
+      document.getElementById('reserveBorrowDays').addEventListener('change', updateBorrowDuePreview);
+    }
+
+    async function boot() {
+      bindEvents();
+      updateBorrowDuePreview();
+      await loadGames();
+    }
+
+    boot();
   </script>
 </body>
 </html>
