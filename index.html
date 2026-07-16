@@ -642,7 +642,7 @@
           <div class="two-col">
             <div class="field">
               <label for="confirmReservationId">預約編號</label>
-              <input id="confirmReservationId" type="text" placeholder="例如：R-8K4P2M" required>
+<input id="confirmReservationId" type="text" placeholder="例如：202607001" required>
             </div>
 
             <div class="field">
@@ -661,10 +661,11 @@
             <input id="confirmSignature" type="text" placeholder="請輸入姓名、簽名縮寫或確認名稱（可留空）">
           </div>
 
-          <div class="btn-row">
-            <button type="submit" class="btn">確認借用</button>
-            <button id="clearConfirmBtn" type="button" class="btn-secondary">清空內容</button>
-          </div>
+<div class="btn-row">
+  <button type="submit" class="btn">確認借用</button>
+  <button id="copyReservationIdBtn" type="button" class="btn-ghost">複製預約編號</button>
+  <button id="clearConfirmBtn" type="button" class="btn-secondary">清空內容</button>
+</div>
         </form>
 
         <div id="reservationStatusPanel" class="status-panel hidden" style="margin-top:16px;"></div>
@@ -723,6 +724,39 @@
       lastReservationId: ''
     };
 
+    function normalizeReservationInput(value = '') {
+  return String(value).toUpperCase().replace(/\s+/g, '');
+}
+
+async function copyReservationId() {
+  const input = document.getElementById('confirmReservationId');
+  const reservationId = normalizeReservationInput(
+    input.value || state.lastReservationId || ''
+  );
+
+  if (!reservationId) {
+    showMessage('confirmMessage', 'warning', '目前沒有可複製的預約編號。');
+    return;
+  }
+
+  input.value = reservationId;
+  state.lastReservationId = reservationId;
+
+  try {
+    if (!navigator.clipboard || !window.isSecureContext) {
+      throw new Error('clipboard unavailable');
+    }
+
+    await navigator.clipboard.writeText(reservationId);
+    showMessage('confirmMessage', 'success', `預約編號已複製：${reservationId}`);
+  } catch (err) {
+    input.focus();
+    input.select();
+    input.setSelectionRange(0, input.value.length);
+    showMessage('confirmMessage', 'warning', `未能自動複製，已為你選取預約編號：${reservationId}`);
+  }
+}
+    
     function escapeHtml(value = '') {
       return String(value)
         .replace(/&/g, '&amp;')
@@ -783,6 +817,34 @@
       el.textContent = '';
     }
 
+    function mapReservationStatusError(message = '') {
+  switch (message) {
+    case 'reservation not found':
+      return '找不到這個預約編號，請檢查是否輸入正確。';
+    case 'missing reservationId':
+      return '請先輸入預約編號。';
+    default:
+      return `查詢狀態失敗：${message}`;
+  }
+}
+
+function mapConfirmBorrowError(message = '') {
+  switch (message) {
+    case 'reservation not found':
+      return '找不到這個預約編號，請重新檢查。';
+    case 'reservation is not ready for code confirmation':
+      return '此預約尚未出碼，請先請職員完成盤點及提供借用碼。';
+    case 'invalid code':
+      return '借用碼不正確，請與職員重新核對。';
+    case 'code expired':
+      return '借用碼已過期，請請職員重新產生借用碼。';
+    case 'missing reservationId or borrowCode':
+      return '請先輸入預約編號及借用碼。';
+    default:
+      return `確認借用失敗：${message}`;
+  }
+}
+    
     async function apiPost(action, payload = {}) {
       const res = await fetch(API_URL, {
         method: 'POST',
@@ -990,7 +1052,7 @@
         showMessage(
           'reserveMessage',
           'success',
-          `預約已提交成功。\n預約編號：${reservation.reservationId || '—'}\n借用期限：${formatDateOnly(reservation.dueAt)}\n請記下此編號，待職員提供借用碼後，再到下方輸入確認。`
+`預約已提交成功。\n預約編號：${reservation.reservationId || '—'}\n借用期限：${formatDateOnly(reservation.dueAt)}\n請記下此編號，到場時向職員出示，完成盤點後取得借用碼，再到下方輸入確認。`
         );
 
         document.getElementById('confirmReservationId').value = reservation.reservationId || '';
@@ -1016,8 +1078,12 @@
       event.preventDefault();
       clearMessage('confirmMessage');
 
-      const reservationId = document.getElementById('confirmReservationId').value.trim().toUpperCase();
-      const borrowCode = document.getElementById('confirmBorrowCode').value.trim();
+const reservationId = normalizeReservationInput(
+  document.getElementById('confirmReservationId').value
+);
+const borrowCode = String(
+  document.getElementById('confirmBorrowCode').value || ''
+).replace(/\s+/g, '');
       const confirmRemark = document.getElementById('confirmRemark').value.trim();
       const signature = document.getElementById('confirmSignature').value.trim();
 
@@ -1034,71 +1100,120 @@
           signature
         });
 
-        const reservation = json.reservation || {};
-        showMessage(
-          'confirmMessage',
-          'success',
-          `借用已確認完成。\n預約編號：${reservation.reservationId || '—'}\n狀態：${getStatusLabel(reservation.status)}\n到期日：${formatDateOnly(reservation.dueAt)}`
-        );
+const reservation = json.reservation || {};
+state.lastReservationId = reservation.reservationId || reservationId;
+document.getElementById('confirmReservationId').value = state.lastReservationId;
+showMessage(
+  'confirmMessage',
+  'success',
+  `借用已確認完成。\n預約編號：${reservation.reservationId || '—'}\n狀態：${getStatusLabel(reservation.status)}\n到期日：${formatDateOnly(reservation.dueAt)}\n離開前請再次與職員確認外盒及配件狀態。`
+);
 
         renderReservationStatus(reservation);
         await loadGames();
       } catch (err) {
-        showMessage('confirmMessage', 'error', `確認借用失敗：${err.message}`);
+showMessage('confirmMessage', 'error', mapConfirmBorrowError(err.message));
       }
     }
 
-    async function checkReservationStatus() {
-      const reservationId = (document.getElementById('confirmReservationId').value || state.lastReservationId || '').trim().toUpperCase();
+async function checkReservationStatus() {
+  const reservationId = normalizeReservationInput(
+    document.getElementById('confirmReservationId').value || state.lastReservationId || ''
+  );
 
-      if (!reservationId) {
-        showMessage('confirmMessage', 'warning', '請先輸入預約編號，或先提交一次預約。');
-        return;
-      }
+  if (!reservationId) {
+    showMessage('confirmMessage', 'warning', '請先輸入預約編號，或先提交一次預約。');
+    return;
+  }
 
-      try {
-        const json = await apiPost('getReservationPublicStatus', { reservationId });
-        const reservation = json.reservation || {};
-        renderReservationStatus(reservation);
-        showMessage('confirmMessage', 'info', `已查詢預約狀態：${getStatusLabel(reservation.status)}。`);
-      } catch (err) {
-        showMessage('confirmMessage', 'error', `查詢狀態失敗：${err.message}`);
-      }
-    }
+  document.getElementById('confirmReservationId').value = reservationId;
 
+  try {
+    const json = await apiPost('getReservationPublicStatus', { reservationId });
+    const reservation = json.reservation || {};
+    state.lastReservationId = reservation.reservationId || reservationId;
+    document.getElementById('confirmReservationId').value = state.lastReservationId;
+    renderReservationStatus(reservation);
+    showMessage('confirmMessage', 'info', `已查詢預約狀態：${getStatusLabel(reservation.status)}。`);
+  } catch (err) {
+    showMessage('confirmMessage', 'error', mapReservationStatusError(err.message));
+  }
+}
+function getReservationNextStep(reservation) {
+  const status = reservation.status;
+
+  if (status === 'pending') {
+    return '下一步：請到場後向職員出示預約編號，完成盤點後取得借用碼。';
+  }
+
+  if (status === 'code_ready') {
+    return '下一步：你已可輸入借用碼完成確認；如未收到代碼，請向職員查詢。';
+  }
+
+  if (status === 'borrowed') {
+    return `下一步：請於 ${formatDateOnly(reservation.dueAt)} 或之前歸還桌遊。`;
+  }
+
+  if (status === 'returned') {
+    return '此筆借用已完成歸還，如需再次借用，請重新提交預約。';
+  }
+
+  if (status === 'cancelled') {
+    return '此筆預約已取消，如需借用請重新提交預約。';
+  }
+
+  return '請按目前狀態跟進，如有疑問請向職員查詢。';
+}
+    
     function renderReservationStatus(reservation) {
-      const panel = document.getElementById('reservationStatusPanel');
-      panel.classList.remove('hidden');
-      panel.innerHTML = `
-        <div class="status-title">${escapeHtml(reservation.gameName || '桌遊預約')}</div>
-        <div class="chip-row">
-          <span class="chip count-chip">預約編號：${escapeHtml(reservation.reservationId || '—')}</span>
-          <span class="chip count-chip">狀態：${escapeHtml(getStatusLabel(reservation.status))}</span>
-          <span class="chip count-chip">借用天數：${escapeHtml(String(reservation.borrowDays || 14))} 天</span>
-          <span class="chip count-chip">到期日：${escapeHtml(formatDateOnly(reservation.dueAt))}</span>
-        </div>
-        <div class="status-text">建立時間：${escapeHtml(formatDateTime(reservation.createdAt))}</div>
-        <div class="status-text">確認時間：${escapeHtml(formatDateTime(reservation.confirmedAt))}</div>
-        <div class="status-text">會員：${escapeHtml(reservation.memberIdMasked || '—')}</div>
-        <div class="status-text">是否已出碼：${reservation.codeReady ? '是' : '否'}</div>
-        <div class="status-text">借用碼有效至：${escapeHtml(formatDateTime(reservation.codeExpiresAt))}</div>
-      `;
-    }
+  const panel = document.getElementById('reservationStatusPanel');
+  const nextStep = getReservationNextStep(reservation);
 
-    function clearReserveForm() {
-      document.getElementById('reserveForm').reset();
-      updateBorrowDuePreview();
-      clearMessage('reserveMessage');
-    }
+  panel.classList.remove('hidden');
+  panel.innerHTML = `
+    <div class="status-title">${escapeHtml(reservation.gameName || '桌遊預約')}</div>
+    <div class="chip-row">
+      <span class="chip count-chip">預約編號：${escapeHtml(reservation.reservationId || '—')}</span>
+      <span class="chip count-chip">狀態：${escapeHtml(getStatusLabel(reservation.status))}</span>
+      <span class="chip count-chip">借用天數：${escapeHtml(String(reservation.borrowDays || 14))} 天</span>
+      <span class="chip count-chip">到期日：${escapeHtml(formatDateOnly(reservation.dueAt))}</span>
+    </div>
+    <div class="status-text">建立時間：${escapeHtml(formatDateTime(reservation.createdAt))}</div>
+    <div class="status-text">確認時間：${escapeHtml(formatDateTime(reservation.confirmedAt))}</div>
+    <div class="status-text">會員：${escapeHtml(reservation.memberIdMasked || '—')}</div>
+    <div class="status-text">是否已出碼：${reservation.codeReady ? '是' : '否'}</div>
+    <div class="status-text">借用碼有效至：${escapeHtml(formatDateTime(reservation.codeExpiresAt))}</div>
+    <div class="status-text">下一步：${escapeHtml(nextStep)}</div>
+  `;
+}
 
-    function clearConfirmForm() {
-      document.getElementById('confirmForm').reset();
-      clearMessage('confirmMessage');
-      document.getElementById('reservationStatusPanel').classList.add('hidden');
-      document.getElementById('reservationStatusPanel').innerHTML = '';
-    }
+function clearReserveForm() {
+  document.getElementById('reserveForm').reset();
+  state.selectedGameId = '';
+  state.selectedGameName = '';
+  updateBorrowDuePreview();
+  populateGameSelect();
+  clearMessage('reserveMessage');
+}
+
+function clearConfirmForm() {
+  document.getElementById('confirmForm').reset();
+  clearMessage('confirmMessage');
+  document.getElementById('reservationStatusPanel').classList.add('hidden');
+  document.getElementById('reservationStatusPanel').innerHTML = '';
+  state.lastReservationId = '';
+}
 
     function bindEvents() {
+      document.getElementById('copyReservationIdBtn').addEventListener('click', copyReservationId);
+
+document.getElementById('confirmReservationId').addEventListener('input', (e) => {
+  e.target.value = normalizeReservationInput(e.target.value);
+});
+
+document.getElementById('confirmBorrowCode').addEventListener('input', (e) => {
+  e.target.value = String(e.target.value || '').replace(/\s+/g, '');
+});
       document.getElementById('reserveForm').addEventListener('submit', submitReservation);
       document.getElementById('confirmForm').addEventListener('submit', submitBorrowConfirm);
 
