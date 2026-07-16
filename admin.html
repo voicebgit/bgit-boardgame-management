@@ -715,6 +715,7 @@
               <div class="btn-row">
                 <button id="newGameBtn" type="button" class="btn">新增空白桌遊</button>
                 <button id="duplicateGameBtn" type="button" class="btn-secondary">複製目前桌遊</button>
+                <button id="clearSelectedGameBtn" type="button" class="btn-ghost">取消選取</button>
               </div>
 
               <div class="game-list" id="adminGamesList"></div>
@@ -1001,6 +1002,13 @@
       ensureOneItemRow();
     }
 
+    function clearSelectedGame() {
+      state.selectedGameId = '';
+      renderAdminGamesList();
+      showEmptyEditor();
+      showMessage('gamesMessage', 'info', '已取消桌遊選取。');
+    }
+
     async function apiPost(action, payload = {}) {
       const headers = { 'Content-Type': 'application/json;charset=utf-8' };
       if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
@@ -1200,6 +1208,11 @@
     }
 
     function selectGame(gameId) {
+      if (state.selectedGameId === gameId) {
+        clearSelectedGame();
+        return;
+      }
+
       const game = state.games.find(g => g.gameId === gameId);
       if (!game) return;
 
@@ -1601,6 +1614,7 @@
 
       document.getElementById('newGameBtn').addEventListener('click', createBlankGame);
       document.getElementById('duplicateGameBtn').addEventListener('click', duplicateCurrentGame);
+      document.getElementById('clearSelectedGameBtn').addEventListener('click', clearSelectedGame);
       document.getElementById('resetGameFormBtn').addEventListener('click', confirmResetGameForm);
       document.getElementById('gameForm').addEventListener('submit', saveGame);
       document.getElementById('addItemBtn').addEventListener('click', () => addItemRow());
