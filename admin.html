@@ -720,7 +720,13 @@
               <div class="game-list" id="adminGamesList"></div>
             </div>
 
-            <div class="panel-box">
+            <div class="panel-box" id="gameEditorEmpty">
+              <div class="empty-state">
+                請先在左側選擇桌遊，或按「新增空白桌遊」開始建立新資料。
+              </div>
+            </div>
+
+            <div class="panel-box hidden" id="gameEditorPanel">
               <div class="cover-preview" id="gameCoverPreview"></div>
 
               <form id="gameForm" class="form-grid">
@@ -974,6 +980,27 @@
       document.getElementById('staffPanelNote').textContent = '先登入後才可載入資料及執行管理操作。';
     }
 
+    function showEmptyEditor() {
+      state.selectedGameId = '';
+      document.getElementById('gameEditorEmpty').classList.remove('hidden');
+      document.getElementById('gameEditorPanel').classList.add('hidden');
+      document.getElementById('gameForm').reset();
+      document.getElementById('itemsWrap').innerHTML = '';
+      document.getElementById('gameCoverPreview').style.backgroundImage = '';
+    }
+
+    function showGameEditor() {
+      document.getElementById('gameEditorEmpty').classList.add('hidden');
+      document.getElementById('gameEditorPanel').classList.remove('hidden');
+    }
+
+    function clearGameFormFields() {
+      document.getElementById('gameForm').reset();
+      document.getElementById('itemsWrap').innerHTML = '';
+      document.getElementById('gameCoverPreview').style.backgroundImage = '';
+      ensureOneItemRow();
+    }
+
     async function apiPost(action, payload = {}) {
       const headers = { 'Content-Type': 'application/json;charset=utf-8' };
       if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
@@ -1026,7 +1053,7 @@
       document.getElementById('adminApp').classList.add('hidden');
       document.getElementById('adminGamesList').innerHTML = '';
       document.getElementById('reservationList').innerHTML = '';
-      clearGameForm();
+      showEmptyEditor();
       applyLoggedOutLayout();
       document.getElementById('adminPassword').value = '';
       showMessage('heroLoginMessage', 'info', '已登出管理頁。');
@@ -1046,10 +1073,14 @@
         if (state.games.length) {
           const targetId = state.selectedGameId && state.games.some(g => g.gameId === state.selectedGameId)
             ? state.selectedGameId
-            : state.games[0].gameId;
-          selectGame(targetId);
+            : '';
+          if (targetId) {
+            selectGame(targetId);
+          } else {
+            showEmptyEditor();
+          }
         } else {
-          clearGameForm();
+          showEmptyEditor();
         }
 
         showMessage('systemMessage', 'success', '系統資料已更新。');
@@ -1064,14 +1095,20 @@
         const json = await apiPost('listAdminData');
         state.games = Array.isArray(json.games) ? json.games : [];
         renderAdminGamesList();
+
         if (state.games.length) {
           const targetId = state.selectedGameId && state.games.some(g => g.gameId === state.selectedGameId)
             ? state.selectedGameId
-            : state.games[0].gameId;
-          selectGame(targetId);
+            : '';
+          if (targetId) {
+            selectGame(targetId);
+          } else {
+            showEmptyEditor();
+          }
         } else {
-          clearGameForm();
+          showEmptyEditor();
         }
+
         showMessage('gamesMessage', 'success', '桌遊資料已更新。');
       } catch (err) {
         showMessage('gamesMessage', 'error', `載入桌遊失敗：${err.message}`);
@@ -1162,17 +1199,12 @@
       })).filter(item => item.name);
     }
 
-    function clearGameForm() {
-      document.getElementById('gameForm').reset();
-      document.getElementById('itemsWrap').innerHTML = '';
-      document.getElementById('gameCoverPreview').style.backgroundImage = '';
-      state.selectedGameId = '';
-      ensureOneItemRow();
-    }
-
     function selectGame(gameId) {
       const game = state.games.find(g => g.gameId === gameId);
       if (!game) return;
+
+      showGameEditor();
+      clearGameFormFields();
 
       state.selectedGameId = game.gameId;
       renderAdminGamesList();
@@ -1216,11 +1248,25 @@
     }
 
     function createBlankGame() {
-      clearGameForm();
+      showGameEditor();
+      clearGameFormFields();
       document.getElementById('gameId').value = buildNextGameId();
       document.getElementById('gameStatus').value = 'available';
       document.getElementById('gameName').focus();
+      state.selectedGameId = '';
+      renderAdminGamesList();
       showMessage('gamesMessage', 'info', '已建立新的空白桌遊表單。');
+    }
+
+    function confirmResetGameForm() {
+      const currentId = document.getElementById('gameId').value.trim();
+      const text = currentId
+        ? `確認清空目前桌遊（${currentId}）的編輯內容？未儲存的資料將會消失。`
+        : '確認清空目前編輯內容？未儲存的資料將會消失。';
+
+      const ok = window.confirm(text);
+      if (!ok) return;
+      createBlankGame();
     }
 
     function duplicateCurrentGame() {
@@ -1270,6 +1316,7 @@
         showMessage('gamesMessage', 'success', `桌遊資料已儲存：${game.name}`);
         state.selectedGameId = game.gameId;
         await loadGamesOnly();
+        selectGame(game.gameId);
       } catch (err) {
         showMessage('gamesMessage', 'error', `儲存桌遊失敗：${err.message}`);
       }
@@ -1554,7 +1601,7 @@
 
       document.getElementById('newGameBtn').addEventListener('click', createBlankGame);
       document.getElementById('duplicateGameBtn').addEventListener('click', duplicateCurrentGame);
-      document.getElementById('resetGameFormBtn').addEventListener('click', createBlankGame);
+      document.getElementById('resetGameFormBtn').addEventListener('click', confirmResetGameForm);
       document.getElementById('gameForm').addEventListener('submit', saveGame);
       document.getElementById('addItemBtn').addEventListener('click', () => addItemRow());
 
@@ -1589,8 +1636,8 @@
 
     function boot() {
       bindEvents();
-      ensureOneItemRow();
       applyLoggedOutLayout();
+      showEmptyEditor();
       showMessage('heroLoginMessage', 'info', '請先輸入管理密碼登入。');
     }
 
