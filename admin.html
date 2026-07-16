@@ -76,6 +76,10 @@
       flex-wrap: wrap;
     }
 
+    #heroIntro {
+      flex: 1 1 620px;
+    }
+
     .hero-badge {
       display: inline-flex;
       align-items: center;
@@ -104,6 +108,7 @@
 
     .staff-panel {
       min-width: 320px;
+      width: min(360px, 100%);
       background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: 22px;
@@ -284,45 +289,6 @@
     }
 
     .hidden { display: none !important; }
-
-    .login-grid {
-      display: grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 16px;
-      align-items: stretch;
-    }
-
-    .login-card,
-    .hint-card {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 20px;
-    }
-
-    .login-card {
-      display: grid;
-      gap: 14px;
-    }
-
-    .hint-card {
-      display: grid;
-      gap: 10px;
-      align-content: start;
-    }
-
-    .hint-card h3 {
-      font-size: 18px;
-      line-height: 1.2;
-    }
-
-    .hint-card ul {
-      padding-left: 18px;
-      color: var(--text-muted);
-      font-size: 14px;
-      display: grid;
-      gap: 8px;
-    }
 
     .top-tools {
       display: grid;
@@ -625,16 +591,9 @@
       font-size: 14px;
     }
 
-    .footer-note {
-      color: var(--text-soft);
-      font-size: 13px;
-      margin-top: 6px;
-    }
-
     @media (max-width: 1100px) {
       .games-layout,
-      .top-tools,
-      .login-grid {
+      .top-tools {
         grid-template-columns: 1fr;
       }
     }
@@ -667,14 +626,18 @@
       .hero h1 {
         font-size: 32px;
       }
+
+      .staff-panel {
+        min-width: 100%;
+      }
     }
   </style>
 </head>
 <body>
   <main class="wrap">
-    <section class="hero">
+    <section class="hero" id="heroSection">
       <div class="hero-top">
-        <div>
+        <div id="heroIntro">
           <div class="hero-badge">BG Board Game Admin</div>
           <h1>桌遊借用內部管理</h1>
           <p>
@@ -682,53 +645,27 @@
           </p>
         </div>
 
-        <div class="staff-panel">
-          <h2>處理同事資料</h2>
+        <div class="staff-panel" id="staffPanel">
+          <h2 id="staffPanelTitle">處理同事資料</h2>
+
+          <div id="heroLoginMessage" class="message-box message-info"></div>
+
           <div class="field">
             <label for="staffName">同事名稱</label>
             <input id="staffName" type="text" placeholder="例如：Danny / Amy / Admin A">
           </div>
-          <div class="field">
+
+          <div class="field" id="passwordFieldWrap">
             <label for="adminPassword">管理密碼</label>
             <input id="adminPassword" type="password" placeholder="請輸入管理密碼">
           </div>
+
           <div class="btn-row">
             <button id="loginBtn" type="button" class="btn">登入管理頁</button>
             <button id="logoutBtn" type="button" class="btn-secondary hidden">登出</button>
           </div>
-          <div class="inline-note">先登入後才可載入資料及執行管理操作。</div>
-        </div>
-      </div>
-    </section>
 
-    <section class="section-card" id="loginSection">
-      <div class="section-head">
-        <h2>登入說明</h2>
-        <p>登入後可管理桌遊主檔、借用流程及匯出紀錄。</p>
-      </div>
-      <div class="section-body">
-        <div id="loginMessage" class="message-box message-info"></div>
-
-        <div class="login-grid">
-          <div class="login-card">
-            <div class="field">
-              <label for="loginPasswordMirror">再次輸入管理密碼</label>
-              <input id="loginPasswordMirror" type="password" placeholder="與右上方相同即可">
-            </div>
-            <div class="btn-row">
-              <button id="loginBtnMirror" type="button" class="btn">登入</button>
-            </div>
-          </div>
-
-          <div class="hint-card">
-            <h3>內部頁可做什麼</h3>
-            <ul>
-              <li>上傳及編輯桌遊資料、封面、簡介、配件與內部備註。</li>
-              <li>查看 pending / code_ready / borrowed / returned / cancelled 各狀態預約。</li>
-              <li>為會員產生借用碼、取消預約、永久刪除錯單、辦理歸還。</li>
-              <li>匯出借用紀錄或整體系統備份。</li>
-            </ul>
-          </div>
+          <div class="inline-note" id="staffPanelNote">先登入後才可載入資料及執行管理操作。</div>
         </div>
       </div>
     </section>
@@ -759,7 +696,7 @@
                 <button id="exportReservationsBtn" type="button" class="btn">匯出借用紀錄 Excel</button>
                 <button id="exportBackupBtn" type="button" class="btn-secondary">匯出完整備份 JSON</button>
               </div>
-              <div class="inline-note">瀏覽器可直接使用 SheetJS 將 JSON 匯出成 Excel 檔案。[web:83]</div>
+              <div class="inline-note">瀏覽器可直接使用 SheetJS 將 JSON 匯出成 Excel 檔案。[file:95]</div>
             </div>
           </div>
         </div>
@@ -925,9 +862,7 @@
     <div class="dialog-card">
       <h3 id="dialogTitle">操作</h3>
       <div id="dialogNote" class="dialog-note"></div>
-
       <div id="dialogFields" class="form-grid"></div>
-
       <div class="btn-row">
         <button id="dialogConfirmBtn" type="button" class="btn">確認</button>
         <button id="dialogCancelBtn" type="button" class="btn-secondary">取消</button>
@@ -998,18 +933,16 @@
       });
     }
 
-    function normalizeReservationInput(value = '') {
-      return String(value).toUpperCase().replace(/\s+/g, '');
-    }
-
     function showMessage(elId, type, text) {
       const el = document.getElementById(elId);
+      if (!el) return;
       el.className = `message-box show message-${type}`;
       el.textContent = text;
     }
 
     function clearMessage(elId) {
       const el = document.getElementById(elId);
+      if (!el) return;
       el.className = 'message-box message-info';
       el.textContent = '';
     }
@@ -1021,6 +954,24 @@
       }
       state.staffName = name;
       return name;
+    }
+
+    function applyLoggedInLayout() {
+      document.getElementById('heroIntro').classList.add('hidden');
+      document.getElementById('passwordFieldWrap').classList.add('hidden');
+      document.getElementById('loginBtn').classList.add('hidden');
+      document.getElementById('logoutBtn').classList.remove('hidden');
+      document.getElementById('staffPanelTitle').textContent = '目前登入資料';
+      document.getElementById('staffPanelNote').textContent = '已登入，可直接執行管理操作。';
+    }
+
+    function applyLoggedOutLayout() {
+      document.getElementById('heroIntro').classList.remove('hidden');
+      document.getElementById('passwordFieldWrap').classList.remove('hidden');
+      document.getElementById('loginBtn').classList.remove('hidden');
+      document.getElementById('logoutBtn').classList.add('hidden');
+      document.getElementById('staffPanelTitle').textContent = '處理同事資料';
+      document.getElementById('staffPanelNote').textContent = '先登入後才可載入資料及執行管理操作。';
     }
 
     async function apiPost(action, payload = {}) {
@@ -1041,13 +992,11 @@
     }
 
     async function loginAdmin() {
-      clearMessage('loginMessage');
-      const passwordTop = document.getElementById('adminPassword').value.trim();
-      const passwordMirror = document.getElementById('loginPasswordMirror').value.trim();
-      const password = passwordTop || passwordMirror;
+      clearMessage('heroLoginMessage');
+      const password = document.getElementById('adminPassword').value.trim();
 
       if (!password) {
-        showMessage('loginMessage', 'error', '請先輸入管理密碼。');
+        showMessage('heroLoginMessage', 'error', '請先輸入管理密碼。');
         return;
       }
 
@@ -1057,15 +1006,13 @@
         state.isLoggedIn = true;
 
         document.getElementById('adminPassword').value = password;
-        document.getElementById('loginPasswordMirror').value = password;
-
         document.getElementById('adminApp').classList.remove('hidden');
-        document.getElementById('logoutBtn').classList.remove('hidden');
 
-        showMessage('loginMessage', 'success', '已登入成功，正在載入資料。');
+        applyLoggedInLayout();
+        showMessage('heroLoginMessage', 'success', '已登入成功，正在載入資料。');
         await loadAllAdminData();
       } catch (err) {
-        showMessage('loginMessage', 'error', `登入失敗：${err.message}`);
+        showMessage('heroLoginMessage', 'error', `登入失敗：${err.message}`);
       }
     }
 
@@ -1075,12 +1022,14 @@
       state.games = [];
       state.reservations = [];
       state.selectedGameId = '';
+
       document.getElementById('adminApp').classList.add('hidden');
-      document.getElementById('logoutBtn').classList.add('hidden');
       document.getElementById('adminGamesList').innerHTML = '';
       document.getElementById('reservationList').innerHTML = '';
       clearGameForm();
-      showMessage('loginMessage', 'info', '已登出管理頁。');
+      applyLoggedOutLayout();
+      document.getElementById('adminPassword').value = '';
+      showMessage('heroLoginMessage', 'info', '已登出管理頁。');
     }
 
     async function loadAllAdminData() {
@@ -1093,6 +1042,7 @@
 
         renderAdminGamesList();
         renderReservations();
+
         if (state.games.length) {
           const targetId = state.selectedGameId && state.games.some(g => g.gameId === state.selectedGameId)
             ? state.selectedGameId
@@ -1430,7 +1380,6 @@
       state.dialogAction = action;
       state.dialogReservationId = reservationId;
 
-      const reservation = state.reservations.find(r => r.reservationId === reservationId);
       const title = document.getElementById('dialogTitle');
       const note = document.getElementById('dialogNote');
       const fields = document.getElementById('dialogFields');
@@ -1594,7 +1543,6 @@
 
     function bindEvents() {
       document.getElementById('loginBtn').addEventListener('click', loginAdmin);
-      document.getElementById('loginBtnMirror').addEventListener('click', loginAdmin);
       document.getElementById('logoutBtn').addEventListener('click', logoutAdmin);
 
       document.getElementById('refreshAllBtn').addEventListener('click', loadAllAdminData);
@@ -1637,16 +1585,13 @@
       document.getElementById('adminPassword').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') loginAdmin();
       });
-
-      document.getElementById('loginPasswordMirror').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') loginAdmin();
-      });
     }
 
     function boot() {
       bindEvents();
       ensureOneItemRow();
-      showMessage('loginMessage', 'info', '請先輸入管理密碼登入。');
+      applyLoggedOutLayout();
+      showMessage('heroLoginMessage', 'info', '請先輸入管理密碼登入。');
     }
 
     boot();
