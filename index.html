@@ -60,7 +60,35 @@
       padding: 28px;
       margin-bottom: 22px;
     }
+    
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
 
+.hero-main {
+  flex: 1 1 620px;
+  min-width: 0;
+}
+
+.hero-logo-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.hero-logo {
+  width: 120px;
+  max-width: 22vw;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+    
     .hero-badge {
       display: inline-flex;
       align-items: center;
@@ -523,6 +551,20 @@
       .hero h1 {
         font-size: 32px;
       }
+      
+        .hero-top {
+    flex-direction: column;
+  }
+
+  .hero-logo-wrap {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .hero-logo {
+    width: 88px;
+    max-width: 120px;
+  }
     }
   </style>
 </head>
@@ -540,7 +582,7 @@
     </div>
 
     <div class="hero-logo-wrap">
-      <img src="./BGIT Logo.jpg" alt="中心 Logo" class="hero-logo">
+<img src="./bgit-logo.jpg" alt="中心 Logo" class="hero-logo">
     </div>
   </div>
       <div class="top-actions">
