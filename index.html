@@ -1054,7 +1054,7 @@
     </div>
   </div>
 
-  <script>
+ <script>
     const API_URL =
       'https://bgit-boardgame-management.voicebgit.workers.dev';
 
@@ -1248,6 +1248,7 @@
 
     function populateGameSelect() {
       const select = document.getElementById('reserveGameId');
+      if (!select) return;
       const current = state.selectedGameId || select.value || '';
       const availableGames = state.games.filter(game => game.status === 'available');
 
@@ -1274,11 +1275,16 @@
 
       populateGameSelect();
 
-      document.getElementById('reserveGameId').value = game.gameId;
-      document.getElementById('reserveSection').scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
+      const reserveGameIdEl = document.getElementById('reserveGameId');
+      if (reserveGameIdEl) reserveGameIdEl.value = game.gameId;
+      
+      const reserveSectionEl = document.getElementById('reserveSection');
+      if (reserveSectionEl) {
+        reserveSectionEl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
 
       showMessage(
         'reserveMessage',
@@ -1289,6 +1295,7 @@
 
     function renderGames() {
       const grid = document.getElementById('gamesGrid');
+      if (!grid) return;
 
       if (!state.games.length) {
         grid.innerHTML = '<div class="empty-state">暫時未有桌遊資料</div>';
@@ -1396,27 +1403,24 @@
       });
     }
 
-async function loadGames() {
-  try {
-    // 透過 apiPost 發送正確的 action 名稱 'listPublicGames'
-    const res = await apiPost('listPublicGames');
-    
-    if (!res.ok) {
-      throw new Error(res.error || 'request failed');
+    async function loadGames() {
+      try {
+        const res = await apiPost('listPublicGames');
+        
+        if (!res.ok) {
+          throw new Error(res.error || 'request failed');
+        }
+        
+        state.games = res.games || [];
+        renderGames();
+        populateGameSelect();
+        
+        return state.games;
+      } catch (error) {
+        console.error('載入桌遊失敗:', error);
+        showMessage('confirmMessage', 'error', `無法載入桌遊列表：${error.message}`);
+      }
     }
-    
-    // 成功取得資料後，將桌遊列表渲染到畫面上（依你的前端實作為主）
-    // 如果你的前端函式名稱不同，可以保留你原本呼叫渲染的地方
-    if (typeof renderGameList === 'function') {
-      renderGameList(res.games);
-    }
-    
-    return res.games;
-  } catch (error) {
-    console.error('載入桌遊失敗:', error);
-    alert(`無法載入桌遊列表：${error.message}`);
-  }
-}
 
     async function openGameDetail(gameId) {
       const game = state.games.find(item => item.gameId === gameId);
@@ -1476,167 +1480,203 @@ async function loadGames() {
     }
 
     // 事件監聽綁定
-    document.getElementById('reserveBorrowDays').addEventListener('change', updateBorrowDuePreview);
+    const reserveBorrowDaysEl = document.getElementById('reserveBorrowDays');
+    if (reserveBorrowDaysEl) {
+      reserveBorrowDaysEl.addEventListener('change', updateBorrowDuePreview);
+    }
 
-    document.getElementById('goReserveBtn').addEventListener('click', () => {
-      document.getElementById('reserveSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    const goReserveBtn = document.getElementById('goReserveBtn');
+    if (goReserveBtn) {
+      goReserveBtn.addEventListener('click', () => {
+        document.getElementById('reserveSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
 
-    document.getElementById('goConfirmBtn').addEventListener('click', () => {
-      document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-
-    document.getElementById('reloadGamesBtn').addEventListener('click', loadGames);
-
-    document.getElementById('closeDetailBtn').addEventListener('click', closeDetailModal);
-
-    document.getElementById('detailOverlay').addEventListener('click', (e) => {
-      if (e.target.id === 'detailOverlay') {
-        closeDetailModal();
-      }
-    });
-
-    document.getElementById('clearReserveBtn').addEventListener('click', () => {
-      document.getElementById('reserveForm').reset();
-      state.selectedGameId = '';
-      state.selectedGameName = '';
-      populateGameSelect();
-      updateBorrowDuePreview();
-      clearMessage('reserveMessage');
-    });
-
-    document.getElementById('clearConfirmBtn').addEventListener('click', () => {
-      document.getElementById('confirmForm').reset();
-      document.getElementById('reservationStatusPanel').classList.add('hidden');
-      clearMessage('confirmMessage');
-    });
-
-    document.getElementById('copyReservationIdBtn').addEventListener('click', copyReservationId);
-
-    // 提交預約表單
-    document.getElementById('reserveForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const gameId = document.getElementById('reserveGameId').value;
-      const memberId = digitsOnly(document.getElementById('reserveMemberId').value);
-      const contact = digitsOnly(document.getElementById('reserveContact').value);
-      const borrowDays = Number(document.getElementById('reserveBorrowDays').value);
-      const remark = document.getElementById('reserveRemark').value;
-
-      if (!gameId || !memberId || contact.length !== 4) {
-        showMessage('reserveMessage', 'error', '請填寫完整的預約資料（會員編號與電話尾 4 位必須正確）。');
-        return;
-      }
-
-      try {
-        showMessage('reserveMessage', 'info', '正在提交預約，請稍候...');
-        const json = await apiPost('createReservation', {
-          gameId,
-          memberId,
-          contact,
-          borrowDays,
-          remark
-        });
-
-        const resId = json.reservationId || '';
-        state.lastReservationId = resId;
-        document.getElementById('confirmReservationId').value = resId;
-
-        showMessage(
-          'reserveMessage',
-          'success',
-          `預約成功！\n預約編號：${resId}\n請記低此編號，並於 2 日內到中心完成核對與確認。`
-        );
-
-        document.getElementById('reserveForm').reset();
-        updateBorrowDuePreview();
-        await loadGames();
-
+    const goConfirmBtn = document.getElementById('goConfirmBtn');
+    if (goConfirmBtn) {
+      goConfirmBtn.addEventListener('click', () => {
         document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch (err) {
-        showMessage('reserveMessage', 'error', `提交預約失敗：${err.message}`);
-      }
-    });
+      });
+    }
 
-    // 確認借用表單
-    document.getElementById('confirmForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const reservationId = normalizeReservationInput(document.getElementById('confirmReservationId').value);
-      const borrowCode = digitsOnly(document.getElementById('confirmBorrowCode').value);
-      const contact = digitsOnly(document.getElementById('confirmSignature').value);
-      const remark = document.getElementById('confirmRemark').value;
+    const reloadGamesBtn = document.getElementById('reloadGamesBtn');
+    if (reloadGamesBtn) {
+      reloadGamesBtn.addEventListener('click', loadGames);
+    }
 
-      if (!reservationId || borrowCode.length !== 6 || contact.length !== 4) {
-        showMessage('confirmMessage', 'error', '請填寫正確的預約編號、6 位數借用碼及電話尾 4 位。');
-        return;
-      }
+    const closeDetailBtn = document.getElementById('closeDetailBtn');
+    if (closeDetailBtn) {
+      closeDetailBtn.addEventListener('click', closeDetailModal);
+    }
 
-      try {
-        showMessage('confirmMessage', 'info', '正在確認借用，請稍候...');
-        await apiPost('confirmBorrow', {
-          reservationId,
-          borrowCode,
-          contact,
-          remark
-        });
+    const detailOverlay = document.getElementById('detailOverlay');
+    if (detailOverlay) {
+      detailOverlay.addEventListener('click', (e) => {
+        if (e.target.id === 'detailOverlay') {
+          closeDetailModal();
+        }
+      });
+    }
 
-        showMessage(
-          'confirmMessage',
-          'success',
-          `借用確認成功！\n預約編號：${reservationId}\n請取走桌遊並按時歸還。`
-        );
+    const clearReserveBtn = document.getElementById('clearReserveBtn');
+    if (clearReserveBtn) {
+      clearReserveBtn.addEventListener('click', () => {
+        document.getElementById('reserveForm').reset();
+        state.selectedGameId = '';
+        state.selectedGameName = '';
+        populateGameSelect();
+        updateBorrowDuePreview();
+        clearMessage('reserveMessage');
+      });
+    }
 
+    const clearConfirmBtn = document.getElementById('clearConfirmBtn');
+    if (clearConfirmBtn) {
+      clearConfirmBtn.addEventListener('click', () => {
         document.getElementById('confirmForm').reset();
         document.getElementById('reservationStatusPanel').classList.add('hidden');
-        await loadGames();
-      } catch (err) {
-        const userMsg = mapConfirmBorrowError(err.message);
-        showMessage('confirmMessage', 'error', userMsg);
-      }
-    });
+        clearMessage('confirmMessage');
+      });
+    }
+
+    const copyReservationIdBtn = document.getElementById('copyReservationIdBtn');
+    if (copyReservationIdBtn) {
+      copyReservationIdBtn.addEventListener('click', copyReservationId);
+    }
+
+    // 提交預約表單
+    const reserveForm = document.getElementById('reserveForm');
+    if (reserveForm) {
+      reserveForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const gameId = document.getElementById('reserveGameId').value;
+        const memberId = digitsOnly(document.getElementById('reserveMemberId').value);
+        const contact = digitsOnly(document.getElementById('reserveContact').value);
+        const borrowDays = Number(document.getElementById('reserveBorrowDays').value);
+        const remark = document.getElementById('reserveRemark').value;
+
+        if (!gameId || !memberId || contact.length !== 4) {
+          showMessage('reserveMessage', 'error', '請填寫完整的預約資料（會員編號與電話尾 4 位必須正確）。');
+          return;
+        }
+
+        try {
+          showMessage('reserveMessage', 'info', '正在提交預約，請稍候...');
+          const json = await apiPost('createReservation', {
+            gameId,
+            memberId,
+            contact,
+            borrowDays,
+            remark
+          });
+
+          const resId = json.reservationId || '';
+          state.lastReservationId = resId;
+          document.getElementById('confirmReservationId').value = resId;
+
+          showMessage(
+            'reserveMessage',
+            'success',
+            `預約成功！\n預約編號：${resId}\n請記低此編號，並於 2 日內到中心完成核對與確認。`
+          );
+
+          document.getElementById('reserveForm').reset();
+          updateBorrowDuePreview();
+          await loadGames();
+
+          document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (err) {
+          showMessage('reserveMessage', 'error', `提交預約失敗：${err.message}`);
+        }
+      });
+    }
+
+    // 確認借用表單
+    const confirmForm = document.getElementById('confirmForm');
+    if (confirmForm) {
+      confirmForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const reservationId = normalizeReservationInput(document.getElementById('confirmReservationId').value);
+        const borrowCode = digitsOnly(document.getElementById('confirmBorrowCode').value);
+        const contact = digitsOnly(document.getElementById('confirmSignature').value);
+        const remark = document.getElementById('confirmRemark').value;
+
+        if (!reservationId || borrowCode.length !== 6 || contact.length !== 4) {
+          showMessage('confirmMessage', 'error', '請填寫正確的預約編號、6 位數借用碼及電話尾 4 位。');
+          return;
+        }
+
+        try {
+          showMessage('confirmMessage', 'info', '正在確認借用，請稍候...');
+          await apiPost('confirmBorrow', {
+            reservationId,
+            borrowCode,
+            contact,
+            remark
+          });
+
+          showMessage(
+            'confirmMessage',
+            'success',
+            `借用確認成功！\n預約編號：${reservationId}\n請取走桌遊並按時歸還。`
+          );
+
+          document.getElementById('confirmForm').reset();
+          document.getElementById('reservationStatusPanel').classList.add('hidden');
+          await loadGames();
+        } catch (err) {
+          const userMsg = mapConfirmBorrowError(err.message);
+          showMessage('confirmMessage', 'error', userMsg);
+        }
+      });
+    }
 
     // 查詢預約狀態
-    document.getElementById('checkStatusBtn').addEventListener('click', async () => {
-      const input = document.getElementById('confirmReservationId');
-      const reservationId = normalizeReservationInput(input.value || state.lastReservationId);
+    const checkStatusBtn = document.getElementById('checkStatusBtn');
+    if (checkStatusBtn) {
+      checkStatusBtn.addEventListener('click', async () => {
+        const input = document.getElementById('confirmReservationId');
+        const reservationId = normalizeReservationInput(input.value || state.lastReservationId);
 
-      if (!reservationId) {
-        input.focus();
-        showMessage('confirmMessage', 'warning', '請先在「預約編號」欄位輸入編號，再點擊查詢預約狀態。');
-        document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return;
-      }
+        if (!reservationId) {
+          input.focus();
+          showMessage('confirmMessage', 'warning', '請先在「預約編號」欄位輸入編號，再點擊查詢預約狀態。');
+          document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
 
-      input.value = reservationId;
-      state.lastReservationId = reservationId;
+        input.value = reservationId;
+        state.lastReservationId = reservationId;
 
-      try {
-        showMessage('confirmMessage', 'info', '正在查詢預約狀態...');
-        const json = await apiPost('getReservationStatus', { reservationId });
-        const res = json.reservation || {};
+        try {
+          showMessage('confirmMessage', 'info', '正在查詢預約狀態...');
+          const json = await apiPost('getReservationStatus', { reservationId });
+          const res = json.reservation || {};
 
-        const panel = document.getElementById('reservationStatusPanel');
-        panel.classList.remove('hidden');
-        panel.innerHTML = `
-          <div class="status-title">預約狀態：${escapeHtml(getStatusLabel(res.status))}</div>
-          <div class="status-text">
-            預約編號：${escapeHtml(res.reservationId)}<br>
-            桌遊名稱：${escapeHtml(res.gameName || res.gameId)}<br>
-            會員編號：${escapeHtml(res.memberId)}<br>
-            建立時間：${escapeHtml(formatDateTime(res.createdAt))}<br>
-            預計到期：${escapeHtml(formatDateOnly(res.dueDate))}
-          </div>
-        `;
+          const panel = document.getElementById('reservationStatusPanel');
+          panel.classList.remove('hidden');
+          panel.innerHTML = `
+            <div class="status-title">預約狀態：${escapeHtml(getStatusLabel(res.status))}</div>
+            <div class="status-text">
+              預約編號：${escapeHtml(res.reservationId)}<br>
+              桌遊名稱：${escapeHtml(res.gameName || res.gameId)}<br>
+              會員編號：${escapeHtml(res.memberId)}<br>
+              建立時間：${escapeHtml(formatDateTime(res.createdAt))}<br>
+              預計到期：${escapeHtml(formatDateOnly(res.dueDate))}
+            </div>
+          `;
 
-        clearMessage('confirmMessage');
-      } catch (err) {
-        const userMsg = mapReservationStatusError(err.message);
-        showMessage('confirmMessage', 'error', userMsg);
-        document.getElementById('reservationStatusPanel').classList.add('hidden');
-      }
-    });
-
+          clearMessage('confirmMessage');
+        } catch (err) {
+          const userMsg = mapReservationStatusError(err.message);
+          showMessage('confirmMessage', 'error', userMsg);
+          document.getElementById('reservationStatusPanel').classList.add('hidden');
+        }
+      });
+    }
     // 初始載入
     loadGames();
+    updateBorrowDuePreview();
   </script>
 </body>
 </html>
