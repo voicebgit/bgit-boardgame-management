@@ -1396,21 +1396,27 @@
       });
     }
 
-    async function loadGames() {
-      try {
-        clearMessage('reserveMessage');
-        const json = await apiPost('listGames');
-        state.games = json.games || [];
-        renderGames();
-        populateGameSelect();
-        updateBorrowDuePreview();
-      } catch (error) {
-        console.error(error);
-        const grid = document.getElementById('gamesGrid');
-        grid.innerHTML = `<div class="empty-state">載入桌遊失敗：${escapeHtml(error.message)}</div>`;
-        showMessage('reserveMessage', 'error', `無法載入桌遊列表：${error.message}`);
-      }
+async function loadGames() {
+  try {
+    // 透過 apiPost 發送正確的 action 名稱 'listPublicGames'
+    const res = await apiPost('listPublicGames');
+    
+    if (!res.ok) {
+      throw new Error(res.error || 'request failed');
     }
+    
+    // 成功取得資料後，將桌遊列表渲染到畫面上（依你的前端實作為主）
+    // 如果你的前端函式名稱不同，可以保留你原本呼叫渲染的地方
+    if (typeof renderGameList === 'function') {
+      renderGameList(res.games);
+    }
+    
+    return res.games;
+  } catch (error) {
+    console.error('載入桌遊失敗:', error);
+    alert(`無法載入桌遊列表：${error.message}`);
+  }
+}
 
     async function openGameDetail(gameId) {
       const game = state.games.find(item => item.gameId === gameId);
