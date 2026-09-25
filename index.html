@@ -1570,9 +1570,16 @@
             remark
           });
 
-          const resId = json.reservationId || '';
-          state.lastReservationId = resId;
-          document.getElementById('confirmReservationId').value = resId;
+const reservation = json.reservation || {};
+const resId = reservation.reservationId || '';
+
+if (!resId) {
+  throw new Error('Worker 沒有回傳預約編號');
+}
+
+state.lastReservationId = resId;
+
+document.getElementById('confirmReservationId').value = resId;
 
           showMessage(
             'reserveMessage',
@@ -1592,44 +1599,91 @@
     }
 
     // 確認借用表單
-    const confirmForm = document.getElementById('confirmForm');
-    if (confirmForm) {
-      confirmForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const reservationId = normalizeReservationInput(document.getElementById('confirmReservationId').value);
-        const borrowCode = digitsOnly(document.getElementById('confirmBorrowCode').value);
-        const contact = digitsOnly(document.getElementById('confirmSignature').value);
-        const remark = document.getElementById('confirmRemark').value;
+   const confirmForm = document.getElementById('confirmForm');
 
-        if (!reservationId || borrowCode.length !== 6 || contact.length !== 4) {
-          showMessage('confirmMessage', 'error', '請填寫正確的預約編號、6 位數借用碼及電話尾 4 位。');
-          return;
-        }
+if (confirmForm) {
+  confirmForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-        try {
-          showMessage('confirmMessage', 'info', '正在確認借用，請稍候...');
-          await apiPost('confirmBorrow', {
-            reservationId,
-            borrowCode,
-            contact,
-            remark
-          });
+    const reservationId =
+      normalizeReservationInput(
+        document.getElementById('confirmReservationId').value
+      );
 
-          showMessage(
-            'confirmMessage',
-            'success',
-            `借用確認成功！\n預約編號：${reservationId}\n請取走桌遊並按時歸還。`
-          );
+    const borrowCode =
+      digitsOnly(
+        document.getElementById('confirmBorrowCode').value
+      );
 
-          document.getElementById('confirmForm').reset();
-          document.getElementById('reservationStatusPanel').classList.add('hidden');
-          await loadGames();
-        } catch (err) {
-          const userMsg = mapConfirmBorrowError(err.message);
-          showMessage('confirmMessage', 'error', userMsg);
-        }
-      });
+    const contact =
+      digitsOnly(
+        document.getElementById('confirmSignature').value
+      );
+
+    const confirmRemark =
+      document.getElementById('confirmRemark').value.trim();
+
+    if (
+      !reservationId ||
+      borrowCode.length !== 6 ||
+      contact.length !== 4
+    ) {
+      showMessage(
+        'confirmMessage',
+        'error',
+        '請填寫正確的預約編號、6 位數借用碼及電話尾 4 位。'
+      );
+      return;
     }
+
+    try {
+      showMessage(
+        'confirmMessage',
+        'info',
+        '正在確認借用，請稍候...'
+      );
+
+      const result = await apiPost(
+        'confirmBorrowByCode',
+        {
+          reservationId,
+          borrowCode,
+          contact,
+          confirmRemark
+        }
+      );
+
+      const reservation =
+        result.reservation || {};
+
+      showMessage(
+        'confirmMessage',
+        'success',
+        `借用確認成功！\n預約編號：${
+          reservation.reservationId || reservationId
+        }\n請取走桌遊並按時歸還。`
+      );
+
+      document.getElementById('confirmForm').reset();
+
+      document
+        .getElementById('reservationStatusPanel')
+        .classList.add('hidden');
+
+      await loadGames();
+
+    } catch (err) {
+      const userMsg =
+        mapConfirmBorrowError(err.message);
+
+      showMessage(
+        'confirmMessage',
+        'error',
+        userMsg
+      );
+    }
+  });
+}
 
     // 查詢預約狀態
     const checkStatusBtn = document.getElementById('checkStatusBtn');
@@ -1650,21 +1704,30 @@
 
         try {
           showMessage('confirmMessage', 'info', '正在查詢預約狀態...');
-          const json = await apiPost('getReservationStatus', { reservationId });
+const json = await apiPost(
+  'getReservationPublicStatus',
+  {
+    reservationId
+  }
+);
           const res = json.reservation || {};
 
           const panel = document.getElementById('reservationStatusPanel');
           panel.classList.remove('hidden');
-          panel.innerHTML = `
-            <div class="status-title">預約狀態：${escapeHtml(getStatusLabel(res.status))}</div>
-            <div class="status-text">
-              預約編號：${escapeHtml(res.reservationId)}<br>
-              桌遊名稱：${escapeHtml(res.gameName || res.gameId)}<br>
-              會員編號：${escapeHtml(res.memberId)}<br>
-              建立時間：${escapeHtml(formatDateTime(res.createdAt))}<br>
-              預計到期：${escapeHtml(formatDateOnly(res.dueDate))}
-            </div>
-          `;
+panel.innerHTML = `
+  <div class="status-title">
+    預約狀態：${escapeHtml(getStatusLabel(res.status))}
+  </div>
+
+  <div class="status-text">
+    預約編號：${escapeHtml(res.reservationId || reservationId)}<br>
+    桌遊名稱：${escapeHtml(res.gameName || res.gameId || '—')}<br>
+    會員編號：${escapeHtml(res.memberIdMasked || '已隱藏')}<br>
+    借用天數：${escapeHtml(String(res.borrowDays || 7))} 天<br>
+    建立時間：${escapeHtml(formatDateTime(res.createdAt))}<br>
+    預計到期：${escapeHtml(formatDateOnly(res.dueAt))}
+  </div>
+`;
 
           clearMessage('confirmMessage');
         } catch (err) {
