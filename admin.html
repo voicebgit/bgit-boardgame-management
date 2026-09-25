@@ -1346,40 +1346,100 @@
       document.getElementById('actionDialog').classList.add('show');
     }
 
-    async function executeDialogAction() {
-      const action = state.dialogAction;
-      const reservationId = state.dialogReservationId;
-      const staffInput = document.getElementById('dialogStaffInput');
-      if (staffInput && staffInput.value.trim()) {
-        state.staffName = staffInput.value.trim();
-        document.getElementById('staffName').value = state.staffName;
-      }
+  async function executeDialogAction() {
+  const action = state.dialogAction;
+  const reservationId = state.dialogReservationId;
 
-      try {
-        if (action === 'readyCode') {
-          await apiPost('adminSetCodeReady', { reservationId, staffName: state.staffName });
-          showMessage('reservationsMessage', 'success', `預約 ${reservationId} 已成功產生借用碼！`);
-        } else if (action === 'forceConfirm') {
-          await apiPost('adminForceConfirm', { reservationId, staffName: state.staffName });
-          showMessage('reservationsMessage', 'success', `預約 ${reservationId} 已強制確認借出！`);
-        } else if (action === 'returnGame') {
-          const returnNote = document.getElementById('dialogReturnNote') ? document.getElementById('dialogReturnNote').value : '';
-          await apiPost('adminReturnGame', { reservationId, staffName: state.staffName, remark: returnNote });
-          showMessage('reservationsMessage', 'success', `預約 ${reservationId} 已完成歸還！`);
-        } else if (action === 'cancelRes') {
-          await apiPost('adminCancelReservation', { reservationId, staffName: state.staffName });
-          showMessage('reservationsMessage', 'success', `預約 ${reservationId} 已取消。`);
-        } else if (action === 'deleteRes') {
-          await apiPost('adminDeleteReservation', { reservationId, staffName: state.staffName });
-          showMessage('reservationsMessage', 'success', `預約紀錄 ${reservationId} 已刪除。`);
-        }
+  const staffInput = document.getElementById('dialogStaffInput');
 
-        document.getElementById('actionDialog').classList.remove('show');
-        await loadAllAdminData();
-      } catch (err) {
-        alert(`操作失敗：${err.message}`);
-      }
+  if (staffInput && staffInput.value.trim()) {
+    state.staffName = staffInput.value.trim();
+    document.getElementById('staffName').value = state.staffName;
+  }
+
+  try {
+    const staffName = getStaffNameRequired();
+
+    if (action === 'readyCode') {
+      const result = await apiPost('generateBorrowCode', {
+        reservationId,
+        staffName
+      });
+
+      const borrowCode =
+        result.reservation?.borrowCode || '';
+
+      const expiresAt =
+        result.reservation?.codeExpiresAt || '';
+
+      showMessage(
+        'reservationsMessage',
+        'success',
+        `預約 ${reservationId} 已成功產生借用碼！` +
+        `${borrowCode ? `\n借用碼：${borrowCode}` : ''}` +
+        `${expiresAt ? `\n有效至：${formatDateTime(expiresAt)}` : ''}`
+      );
+
+    } else if (action === 'returnGame') {
+      const returnNote =
+        document.getElementById('dialogReturnNote')
+          ? document.getElementById('dialogReturnNote').value.trim()
+          : '';
+
+      await apiPost('markReturned', {
+        reservationId,
+        staffName,
+        nextGameStatus: 'available',
+        returnNote
+      });
+
+      showMessage(
+        'reservationsMessage',
+        'success',
+        `預約 ${reservationId} 已完成歸還，桌遊已恢復為可借狀態。`
+      );
+
+    } else if (action === 'cancelRes') {
+      await apiPost('cancelReservation', {
+        reservationId,
+        staffName,
+        cancelReason: ''
+      });
+
+      showMessage(
+        'reservationsMessage',
+        'success',
+        `預約 ${reservationId} 已取消。`
+      );
+
+    } else if (action === 'deleteRes') {
+      await apiPost('deleteReservation', {
+        reservationId,
+        staffName
+      });
+
+      showMessage(
+        'reservationsMessage',
+        'success',
+        `預約紀錄 ${reservationId} 已刪除。`
+      );
+
+    } else if (action === 'forceConfirm') {
+      throw new Error(
+        'Worker 尚未提供管理員強制確認功能。請使用借用碼由會員公開頁完成確認，或先在 Worker 新增 forceConfirm action。'
+      );
     }
+
+    document
+      .getElementById('actionDialog')
+      .classList.remove('show');
+
+    await loadAllAdminData();
+
+  } catch (err) {
+    alert(`操作失敗：${err.message}`);
+  }
+}
 
     // 事件監聽綁定
     document.getElementById('loginBtn').addEventListener('click', loginAdmin);
