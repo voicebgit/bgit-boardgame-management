@@ -1018,18 +1018,46 @@
           </div>
         </div>
 
-        <div>
-          <h3
-            style="font-size: 18px; margin-bottom: 8px;"
-          >
-            配件數量
-          </h3>
+      <div>
+  <h3
+    style="font-size: 18px; margin-bottom: 8px;"
+  >
+    簡介
+  </h3>
 
-          <div
-            id="detailItems"
-            class="item-list"
-          ></div>
-        </div>
+  <div
+    id="detailText"
+    class="detail-text"
+  >
+    —
+  </div>
+
+  <div
+    id="detailPlayWrap"
+    class="hidden"
+    style="margin-top: 12px;"
+  >
+    <button
+      id="toggleDetailPlayBtn"
+      type="button"
+      class="btn-ghost"
+    >
+      顯示完整玩法介紹
+    </button>
+
+    <div
+      id="detailFullPlay"
+      class="detail-text hidden"
+      style="
+        margin-top: 12px;
+        padding: 14px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+      "
+    ></div>
+  </div>
+</div>
 
         <div class="btn-row">
           <a
@@ -1421,36 +1449,209 @@
         showMessage('confirmMessage', 'error', `無法載入桌遊列表：${error.message}`);
       }
     }
+   
+async function getPublicGameDetail(gameId) {
+  const result = await apiPost(
+    'getPublicGameDetail',
+    { gameId }
+  );
 
-    async function openGameDetail(gameId) {
-      const game = state.games.find(item => item.gameId === gameId);
-      if (!game) return;
+  if (!result.game) {
+    throw new Error('找不到桌遊詳情');
+  }
 
-      document.getElementById('detailCover').style.backgroundImage = `url('${escapeHtml(game.coverImageUrl || '')}')`;
-      document.getElementById('detailTitle').textContent = game.name || '未命名桌遊';
-      document.getElementById('detailText').textContent = game.fullPlay || game.shortPlay || '暫時未有詳細玩法說明';
+  return result.game;
+}
+   
+  async function openGameDetail(gameId) {
+  const basicGame = state.games.find(
+    item => item.gameId === gameId
+  );
 
-      const metaEl = document.getElementById('detailMeta');
-      metaEl.innerHTML = `
-        <span class="chip status-${escapeHtml(game.status || '')}">${escapeHtml(getStatusLabel(game.status))}</span>
-        <span class="chip count-chip">編號：${escapeHtml(game.gameId)}</span>
-        ${game.category ? `<span class="chip count-chip">${escapeHtml(game.category)}</span>` : ''}
-        <span class="chip count-chip">借用次數：${escapeHtml(String(game.borrowCount || 0))}</span>
-      `;
+  if (!basicGame) return;
 
-      const itemsEl = document.getElementById('detailItems');
-      const items = Array.isArray(game.items) ? game.items : [];
-      if (!items.length) {
-        itemsEl.innerHTML = '<div class="empty-state" style="padding:14px;">暫時未有詳細配件清單</div>';
-      } else {
-        itemsEl.innerHTML = items.map(item => `
-          <div class="item-row">
-            <span class="item-key">${escapeHtml(item.name || '配件')}</span>
-            <span>數量：${escapeHtml(String(item.count || 1))}</span>
-            ${item.note ? `<span class="meta-note">（${escapeHtml(item.note)}）</span>` : ''}
-          </div>
-        `).join('');
+  try {
+    const game = await getPublicGameDetail(gameId);
+
+    document.getElementById('detailCover').style.backgroundImage =
+      `url('${escapeHtml(game.coverImageUrl || '')}')`;
+
+    document.getElementById('detailTitle').textContent =
+      game.name || '未命名桌遊';
+
+    document.getElementById('detailText').textContent =
+      game.shortPlay || '暫時未有簡介';
+
+    const metaEl = document.getElementById('detailMeta');
+
+    metaEl.innerHTML = `
+      <span class="chip status-${escapeHtml(game.status || '')}">
+        ${escapeHtml(getStatusLabel(game.status))}
+      </span>
+
+      <span class="chip count-chip">
+        編號：${escapeHtml(game.gameId || '')}
+      </span>
+
+      ${
+        game.category
+          ? `
+            <span class="chip count-chip">
+              ${escapeHtml(game.category)}
+            </span>
+          `
+          : ''
       }
+
+      <span class="chip count-chip">
+        借用次數：${escapeHtml(
+          String(game.borrowCount || 0)
+        )}
+      </span>
+    `;
+
+    const detailPlayWrap =
+      document.getElementById('detailPlayWrap');
+
+    const detailFullPlay =
+      document.getElementById('detailFullPlay');
+
+    const toggleDetailPlayBtn =
+      document.getElementById('toggleDetailPlayBtn');
+
+    const fullPlay =
+      String(game.detailPlay || '').trim();
+
+    detailFullPlay.classList.add('hidden');
+    detailFullPlay.textContent = fullPlay;
+
+    if (fullPlay) {
+      detailPlayWrap.classList.remove('hidden');
+
+      toggleDetailPlayBtn.textContent =
+        '顯示完整玩法介紹';
+
+      toggleDetailPlayBtn.onclick = () => {
+        const isHidden =
+          detailFullPlay.classList.contains('hidden');
+
+        if (isHidden) {
+          detailFullPlay.classList.remove('hidden');
+
+          toggleDetailPlayBtn.textContent =
+            '收起完整玩法介紹';
+        } else {
+          detailFullPlay.classList.add('hidden');
+
+          toggleDetailPlayBtn.textContent =
+            '顯示完整玩法介紹';
+        }
+      };
+    } else {
+      detailPlayWrap.classList.add('hidden');
+      toggleDetailPlayBtn.onclick = null;
+    }
+
+    const itemsEl =
+      document.getElementById('detailItems');
+
+    const items = Array.isArray(game.items)
+      ? game.items
+      : [];
+
+    if (!items.length) {
+      itemsEl.innerHTML = `
+        <div
+          class="empty-state"
+          style="padding: 14px;"
+        >
+          暫時未有詳細配件清單
+        </div>
+      `;
+    } else {
+      itemsEl.innerHTML = items.map(item => {
+        const itemName =
+          String(item.name || '').trim() || '未命名配件';
+
+        const itemQty =
+          Number.isFinite(Number(item.qty))
+            ? Number(item.qty)
+            : 0;
+
+        const itemUnit =
+          String(item.unit || '').trim();
+
+        const itemImportant =
+          item.important === true;
+
+        return `
+          <div class="item-row">
+            <span class="item-key">
+              ${escapeHtml(itemName)}
+            </span>
+
+            <span>
+              數量：${escapeHtml(String(itemQty))}
+              ${itemUnit ? escapeHtml(itemUnit) : ''}
+            </span>
+
+            ${
+              itemImportant
+                ? `
+                  <span class="meta-note">
+                    （重要配件）
+                  </span>
+                `
+                : ''
+            }
+          </div>
+        `;
+      }).join('');
+    }
+
+    const ytBtn =
+      document.getElementById('detailYoutubeBtn');
+
+    const youtubeUrl =
+      String(game.youtubeUrl || '').trim();
+
+    if (youtubeUrl) {
+      ytBtn.href = youtubeUrl;
+      ytBtn.classList.remove('hidden');
+    } else {
+      ytBtn.href = '#';
+      ytBtn.classList.add('hidden');
+    }
+
+    const useBtn =
+      document.getElementById('detailUseThisBtn');
+
+    if (game.status === 'available') {
+      useBtn.classList.remove('hidden');
+
+      useBtn.onclick = () => {
+        closeDetailModal();
+        selectGameForReservation(game.gameId);
+      };
+    } else {
+      useBtn.classList.add('hidden');
+      useBtn.onclick = null;
+    }
+
+    document
+      .getElementById('detailOverlay')
+      .classList.add('show');
+
+  } catch (error) {
+    console.error('載入桌遊詳情失敗：', error);
+
+    showMessage(
+      'confirmMessage',
+      'error',
+      `無法載入桌遊詳情：${error.message}`
+    );
+  }
+}
 
       const ytBtn = document.getElementById('detailYoutubeBtn');
       if (game.youtubeUrl) {
