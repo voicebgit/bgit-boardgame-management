@@ -1463,7 +1463,7 @@ async function getPublicGameDetail(gameId) {
   return result.game;
 }
    
-  async function openGameDetail(gameId) {
+async function openGameDetail(gameId) {
   const basicGame = state.games.find(
     item => item.gameId === gameId
   );
@@ -1482,7 +1482,8 @@ async function getPublicGameDetail(gameId) {
     document.getElementById('detailText').textContent =
       game.shortPlay || '暫時未有簡介';
 
-    const metaEl = document.getElementById('detailMeta');
+    const metaEl =
+      document.getElementById('detailMeta');
 
     metaEl.innerHTML = `
       <span class="chip status-${escapeHtml(game.status || '')}">
@@ -1527,7 +1528,6 @@ async function getPublicGameDetail(gameId) {
 
     if (fullPlay) {
       detailPlayWrap.classList.remove('hidden');
-
       toggleDetailPlayBtn.textContent =
         '顯示完整玩法介紹';
 
@@ -1537,12 +1537,10 @@ async function getPublicGameDetail(gameId) {
 
         if (isHidden) {
           detailFullPlay.classList.remove('hidden');
-
           toggleDetailPlayBtn.textContent =
             '收起完整玩法介紹';
         } else {
           detailFullPlay.classList.add('hidden');
-
           toggleDetailPlayBtn.textContent =
             '顯示完整玩法介紹';
         }
@@ -1571,7 +1569,8 @@ async function getPublicGameDetail(gameId) {
     } else {
       itemsEl.innerHTML = items.map(item => {
         const itemName =
-          String(item.name || '').trim() || '未命名配件';
+          String(item.name || '').trim() ||
+          '未命名配件';
 
         const itemQty =
           Number.isFinite(Number(item.qty))
@@ -1643,7 +1642,10 @@ async function getPublicGameDetail(gameId) {
       .classList.add('show');
 
   } catch (error) {
-    console.error('載入桌遊詳情失敗：', error);
+    console.error(
+      '載入桌遊詳情失敗：',
+      error
+    );
 
     showMessage(
       'confirmMessage',
@@ -1651,6 +1653,13 @@ async function getPublicGameDetail(gameId) {
       `無法載入桌遊詳情：${error.message}`
     );
   }
+}
+
+function closeDetailModal() {
+  document
+    .getElementById('detailOverlay')
+    .classList
+    .remove('show');
 }
 
       const ytBtn = document.getElementById('detailYoutubeBtn');
@@ -1661,20 +1670,6 @@ async function getPublicGameDetail(gameId) {
         ytBtn.href = '#';
         ytBtn.classList.add('hidden');
       }
-
-      const useBtn = document.getElementById('detailUseThisBtn');
-      if (game.status === 'available') {
-        useBtn.classList.remove('hidden');
-        useBtn.onclick = () => {
-          closeDetailModal();
-          selectGameForReservation(game.gameId);
-        };
-      } else {
-        useBtn.classList.add('hidden');
-      }
-
-      document.getElementById('detailOverlay').classList.add('show');
-    }
 
     function closeDetailModal() {
       document.getElementById('detailOverlay').classList.remove('show');
