@@ -1315,7 +1315,6 @@ const importantVal =
             </div>
             <div class="reservation-actions">
               ${r.status === 'pending' ? `<button type="button" class="btn small" data-action="readyCode" data-id="${escapeHtml(r.reservationId)}">產生出碼</button>` : ''}
-              ${r.status === 'code_ready' ? `<button type="button" class="btn small" data-action="forceConfirm" data-id="${escapeHtml(r.reservationId)}">強制確認</button>` : ''}
               ${r.status === 'borrowed' ? `<button type="button" class="btn small" data-action="returnGame" data-id="${escapeHtml(r.reservationId)}">辦理歸還</button>` : ''}
               ${['pending', 'code_ready'].includes(r.status) ? `<button type="button" class="btn-danger small" data-action="cancelRes" data-id="${escapeHtml(r.reservationId)}">取消預約</button>` : ''}
               <button type="button" class="btn-secondary small" data-action="deleteRes" data-id="${escapeHtml(r.reservationId)}">刪除紀錄</button>
@@ -1557,135 +1556,186 @@ async function executeDialogAction() {
       document.getElementById('gameCoverPreview').style.backgroundImage = url ? `url('${escapeHtml(url)}')` : '';
     });
 
-    document.getElementById('gameForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
+ document
+  .getElementById('gameForm')
+  .addEventListener('submit', async e => {
+    e.preventDefault();
+
+    try {
+      const staffName =
         getStaffNameRequired();
 
-const items = [];
+      const items = [];
 
-document
-  .querySelectorAll('#itemsWrap .item-row')
-  .forEach(row => {
-    const nameInput =
-      row.querySelector('.item-name');
+      document
+        .querySelectorAll('#itemsWrap .item-row')
+        .forEach(row => {
+          const nameInput =
+            row.querySelector('.item-name');
 
-    const qtyInput =
-      row.querySelector('.item-qty');
+          const qtyInput =
+            row.querySelector('.item-qty');
 
-    const unitInput =
-      row.querySelector('.item-unit');
+          const unitInput =
+            row.querySelector('.item-unit');
 
-    const importantInput =
-      row.querySelector('.item-important');
+          const importantInput =
+            row.querySelector('.item-important');
 
-    const name =
-      nameInput
-        ? nameInput.value.trim()
-        : '';
+          const name =
+            nameInput
+              ? nameInput.value.trim()
+              : '';
 
-    const qty =
-      qtyInput
-        ? Number.parseInt(
-            qtyInput.value,
-            10
-          )
-        : 0;
+          const qty =
+            qtyInput
+              ? Number.parseInt(
+                  qtyInput.value,
+                  10
+                )
+              : 0;
 
-    const unit =
-      unitInput
-        ? unitInput.value.trim()
-        : '';
+          const unit =
+            unitInput
+              ? unitInput.value.trim()
+              : '';
 
-    const important =
-      Boolean(
-        importantInput &&
-        importantInput.checked
+          const important =
+            Boolean(
+              importantInput &&
+              importantInput.checked
+            );
+
+          if (!name) {
+            return;
+          }
+
+          items.push({
+            name,
+            qty: Number.isFinite(qty)
+              ? Math.max(0, qty)
+              : 0,
+            unit,
+            important
+          });
+        });
+
+      const game = {
+        gameId:
+          document
+            .getElementById('gameId')
+            .value
+            .trim(),
+
+        status:
+          document
+            .getElementById('gameStatus')
+            .value,
+
+        name:
+          document
+            .getElementById('gameName')
+            .value
+            .trim(),
+
+        category:
+          document
+            .getElementById('gameCategory')
+            .value
+            .trim(),
+
+        players:
+          document
+            .getElementById('gamePlayers')
+            .value
+            .trim(),
+
+        playTime:
+          document
+            .getElementById('gamePlayTime')
+            .value
+            .trim(),
+
+        age:
+          document
+            .getElementById('gameAge')
+            .value
+            .trim(),
+
+        coverImageUrl:
+          document
+            .getElementById('gameCoverImageUrl')
+            .value
+            .trim(),
+
+        youtubeUrl:
+          document
+            .getElementById('gameYoutubeUrl')
+            .value
+            .trim(),
+
+        shortPlay:
+          document
+            .getElementById('gameShortPlay')
+            .value
+            .trim(),
+
+        detailPlay:
+          document
+            .getElementById('gameDetailPlay')
+            .value
+            .trim(),
+
+        publicNote:
+          document
+            .getElementById('gamePublicNote')
+            .value
+            .trim(),
+
+        internalNote:
+          document
+            .getElementById('gameInternalNote')
+            .value
+            .trim(),
+
+        items
+      };
+
+      if (!game.gameId) {
+        throw new Error('請輸入桌遊編號。');
+      }
+
+      if (!game.name) {
+        throw new Error('請輸入桌遊名稱。');
+      }
+
+      showMessage(
+        'gamesMessage',
+        'info',
+        '正在儲存桌遊資料，請稍候...'
       );
 
-    if (!name) {
-      return;
+      await apiPost('saveGame', {
+        game,
+        staffName
+      });
+
+      showMessage(
+        'gamesMessage',
+        'success',
+        `桌遊「${game.name}」及配件資料已成功儲存。`
+      );
+
+      await loadGamesOnly();
+
+    } catch (err) {
+      showMessage(
+        'gamesMessage',
+        'error',
+        `儲存桌遊失敗：${err.message}`
+      );
     }
-
-    items.push({
-      name,
-      qty: Number.isFinite(qty)
-        ? Math.max(0, qty)
-        : 0,
-      unit,
-      important
-    });
   });
-
-const game = {
-  gameId:
-    document.getElementById('gameId').value.trim(),
-
-  status:
-    document.getElementById('gameStatus').value,
-
-  name:
-    document.getElementById('gameName').value.trim(),
-
-  category:
-    document.getElementById('gameCategory').value.trim(),
-
-  players:
-    document.getElementById('gamePlayers').value.trim(),
-
-  playTime:
-    document.getElementById('gamePlayTime').value.trim(),
-
-  age:
-    document.getElementById('gameAge').value.trim(),
-
-  coverImageUrl:
-    document
-      .getElementById('gameCoverImageUrl')
-      .value
-      .trim(),
-
-  youtubeUrl:
-    document
-      .getElementById('gameYoutubeUrl')
-      .value
-      .trim(),
-
-  shortPlay:
-    document
-      .getElementById('gameShortPlay')
-      .value
-      .trim(),
-
-  detailPlay:
-    document
-      .getElementById('gameDetailPlay')
-      .value
-      .trim(),
-
-  publicNote:
-    document
-      .getElementById('gamePublicNote')
-      .value
-      .trim(),
-
-  internalNote:
-    document
-      .getElementById('gameInternalNote')
-      .value
-      .trim(),
-
-  items
-};
-
-        showMessage('gamesMessage', 'info', '正在儲存桌遊資料...');
-        await apiPost('saveGame', { game, staffName: state.staffName });
-        showMessage('gamesMessage', 'success', '桌遊資料已成功儲存！');
-        await loadGamesOnly();
-      } catch (err) {
-        showMessage('gamesMessage', 'error', `儲存失敗：${err.message}`);
-      }
-    });
 
     // 預約清單過濾分頁
     document.querySelectorAll('#reservationTabs .tab-btn').forEach(btn => {
