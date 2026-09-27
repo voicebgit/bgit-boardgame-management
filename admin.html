@@ -440,9 +440,9 @@
       gap: 10px;
     }
 
-    .item-row {
-      display: grid;
-      grid-template-columns: 1.3fr .7fr .7fr auto;
+.item-row {
+  display: grid;
+  grid-template-columns: 1.3fr .6fr 1fr .8fr auto;
       gap: 10px;
       align-items: center;
       background: #fff;
@@ -984,35 +984,95 @@
       }
     }
 
-    function addItemRow(itemData = {}) {
-      const wrap = document.getElementById('itemsWrap');
-      const row = document.createElement('div');
-      row.className = 'item-row';
-      
-      const nameVal = itemData.name || '';
-      const countVal = itemData.count !== undefined ? itemData.count : 1;
-      const noteVal = itemData.note || '';
+function addItemRow(itemData = {}) {
+  const wrap = document.getElementById('itemsWrap');
 
-      row.innerHTML = `
-        <div class="field">
-          <input type="text" class="item-name" placeholder="配件名稱（例如：說明書）" value="${escapeHtml(nameVal)}">
-        </div>
-        <div class="field">
-          <input type="number" class="item-count" placeholder="數量" value="${escapeHtml(countVal)}" min="1">
-        </div>
-        <div class="field">
-          <input type="text" class="item-note" placeholder="備註（例如：缺紅棋）" value="${escapeHtml(noteVal)}">
-        </div>
-        <button type="button" class="btn-danger small remove-item-btn">刪除</button>
-      `;
+  const row = document.createElement('div');
 
-      row.querySelector('.remove-item-btn').addEventListener('click', () => {
-        row.remove();
-        ensureOneItemRow();
-      });
+  row.className = 'item-row';
 
-      wrap.appendChild(row);
-    }
+  const nameVal =
+    itemData.name || '';
+
+const qtyVal =
+  itemData.qty !== undefined
+    ? itemData.qty
+    : (
+      itemData.count !== undefined
+        ? itemData.count
+        : 1
+    );
+
+const unitVal =
+  itemData.unit || itemData.note || '';
+
+const importantVal =
+  itemData.important === true;
+
+  row.innerHTML = `
+    <div class="field">
+      <input
+        type="text"
+        class="item-name"
+        placeholder="配件名稱（例如：說明書）"
+        value="${escapeHtml(nameVal)}"
+      >
+    </div>
+
+    <div class="field">
+      <input
+        type="number"
+        class="item-qty"
+        placeholder="數量"
+        value="${escapeHtml(qtyVal)}"
+        min="0"
+      >
+    </div>
+
+    <div class="field">
+      <input
+        type="text"
+        class="item-unit"
+        placeholder="單位／備註（例如：張／紅棋）"
+        value="${escapeHtml(unitVal)}"
+      >
+    </div>
+
+    <div class="field">
+      <label
+        style="
+          display:flex;
+          align-items:center;
+          gap:8px;
+          font-weight:normal;
+        "
+      >
+        <input
+          type="checkbox"
+          class="item-important"
+          ${importantVal ? 'checked' : ''}
+        >
+        重要配件
+      </label>
+    </div>
+
+    <button
+      type="button"
+      class="btn-danger small remove-item-btn"
+    >
+      刪除
+    </button>
+  `;
+
+  row
+    .querySelector('.remove-item-btn')
+    .addEventListener('click', () => {
+      row.remove();
+      ensureOneItemRow();
+    });
+
+  wrap.appendChild(row);
+}
 
     function clearSelectedGame() {
       state.selectedGameId = '';
@@ -1502,30 +1562,121 @@ async function executeDialogAction() {
       try {
         getStaffNameRequired();
 
-        const items = [];
-        document.querySelectorAll('#itemsWrap .item-row').forEach(row => {
-          const name = row.querySelector('.item-name').value.trim();
-          const count = parseInt(row.querySelector('.item-count').value, 10) || 1;
-          const note = row.querySelector('.item-note').value.trim();
-          if (name) items.push({ name, count, note });
-        });
+const items = [];
 
-        const game = {
-          gameId: document.getElementById('gameId').value.trim(),
-          status: document.getElementById('gameStatus').value,
-          name: document.getElementById('gameName').value.trim(),
-          category: document.getElementById('gameCategory').value.trim(),
-          players: document.getElementById('gamePlayers').value.trim(),
-          playTime: document.getElementById('gamePlayTime').value.trim(),
-          age: document.getElementById('gameAge').value.trim(),
-          coverImageUrl: document.getElementById('gameCoverImageUrl').value.trim(),
-          youtubeUrl: document.getElementById('gameYoutubeUrl').value.trim(),
-          shortPlay: document.getElementById('gameShortPlay').value.trim(),
-          detailPlay: document.getElementById('gameDetailPlay').value.trim(),
-          publicNote: document.getElementById('gamePublicNote').value.trim(),
-          internalNote: document.getElementById('gameInternalNote').value.trim(),
-          items
-        };
+document
+  .querySelectorAll('#itemsWrap .item-row')
+  .forEach(row => {
+    const nameInput =
+      row.querySelector('.item-name');
+
+    const qtyInput =
+      row.querySelector('.item-qty');
+
+    const unitInput =
+      row.querySelector('.item-unit');
+
+    const importantInput =
+      row.querySelector('.item-important');
+
+    const name =
+      nameInput
+        ? nameInput.value.trim()
+        : '';
+
+    const qty =
+      qtyInput
+        ? Number.parseInt(
+            qtyInput.value,
+            10
+          )
+        : 0;
+
+    const unit =
+      unitInput
+        ? unitInput.value.trim()
+        : '';
+
+    const important =
+      Boolean(
+        importantInput &&
+        importantInput.checked
+      );
+
+    if (!name) {
+      return;
+    }
+
+    items.push({
+      name,
+      qty: Number.isFinite(qty)
+        ? Math.max(0, qty)
+        : 0,
+      unit,
+      important
+    });
+  });
+
+const game = {
+  gameId:
+    document.getElementById('gameId').value.trim(),
+
+  status:
+    document.getElementById('gameStatus').value,
+
+  name:
+    document.getElementById('gameName').value.trim(),
+
+  category:
+    document.getElementById('gameCategory').value.trim(),
+
+  players:
+    document.getElementById('gamePlayers').value.trim(),
+
+  playTime:
+    document.getElementById('gamePlayTime').value.trim(),
+
+  age:
+    document.getElementById('gameAge').value.trim(),
+
+  coverImageUrl:
+    document
+      .getElementById('gameCoverImageUrl')
+      .value
+      .trim(),
+
+  youtubeUrl:
+    document
+      .getElementById('gameYoutubeUrl')
+      .value
+      .trim(),
+
+  shortPlay:
+    document
+      .getElementById('gameShortPlay')
+      .value
+      .trim(),
+
+  detailPlay:
+    document
+      .getElementById('gameDetailPlay')
+      .value
+      .trim(),
+
+  publicNote:
+    document
+      .getElementById('gamePublicNote')
+      .value
+      .trim(),
+
+  internalNote:
+    document
+      .getElementById('gameInternalNote')
+      .value
+      .trim(),
+
+  items
+};
 
         showMessage('gamesMessage', 'info', '正在儲存桌遊資料...');
         await apiPost('saveGame', { game, staffName: state.staffName });
