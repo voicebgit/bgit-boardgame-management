@@ -1322,7 +1322,7 @@ const importantVal =
           </div>
           <div class="reservation-meta">
             <div>會員編號：<strong>${escapeHtml(r.memberId)}</strong> ｜ 電話尾 4 位：<strong>${escapeHtml(r.contact)}</strong> ｜ 借用天數：${escapeHtml(String(r.borrowDays || 7))}天</div>
-            <div>建立時間：${escapeHtml(formatDateTime(r.createdAt))} ｜ 預計到期：${escapeHtml(formatDateOnly(r.dueDate))}</div>
+            <div>建立時間：${escapeHtml(formatDateTime(r.createdAt))} ｜ 預計到期：${escapeHtml(formatDateOnly(r.dueAt))}</div>
             ${r.borrowCode ? `<div>借用碼：<strong style="color:var(--primary);">${escapeHtml(r.borrowCode)}</strong> (有效至：${escapeHtml(formatDateTime(r.codeExpiresAt))})</div>` : ''}
             ${r.remark ? `<div>預約備註：${escapeHtml(r.remark)}</div>` : ''}
             ${r.confirmRemark ? `<div>確認備註：${escapeHtml(r.confirmRemark)}</div>` : ''}
@@ -1771,7 +1771,7 @@ async function executeDialogAction() {
         '狀態': getStatusLabel(r.status),
         '借用天數': r.borrowDays,
         '建立時間': formatDateTime(r.createdAt),
-        '預計到期': formatDateOnly(r.dueDate)
+        '預計到期': formatDateOnly(r.dueAt)
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(data);
