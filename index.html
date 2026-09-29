@@ -528,6 +528,138 @@
       font-size: 14px;
     }
 
+    /* 新增：借用規則與聲明樣式 */
+    .rules-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+      overflow: hidden;
+    }
+
+    .rules-head {
+      padding: 24px 24px 0;
+    }
+
+    .rules-head h2 {
+      font-size: 24px;
+      line-height: 1.15;
+      margin-bottom: 6px;
+      color: var(--primary-hover);
+    }
+
+    .rules-head p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .rules-body {
+      padding: 24px;
+    }
+
+    .rules-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .rule-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .rule-icon {
+      flex: 0 0 24px;
+      width: 24px;
+      height: 24px;
+      background: var(--primary-soft);
+      color: var(--primary-hover);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .rule-content {
+      flex: 1;
+    }
+
+    .rule-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .rule-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .rule-desc strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .rule-warning {
+      background: var(--amber-soft);
+      border-color: rgba(145, 96, 26, 0.14);
+    }
+
+    .rule-warning .rule-title {
+      color: var(--amber-text);
+    }
+
+    .rule-danger {
+      background: var(--pink-soft);
+      border-color: rgba(165, 59, 107, 0.14);
+    }
+
+    .rule-danger .rule-title {
+      color: var(--pink-text);
+    }
+
+    /* 新增：同意條款 checkbox 樣式 */
+    .agreement-wrap {
+      background: #f9f7f2;
+      border: 1px solid var(--border-strong);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+
+    .agreement-checkbox {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .agreement-checkbox input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .agreement-checkbox label {
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+      line-height: 1.5;
+    }
+
+    .agreement-checkbox label strong {
+      color: var(--primary-hover);
+      font-weight: 800;
+    }
+
     @media (max-width: 980px) {
       .games-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -541,11 +673,13 @@
       }
 
       .hero,
-      .section-body {
+      .section-body,
+      .rules-body {
         padding: 18px;
       }
 
-      .section-head {
+      .section-head,
+      .rules-head {
         padding: 18px 18px 0;
       }
 
@@ -590,6 +724,15 @@
       .btn-row .btn-ghost {
         min-height: 44px;
       }
+
+      .rule-item {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .rule-icon {
+        flex: 0 0 auto;
+      }
     }
   </style>
 </head>
@@ -604,7 +747,7 @@
             BG Board Game Borrowing
           </div>
 
-          <h1>BGIT桌遊借用系統</h1>
+          <h1>桌遊借用系統</h1>
 
           <p>
             先選擇桌遊並提交借用預約，再由職員盤點後提供確認代碼。
@@ -675,6 +818,84 @@
             </button>
           </div>
         </article>
+      </div>
+    </section>
+
+    <!-- 新增：借用規則與聲明區塊 -->
+    <section class="rules-section">
+      <div class="rules-head">
+        <h2>借用規則與聲明</h2>
+        <p>
+          提交預約前，請仔細閱讀以下規則。提交預約即表示您已閱讀、理解並同意遵守所有條款。
+        </p>
+      </div>
+
+      <div class="rules-body">
+        <div class="rules-list">
+          <div class="rule-item">
+            <div class="rule-icon">1</div>
+            <div class="rule-content">
+              <div class="rule-title">借用資格</div>
+              <div class="rule-desc">
+                本服務<strong>只限 6-24 歲中心會員</strong>借用。非會員或年齡不符者恕不提供服務。
+              </div>
+            </div>
+          </div>
+
+          <div class="rule-item">
+            <div class="rule-icon">2</div>
+            <div class="rule-content">
+              <div class="rule-title">愛惜公物</div>
+              <div class="rule-desc">
+                請愛惜中心桌遊及配件。<strong>如發現有損壞或遺失物品以致不能正常遊玩</strong>，則有機會被要求進行「中心服務令」；
+                如情況嚴重，或會被列入<strong>黑名單</strong>及<strong>按價進行賠償</strong>。
+              </div>
+            </div>
+          </div>
+
+          <div class="rule-item rule-warning">
+            <div class="rule-icon">3</div>
+            <div class="rule-content">
+              <div class="rule-title">使用限制</div>
+              <div class="rule-desc">
+                <strong>嚴禁使用本中心之桌遊以進行任何違法、商業活動</strong>。如有涉及相關情況，本中心不作出任何負責行為，
+                <strong>均為借用人承擔所有責任</strong>。
+              </div>
+            </div>
+          </div>
+
+          <div class="rule-item rule-danger">
+            <div class="rule-icon">4</div>
+            <div class="rule-content">
+              <div class="rule-title">物品盤點責任</div>
+              <div class="rule-desc">
+                請借用人於借用時<strong>親自盤點物品是否齊全</strong>，並於借用時的備註欄說明情況。
+                <strong>借出後如有遺失物品則視為借用人的責任</strong>，根據上面說明的明細，本中心將會保留追究的權利。
+              </div>
+            </div>
+          </div>
+
+          <div class="rule-item">
+            <div class="rule-icon">5</div>
+            <div class="rule-content">
+              <div class="rule-title">借用期限與歸還</div>
+              <div class="rule-desc">
+                每次借用最長 14 天。預約建立後 2 日內須到中心完成確認，否則系統會自動取消。
+                請按時歸還，逾期可能影響日後借用資格。
+              </div>
+            </div>
+          </div>
+
+          <div class="rule-item">
+            <div class="rule-icon">6</div>
+            <div class="rule-content">
+              <div class="rule-title">會員借用上限</div>
+              <div class="rule-desc">
+                每位會員同時間最多只可有 <strong>2 筆未完成借用</strong>（狀態為「待盤點」、「已出碼」或「借出中」）。
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -798,6 +1019,21 @@
               id="reserveRemark"
               placeholder="例如：想今日下午到場、需先確認配件等（可留空）"
             ></textarea>
+          </div>
+
+          <!-- 新增：同意條款 checkbox -->
+          <div class="agreement-wrap">
+            <label class="agreement-checkbox">
+              <input
+                type="checkbox"
+                id="agreeRules"
+                required
+              >
+              <span>
+                我已仔細閱讀並同意遵守<strong>《借用規則與聲明》</strong>的所有條款，
+                並確認本人符合<strong>6-24 歲中心會員</strong>的借用資格。
+              </span>
+            </label>
           </div>
 
           <div class="rule-box">
@@ -1726,6 +1962,15 @@
     if (reserveForm) {
       reserveForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        // 檢查是否同意規則
+        const agreeCheckbox = document.getElementById('agreeRules');
+        if (!agreeCheckbox || !agreeCheckbox.checked) {
+          showMessage('reserveMessage', 'error', '請先閱讀並同意《借用規則與聲明》的所有條款，然後勾選同意框再提交預約。');
+          agreeCheckbox?.focus();
+          return;
+        }
+
         const gameId = document.getElementById('reserveGameId').value;
         const memberId = digitsOnly(document.getElementById('reserveMemberId').value);
         const contact = digitsOnly(document.getElementById('reserveContact').value);
