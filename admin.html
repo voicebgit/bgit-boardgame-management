@@ -440,9 +440,9 @@
       gap: 10px;
     }
 
-.item-row {
-  display: grid;
-  grid-template-columns: 1.3fr .6fr 1fr .8fr auto;
+    .item-row {
+      display: grid;
+      grid-template-columns: 1.3fr .6fr 1fr .8fr auto;
       gap: 10px;
       align-items: center;
       background: #fff;
@@ -984,95 +984,87 @@
       }
     }
 
-function addItemRow(itemData = {}) {
-  const wrap = document.getElementById('itemsWrap');
+    function addItemRow(itemData = {}) {
+      const wrap = document.getElementById('itemsWrap');
 
-  const row = document.createElement('div');
+      const row = document.createElement('div');
 
-  row.className = 'item-row';
+      row.className = 'item-row';
 
-  const nameVal =
-    itemData.name || '';
+      const nameVal = itemData.name || '';
 
-const qtyVal =
-  itemData.qty !== undefined
-    ? itemData.qty
-    : (
-      itemData.count !== undefined
-        ? itemData.count
-        : 1
-    );
+      const qtyVal = itemData.qty !== undefined
+        ? itemData.qty
+        : (itemData.count !== undefined ? itemData.count : 1);
 
-const unitVal =
-  itemData.unit || itemData.note || '';
+      const unitVal = itemData.unit || itemData.note || '';
 
-const importantVal =
-  itemData.important === true;
+      const importantVal = itemData.important === true;
 
-  row.innerHTML = `
-    <div class="field">
-      <input
-        type="text"
-        class="item-name"
-        placeholder="配件名稱（例如：說明書）"
-        value="${escapeHtml(nameVal)}"
-      >
-    </div>
+      row.innerHTML = `
+        <div class="field">
+          <input
+            type="text"
+            class="item-name"
+            placeholder="配件名稱（例如：說明書）"
+            value="${escapeHtml(nameVal)}"
+          >
+        </div>
 
-    <div class="field">
-      <input
-        type="number"
-        class="item-qty"
-        placeholder="數量"
-        value="${escapeHtml(qtyVal)}"
-        min="0"
-      >
-    </div>
+        <div class="field">
+          <input
+            type="number"
+            class="item-qty"
+            placeholder="數量"
+            value="${escapeHtml(qtyVal)}"
+            min="0"
+          >
+        </div>
 
-    <div class="field">
-      <input
-        type="text"
-        class="item-unit"
-        placeholder="單位／備註（例如：張／紅棋）"
-        value="${escapeHtml(unitVal)}"
-      >
-    </div>
+        <div class="field">
+          <input
+            type="text"
+            class="item-unit"
+            placeholder="單位／備註（例如：張／紅棋）"
+            value="${escapeHtml(unitVal)}"
+          >
+        </div>
 
-    <div class="field">
-      <label
-        style="
-          display:flex;
-          align-items:center;
-          gap:8px;
-          font-weight:normal;
-        "
-      >
-        <input
-          type="checkbox"
-          class="item-important"
-          ${importantVal ? 'checked' : ''}
+        <div class="field">
+          <label
+            style="
+              display:flex;
+              align-items:center;
+              gap:8px;
+              font-weight:normal;
+            "
+          >
+            <input
+              type="checkbox"
+              class="item-important"
+              ${importantVal ? 'checked' : ''}
+            >
+            重要配件
+          </label>
+        </div>
+
+        <button
+          type="button"
+          class="btn-danger small remove-item-btn"
         >
-        重要配件
-      </label>
-    </div>
+          刪除
+        </button>
+      `;
 
-    <button
-      type="button"
-      class="btn-danger small remove-item-btn"
-    >
-      刪除
-    </button>
-  `;
+      row
+        .querySelector('.remove-item-btn')
+        .addEventListener('click', () => {
+          row.remove();
+          ensureOneItemRow();
+        });
 
-  row
-    .querySelector('.remove-item-btn')
-    .addEventListener('click', () => {
-      row.remove();
-      ensureOneItemRow();
-    });
-
-  wrap.appendChild(row);
-}
+      wrap.appendChild(row);
+    }
 
     function clearSelectedGame() {
       state.selectedGameId = '';
@@ -1100,10 +1092,19 @@ const importantVal =
 
     async function loginAdmin() {
       clearMessage('heroLoginMessage');
+
+      // 強制要求先輸入同事名稱
+      const staffName = document.getElementById('staffName').value.trim();
+      if (!staffName) {
+        showMessage('heroLoginMessage', 'error', '請先輸入同事名稱，然後再輸入管理密碼進行登入。');
+        document.getElementById('staffName').focus();
+        return;
+      }
+
       const password = document.getElementById('adminPassword').value.trim();
 
       if (!password) {
-        showMessage('heroLoginMessage', 'error', '請先輸入管理密碼。');
+        showMessage('heroLoginMessage', 'error', '請輸入管理密碼。');
         return;
       }
 
@@ -1111,7 +1112,7 @@ const importantVal =
         const json = await apiPost('adminLogin', { password });
         state.token = json.token || password;
         state.isLoggedIn = true;
-
+        state.staffName = staffName;
         document.getElementById('adminPassword').value = password;
         document.getElementById('adminApp').classList.remove('hidden');
 
@@ -1220,7 +1221,7 @@ const importantVal =
             <span class="chip count-chip">借用次數：${escapeHtml(String(game.borrowCount || 0))}</span>
           </div>
           <div class="game-mini-title">${escapeHtml(game.name || '未命名桌遊')}</div>
-          <div class="meta-line">${escapeHtml(game.gameId || '')}${game.category ? ` ・ ${escapeHtml(game.category)}` : ''}</div>
+          <div class="meta-line">${escapeHtml(game.gameId || '')}${game.category ? ` · ${escapeHtml(game.category)}` : ''}</div>
           <div class="meta-line">${escapeHtml(game.shortPlay || '暫時未有簡介')}</div>
         </article>
       `).join('');
@@ -1326,6 +1327,7 @@ const importantVal =
             ${r.borrowCode ? `<div>借用碼：<strong style="color:var(--primary);">${escapeHtml(r.borrowCode)}</strong> (有效至：${escapeHtml(formatDateTime(r.codeExpiresAt))})</div>` : ''}
             ${r.remark ? `<div>預約備註：${escapeHtml(r.remark)}</div>` : ''}
             ${r.confirmRemark ? `<div>確認備註：${escapeHtml(r.confirmRemark)}</div>` : ''}
+            ${r.confirmedBy ? `<div>出碼職員：<strong style="color:var(--primary);">${escapeHtml(r.confirmedBy)}</strong></div>` : ''}
           </div>
         </article>
       `).join('');
@@ -1405,100 +1407,104 @@ const importantVal =
       document.getElementById('actionDialog').classList.add('show');
     }
 
-async function executeDialogAction() {
-  const action = state.dialogAction;
-  const reservationId = state.dialogReservationId;
+    async function executeDialogAction() {
+      const action = state.dialogAction;
+      const reservationId = state.dialogReservationId;
 
-  const staffInput = document.getElementById('dialogStaffInput');
+      const staffInput = document.getElementById('dialogStaffInput');
 
-  if (staffInput && staffInput.value.trim()) {
-    state.staffName = staffInput.value.trim();
-    document.getElementById('staffName').value = state.staffName;
-  }
+      if (staffInput && staffInput.value.trim()) {
+        state.staffName = staffInput.value.trim();
+        document.getElementById('staffName').value = state.staffName;
+      }
 
-  try {
-    const staffName = getStaffNameRequired();
+      try {
+        const staffName = getStaffNameRequired();
 
-    if (action === 'readyCode') {
-      const result = await apiPost('generateBorrowCode', {
-        reservationId,
-        staffName
-      });
+        if (action === 'readyCode') {
+          const result = await apiPost('generateBorrowCode', {
+            reservationId,
+            staffName
+          });
 
-      const borrowCode =
-        result.reservation?.borrowCode || '';
+          const borrowCode = result.reservation?.borrowCode || '';
+          const expiresAt = result.reservation?.codeExpiresAt || '';
 
-      const expiresAt =
-        result.reservation?.codeExpiresAt || '';
+          showMessage(
+            'reservationsMessage',
+            'success',
+            `預約 ${reservationId} 已成功產生借用碼！` +
+            `${borrowCode ? `\n借用碼：${borrowCode}` : ''}` +
+            `${expiresAt ? `\n有效至：${formatDateTime(expiresAt)}` : ''}`
+          );
 
-      showMessage(
-        'reservationsMessage',
-        'success',
-        `預約 ${reservationId} 已成功產生借用碼！` +
-        `${borrowCode ? `\n借用碼：${borrowCode}` : ''}` +
-        `${expiresAt ? `\n有效至：${formatDateTime(expiresAt)}` : ''}`
-      );
+          // 自動刷新預約資料
+          await loadReservationsOnly();
 
-    } else if (action === 'returnGame') {
-      const returnNote =
-        document.getElementById('dialogReturnNote')
-          ? document.getElementById('dialogReturnNote').value.trim()
-          : '';
+        } else if (action === 'returnGame') {
+          const returnNote = document.getElementById('dialogReturnNote')
+            ? document.getElementById('dialogReturnNote').value.trim()
+            : '';
 
-      await apiPost('markReturned', {
-        reservationId,
-        staffName,
-        nextGameStatus: 'available',
-        returnNote
-      });
+          await apiPost('markReturned', {
+            reservationId,
+            staffName,
+            nextGameStatus: 'available',
+            returnNote
+          });
 
-      showMessage(
-        'reservationsMessage',
-        'success',
-        `預約 ${reservationId} 已完成歸還，桌遊已恢復為可借狀態。`
-      );
+          showMessage(
+            'reservationsMessage',
+            'success',
+            `預約 ${reservationId} 已完成歸還，桌遊已恢復為可借狀態。`
+          );
 
-    } else if (action === 'cancelRes') {
-      await apiPost('cancelReservation', {
-        reservationId,
-        staffName,
-        cancelReason: ''
-      });
+          // 自動刷新預約資料
+          await loadReservationsOnly();
 
-      showMessage(
-        'reservationsMessage',
-        'success',
-        `預約 ${reservationId} 已取消。`
-      );
+        } else if (action === 'cancelRes') {
+          await apiPost('cancelReservation', {
+            reservationId,
+            staffName,
+            cancelReason: ''
+          });
 
-    } else if (action === 'deleteRes') {
-      await apiPost('deleteReservation', {
-        reservationId,
-        staffName
-      });
+          showMessage(
+            'reservationsMessage',
+            'success',
+            `預約 ${reservationId} 已取消。`
+          );
 
-      showMessage(
-        'reservationsMessage',
-        'success',
-        `預約紀錄 ${reservationId} 已刪除。`
-      );
+          // 自動刷新預約資料
+          await loadReservationsOnly();
 
-    } else if (action === 'forceConfirm') {
-      throw new Error(
-        'Worker 尚未提供管理員強制確認功能。請使用借用碼由會員公開頁完成確認，或先在 Worker 新增 forceConfirm action。'
-      );
+        } else if (action === 'deleteRes') {
+          await apiPost('deleteReservation', {
+            reservationId,
+            staffName
+          });
+
+          showMessage(
+            'reservationsMessage',
+            'success',
+            `預約紀錄 ${reservationId} 已刪除。`
+          );
+
+          // 自動刷新預約資料
+          await loadReservationsOnly();
+
+        } else if (action === 'forceConfirm') {
+          throw new Error(
+            'Worker 尚未提供管理員強制確認功能。請使用借用碼由會員公開頁完成確認，或先在 Worker 新增 forceConfirm action。'
+          );
+        }
+
+        document.getElementById('actionDialog').classList.remove('show');
+
+      } catch (err) {
+        alert(`操作失敗：${err.message}`);
+      }
     }
-
-    document
-      .getElementById('actionDialog')
-      .classList.remove('show');
-
-    await loadAllAdminData();
-
-  } catch (err) {
-    alert(`操作失敗：${err.message}`);
-  }
-}
 
     // 事件監聽綁定
     document.getElementById('loginBtn').addEventListener('click', loginAdmin);
@@ -1556,186 +1562,72 @@ async function executeDialogAction() {
       document.getElementById('gameCoverPreview').style.backgroundImage = url ? `url('${escapeHtml(url)}')` : '';
     });
 
- document
-  .getElementById('gameForm')
-  .addEventListener('submit', async e => {
-    e.preventDefault();
+    document.getElementById('gameForm').addEventListener('submit', async e => {
+      e.preventDefault();
 
-    try {
-      const staffName =
-        getStaffNameRequired();
+      try {
+        const staffName = getStaffNameRequired();
 
-      const items = [];
+        const items = [];
 
-      document
-        .querySelectorAll('#itemsWrap .item-row')
-        .forEach(row => {
-          const nameInput =
-            row.querySelector('.item-name');
+        document.querySelectorAll('#itemsWrap .item-row').forEach(row => {
+          const nameInput = row.querySelector('.item-name');
+          const qtyInput = row.querySelector('.item-qty');
+          const unitInput = row.querySelector('.item-unit');
+          const importantInput = row.querySelector('.item-important');
 
-          const qtyInput =
-            row.querySelector('.item-qty');
+          const name = nameInput ? nameInput.value.trim() : '';
+          const qty = qtyInput ? parseInt(qtyInput.value, 10) : 0;
+          const unit = unitInput ? unitInput.value.trim() : '';
+          const important = Boolean(importantInput && importantInput.checked);
 
-          const unitInput =
-            row.querySelector('.item-unit');
-
-          const importantInput =
-            row.querySelector('.item-important');
-
-          const name =
-            nameInput
-              ? nameInput.value.trim()
-              : '';
-
-          const qty =
-            qtyInput
-              ? Number.parseInt(
-                  qtyInput.value,
-                  10
-                )
-              : 0;
-
-          const unit =
-            unitInput
-              ? unitInput.value.trim()
-              : '';
-
-          const important =
-            Boolean(
-              importantInput &&
-              importantInput.checked
-            );
-
-          if (!name) {
-            return;
-          }
+          if (!name) return;
 
           items.push({
             name,
-            qty: Number.isFinite(qty)
-              ? Math.max(0, qty)
-              : 0,
+            qty: Number.isFinite(qty) ? Math.max(0, qty) : 0,
             unit,
             important
           });
         });
 
-      const game = {
-        gameId:
-          document
-            .getElementById('gameId')
-            .value
-            .trim(),
+        const game = {
+          gameId: document.getElementById('gameId').value.trim(),
+          status: document.getElementById('gameStatus').value,
+          name: document.getElementById('gameName').value.trim(),
+          category: document.getElementById('gameCategory').value.trim(),
+          players: document.getElementById('gamePlayers').value.trim(),
+          playTime: document.getElementById('gamePlayTime').value.trim(),
+          age: document.getElementById('gameAge').value.trim(),
+          coverImageUrl: document.getElementById('gameCoverImageUrl').value.trim(),
+          youtubeUrl: document.getElementById('gameYoutubeUrl').value.trim(),
+          shortPlay: document.getElementById('gameShortPlay').value.trim(),
+          detailPlay: document.getElementById('gameDetailPlay').value.trim(),
+          publicNote: document.getElementById('gamePublicNote').value.trim(),
+          internalNote: document.getElementById('gameInternalNote').value.trim(),
+          items
+        };
 
-        status:
-          document
-            .getElementById('gameStatus')
-            .value,
+        if (!game.gameId) {
+          throw new Error('請輸入桌遊編號。');
+        }
 
-        name:
-          document
-            .getElementById('gameName')
-            .value
-            .trim(),
+        if (!game.name) {
+          throw new Error('請輸入桌遊名稱。');
+        }
 
-        category:
-          document
-            .getElementById('gameCategory')
-            .value
-            .trim(),
+        showMessage('gamesMessage', 'info', '正在儲存桌遊資料，請稍候...');
 
-        players:
-          document
-            .getElementById('gamePlayers')
-            .value
-            .trim(),
+        await apiPost('saveGame', { game, staffName });
 
-        playTime:
-          document
-            .getElementById('gamePlayTime')
-            .value
-            .trim(),
+        showMessage('gamesMessage', 'success', `桌遊「${game.name}」及配件資料已成功儲存。`);
 
-        age:
-          document
-            .getElementById('gameAge')
-            .value
-            .trim(),
+        await loadGamesOnly();
 
-        coverImageUrl:
-          document
-            .getElementById('gameCoverImageUrl')
-            .value
-            .trim(),
-
-        youtubeUrl:
-          document
-            .getElementById('gameYoutubeUrl')
-            .value
-            .trim(),
-
-        shortPlay:
-          document
-            .getElementById('gameShortPlay')
-            .value
-            .trim(),
-
-        detailPlay:
-          document
-            .getElementById('gameDetailPlay')
-            .value
-            .trim(),
-
-        publicNote:
-          document
-            .getElementById('gamePublicNote')
-            .value
-            .trim(),
-
-        internalNote:
-          document
-            .getElementById('gameInternalNote')
-            .value
-            .trim(),
-
-        items
-      };
-
-      if (!game.gameId) {
-        throw new Error('請輸入桌遊編號。');
+      } catch (err) {
+        showMessage('gamesMessage', 'error', `儲存桌遊失敗：${err.message}`);
       }
-
-      if (!game.name) {
-        throw new Error('請輸入桌遊名稱。');
-      }
-
-      showMessage(
-        'gamesMessage',
-        'info',
-        '正在儲存桌遊資料，請稍候...'
-      );
-
-      await apiPost('saveGame', {
-        game,
-        staffName
-      });
-
-      showMessage(
-        'gamesMessage',
-        'success',
-        `桌遊「${game.name}」及配件資料已成功儲存。`
-      );
-
-      await loadGamesOnly();
-
-    } catch (err) {
-      showMessage(
-        'gamesMessage',
-        'error',
-        `儲存桌遊失敗：${err.message}`
-      );
-    }
-  });
+    });
 
     // 預約清單過濾分頁
     document.querySelectorAll('#reservationTabs .tab-btn').forEach(btn => {
@@ -1767,11 +1659,12 @@ async function executeDialogAction() {
         '桌遊編號': r.gameId,
         '桌遊名稱': r.gameName,
         '會員編號': r.memberId,
-        '電話尾4位': r.contact,
+        '電話尾 4 位': r.contact,
         '狀態': getStatusLabel(r.status),
         '借用天數': r.borrowDays,
         '建立時間': formatDateTime(r.createdAt),
-        '預計到期': formatDateOnly(r.dueAt)
+        '預計到期': formatDateOnly(r.dueAt),
+        '出碼職員': r.confirmedBy || ''
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(data);
