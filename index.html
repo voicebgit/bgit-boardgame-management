@@ -1004,60 +1004,54 @@
         </div>
 
         <div>
-          <h3
-            style="font-size: 18px; margin-bottom: 8px;"
-          >
-            玩法介紹
+          <h3 style="font-size: 18px; margin-bottom: 8px;">
+            簡介
           </h3>
 
           <div
-            id="detailText"
+            id="detailShortPlay"
             class="detail-text"
           >
             —
           </div>
+
+          <div
+            id="detailPlayWrap"
+            class="hidden"
+            style="margin-top: 12px;"
+          >
+            <button
+              id="toggleDetailPlayBtn"
+              type="button"
+              class="btn-ghost"
+            >
+              顯示完整玩法介紹
+            </button>
+
+            <div
+              id="detailFullPlay"
+              class="detail-text hidden"
+              style="
+                margin-top: 12px;
+                padding: 14px;
+                background: var(--surface-2);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+              "
+            ></div>
+          </div>
         </div>
 
-      <div>
-  <h3
-    style="font-size: 18px; margin-bottom: 8px;"
-  >
-    簡介
-  </h3>
+        <div>
+          <h3 style="font-size: 18px; margin-bottom: 8px;">
+            配件清單
+          </h3>
 
-  <div
-    id="detailText"
-    class="detail-text"
-  >
-    —
-  </div>
-
-  <div
-    id="detailPlayWrap"
-    class="hidden"
-    style="margin-top: 12px;"
-  >
-    <button
-      id="toggleDetailPlayBtn"
-      type="button"
-      class="btn-ghost"
-    >
-      顯示完整玩法介紹
-    </button>
-
-    <div
-      id="detailFullPlay"
-      class="detail-text hidden"
-      style="
-        margin-top: 12px;
-        padding: 14px;
-        background: var(--surface-2);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-      "
-    ></div>
-  </div>
-</div>
+          <div
+            id="detailItems"
+            class="item-list"
+          ></div>
+        </div>
 
         <div class="btn-row">
           <a
@@ -1082,7 +1076,7 @@
     </div>
   </div>
 
- <script>
+  <script>
     const API_URL =
       'https://bgit-boardgame-management.voicebgit.workers.dev';
 
@@ -1305,7 +1299,7 @@
 
       const reserveGameIdEl = document.getElementById('reserveGameId');
       if (reserveGameIdEl) reserveGameIdEl.value = game.gameId;
-      
+
       const reserveSectionEl = document.getElementById('reserveSection');
       if (reserveSectionEl) {
         reserveSectionEl.scrollIntoView({
@@ -1354,7 +1348,7 @@
 
             <div class="meta-note">
               ${escapeHtml(game.gameId || '')}
-              ${game.category ? ` ・ ${escapeHtml(game.category)}` : ''}
+              ${game.category ? ` · ${escapeHtml(game.category)}` : ''}
             </div>
 
             <div class="game-summary">
@@ -1434,245 +1428,232 @@
     async function loadGames() {
       try {
         const res = await apiPost('listPublicGames');
-        
+
         if (!res.ok) {
           throw new Error(res.error || 'request failed');
         }
-        
+
         state.games = res.games || [];
         renderGames();
         populateGameSelect();
-        
+
         return state.games;
       } catch (error) {
         console.error('載入桌遊失敗:', error);
         showMessage('confirmMessage', 'error', `無法載入桌遊列表：${error.message}`);
       }
     }
-   
-async function getPublicGameDetail(gameId) {
-  const result = await apiPost(
-    'getPublicGameDetail',
-    { gameId }
-  );
 
-  if (!result.game) {
-    throw new Error('找不到桌遊詳情');
-  }
+    async function getPublicGameDetail(gameId) {
+      const result = await apiPost(
+        'getPublicGameDetail',
+        { gameId }
+      );
 
-  return result.game;
-}
-   
-async function openGameDetail(gameId) {
-  const basicGame = state.games.find(
-    item => item.gameId === gameId
-  );
-
-  if (!basicGame) return;
-
-  try {
-    const game = await getPublicGameDetail(gameId);
-
-    document.getElementById('detailCover').style.backgroundImage =
-      `url('${escapeHtml(game.coverImageUrl || '')}')`;
-
-    document.getElementById('detailTitle').textContent =
-      game.name || '未命名桌遊';
-
-    document.getElementById('detailText').textContent =
-      game.shortPlay || '暫時未有簡介';
-
-    const metaEl =
-      document.getElementById('detailMeta');
-
-    metaEl.innerHTML = `
-      <span class="chip status-${escapeHtml(game.status || '')}">
-        ${escapeHtml(getStatusLabel(game.status))}
-      </span>
-
-      <span class="chip count-chip">
-        編號：${escapeHtml(game.gameId || '')}
-      </span>
-
-      ${
-        game.category
-          ? `
-            <span class="chip count-chip">
-              ${escapeHtml(game.category)}
-            </span>
-          `
-          : ''
+      if (!result.game) {
+        throw new Error('找不到桌遊詳情');
       }
 
-      <span class="chip count-chip">
-        借用次數：${escapeHtml(
-          String(game.borrowCount || 0)
-        )}
-      </span>
-    `;
+      return result.game;
+    }
 
-    const detailPlayWrap =
-      document.getElementById('detailPlayWrap');
+    async function openGameDetail(gameId) {
+      const basicGame = state.games.find(
+        item => item.gameId === gameId
+      );
 
-    const detailFullPlay =
-      document.getElementById('detailFullPlay');
+      if (!basicGame) return;
 
-    const toggleDetailPlayBtn =
-      document.getElementById('toggleDetailPlayBtn');
+      try {
+        const game = await getPublicGameDetail(gameId);
 
-    const fullPlay =
-      String(game.detailPlay || '').trim();
+        document.getElementById('detailCover').style.backgroundImage =
+          `url('${escapeHtml(game.coverImageUrl || '')}')`;
 
-    detailFullPlay.classList.add('hidden');
-    detailFullPlay.textContent = fullPlay;
+        document.getElementById('detailTitle').textContent =
+          game.name || '未命名桌遊';
 
-    if (fullPlay) {
-      detailPlayWrap.classList.remove('hidden');
-      toggleDetailPlayBtn.textContent =
-        '顯示完整玩法介紹';
+        document.getElementById('detailShortPlay').textContent =
+          game.shortPlay || '暫時未有簡介';
 
-      toggleDetailPlayBtn.onclick = () => {
-        const isHidden =
-          detailFullPlay.classList.contains('hidden');
+        const metaEl =
+          document.getElementById('detailMeta');
 
-        if (isHidden) {
-          detailFullPlay.classList.remove('hidden');
-          toggleDetailPlayBtn.textContent =
-            '收起完整玩法介紹';
-        } else {
-          detailFullPlay.classList.add('hidden');
+        metaEl.innerHTML = `
+          <span class="chip status-${escapeHtml(game.status || '')}">
+            ${escapeHtml(getStatusLabel(game.status))}
+          </span>
+
+          <span class="chip count-chip">
+            編號：${escapeHtml(game.gameId || '')}
+          </span>
+
+          ${
+            game.category
+              ? `
+                <span class="chip count-chip">
+                  ${escapeHtml(game.category)}
+                </span>
+              `
+              : ''
+          }
+
+          <span class="chip count-chip">
+            借用次數：${escapeHtml(
+              String(game.borrowCount || 0)
+            )}
+          </span>
+        `;
+
+        const detailPlayWrap =
+          document.getElementById('detailPlayWrap');
+
+        const detailFullPlay =
+          document.getElementById('detailFullPlay');
+
+        const toggleDetailPlayBtn =
+          document.getElementById('toggleDetailPlayBtn');
+
+        const fullPlay =
+          String(game.detailPlay || '').trim();
+
+        detailFullPlay.classList.add('hidden');
+        detailFullPlay.textContent = fullPlay;
+
+        if (fullPlay) {
+          detailPlayWrap.classList.remove('hidden');
           toggleDetailPlayBtn.textContent =
             '顯示完整玩法介紹';
-        }
-      };
-    } else {
-      detailPlayWrap.classList.add('hidden');
-      toggleDetailPlayBtn.onclick = null;
-    }
 
-    const itemsEl =
-      document.getElementById('detailItems');
+          toggleDetailPlayBtn.onclick = () => {
+            const isHidden =
+              detailFullPlay.classList.contains('hidden');
 
-    const items = Array.isArray(game.items)
-      ? game.items
-      : [];
-
-    if (!items.length) {
-      itemsEl.innerHTML = `
-        <div
-          class="empty-state"
-          style="padding: 14px;"
-        >
-          暫時未有詳細配件清單
-        </div>
-      `;
-    } else {
-      itemsEl.innerHTML = items.map(item => {
-        const itemName =
-          String(item.name || '').trim() ||
-          '未命名配件';
-
-        const itemQty =
-          Number.isFinite(Number(item.qty))
-            ? Number(item.qty)
-            : 0;
-
-        const itemUnit =
-          String(item.unit || '').trim();
-
-        const itemImportant =
-          item.important === true;
-
-        return `
-          <div class="item-row">
-            <span class="item-key">
-              ${escapeHtml(itemName)}
-            </span>
-
-            <span>
-              數量：${escapeHtml(String(itemQty))}
-              ${itemUnit ? escapeHtml(itemUnit) : ''}
-            </span>
-
-            ${
-              itemImportant
-                ? `
-                  <span class="meta-note">
-                    （重要配件）
-                  </span>
-                `
-                : ''
+            if (isHidden) {
+              detailFullPlay.classList.remove('hidden');
+              toggleDetailPlayBtn.textContent =
+                '收起完整玩法介紹';
+            } else {
+              detailFullPlay.classList.add('hidden');
+              toggleDetailPlayBtn.textContent =
+                '顯示完整玩法介紹';
             }
-          </div>
-        `;
-      }).join('');
-    }
+          };
+        } else {
+          detailPlayWrap.classList.add('hidden');
+          toggleDetailPlayBtn.onclick = null;
+        }
 
-    const ytBtn =
-      document.getElementById('detailYoutubeBtn');
+        const itemsEl =
+          document.getElementById('detailItems');
 
-    const youtubeUrl =
-      String(game.youtubeUrl || '').trim();
+        const items = Array.isArray(game.items)
+          ? game.items
+          : [];
 
-    if (youtubeUrl) {
-      ytBtn.href = youtubeUrl;
-      ytBtn.classList.remove('hidden');
-    } else {
-      ytBtn.href = '#';
-      ytBtn.classList.add('hidden');
-    }
+        if (!items.length) {
+          itemsEl.innerHTML = `
+            <div
+              class="empty-state"
+              style="padding: 14px;"
+            >
+              暫時未有詳細配件清單
+            </div>
+          `;
+        } else {
+          itemsEl.innerHTML = items.map(item => {
+            const itemName =
+              String(item.name || '').trim() ||
+              '未命名配件';
 
-    const useBtn =
-      document.getElementById('detailUseThisBtn');
+            const itemQty =
+              Number.isFinite(Number(item.qty))
+                ? Number(item.qty)
+                : 0;
 
-    if (game.status === 'available') {
-      useBtn.classList.remove('hidden');
+            const itemUnit =
+              String(item.unit || '').trim();
 
-      useBtn.onclick = () => {
-        closeDetailModal();
-        selectGameForReservation(game.gameId);
-      };
-    } else {
-      useBtn.classList.add('hidden');
-      useBtn.onclick = null;
-    }
+            const itemImportant =
+              item.important === true;
 
-    document
-      .getElementById('detailOverlay')
-      .classList.add('show');
+            return `
+              <div class="item-row">
+                <span class="item-key">
+                  ${escapeHtml(itemName)}
+                </span>
 
-  } catch (error) {
-    console.error(
-      '載入桌遊詳情失敗：',
-      error
-    );
+                <span>
+                  數量：${escapeHtml(String(itemQty))}
+                  ${itemUnit ? escapeHtml(itemUnit) : ''}
+                </span>
 
-    showMessage(
-      'confirmMessage',
-      'error',
-      `無法載入桌遊詳情：${error.message}`
-    );
-  }
-}
+                ${
+                  itemImportant
+                    ? `
+                      <span class="meta-note">
+                        （重要配件）
+                      </span>
+                    `
+                    : ''
+                }
+              </div>
+            `;
+          }).join('');
+        }
 
-function closeDetailModal() {
-  document
-    .getElementById('detailOverlay')
-    .classList
-    .remove('show');
-}
+        const ytBtn =
+          document.getElementById('detailYoutubeBtn');
 
-      const ytBtn = document.getElementById('detailYoutubeBtn');
-      if (game.youtubeUrl) {
-        ytBtn.href = game.youtubeUrl;
-        ytBtn.classList.remove('hidden');
-      } else {
-        ytBtn.href = '#';
-        ytBtn.classList.add('hidden');
+        const youtubeUrl =
+          String(game.youtubeUrl || '').trim();
+
+        if (youtubeUrl) {
+          ytBtn.href = youtubeUrl;
+          ytBtn.classList.remove('hidden');
+        } else {
+          ytBtn.href = '#';
+          ytBtn.classList.add('hidden');
+        }
+
+        const useBtn =
+          document.getElementById('detailUseThisBtn');
+
+        if (game.status === 'available') {
+          useBtn.classList.remove('hidden');
+
+          useBtn.onclick = () => {
+            closeDetailModal();
+            selectGameForReservation(game.gameId);
+          };
+        } else {
+          useBtn.classList.add('hidden');
+          useBtn.onclick = null;
+        }
+
+        document
+          .getElementById('detailOverlay')
+          .classList.add('show');
+
+      } catch (error) {
+        console.error(
+          '載入桌遊詳情失敗：',
+          error
+        );
+
+        showMessage(
+          'confirmMessage',
+          'error',
+          `無法載入桌遊詳情：${error.message}`
+        );
       }
+    }
 
     function closeDetailModal() {
-      document.getElementById('detailOverlay').classList.remove('show');
+      document
+        .getElementById('detailOverlay')
+        .classList
+        .remove('show');
     }
 
     // 事件監聽綁定
@@ -1766,16 +1747,16 @@ function closeDetailModal() {
             remark
           });
 
-const reservation = json.reservation || {};
-const resId = reservation.reservationId || '';
+          const reservation = json.reservation || {};
+          const resId = reservation.reservationId || '';
 
-if (!resId) {
-  throw new Error('Worker 沒有回傳預約編號');
-}
+          if (!resId) {
+            throw new Error('Worker 沒有回傳預約編號');
+          }
 
-state.lastReservationId = resId;
+          state.lastReservationId = resId;
 
-document.getElementById('confirmReservationId').value = resId;
+          document.getElementById('confirmReservationId').value = resId;
 
           showMessage(
             'reserveMessage',
@@ -1795,91 +1776,91 @@ document.getElementById('confirmReservationId').value = resId;
     }
 
     // 確認借用表單
-   const confirmForm = document.getElementById('confirmForm');
+    const confirmForm = document.getElementById('confirmForm');
 
-if (confirmForm) {
-  confirmForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    if (confirmForm) {
+      confirmForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    const reservationId =
-      normalizeReservationInput(
-        document.getElementById('confirmReservationId').value
-      );
+        const reservationId =
+          normalizeReservationInput(
+            document.getElementById('confirmReservationId').value
+          );
 
-    const borrowCode =
-      digitsOnly(
-        document.getElementById('confirmBorrowCode').value
-      );
+        const borrowCode =
+          digitsOnly(
+            document.getElementById('confirmBorrowCode').value
+          );
 
-    const contact =
-      digitsOnly(
-        document.getElementById('confirmSignature').value
-      );
+        const contact =
+          digitsOnly(
+            document.getElementById('confirmSignature').value
+          );
 
-    const confirmRemark =
-      document.getElementById('confirmRemark').value.trim();
+        const confirmRemark =
+          document.getElementById('confirmRemark').value.trim();
 
-    if (
-      !reservationId ||
-      borrowCode.length !== 6 ||
-      contact.length !== 4
-    ) {
-      showMessage(
-        'confirmMessage',
-        'error',
-        '請填寫正確的預約編號、6 位數借用碼及電話尾 4 位。'
-      );
-      return;
-    }
-
-    try {
-      showMessage(
-        'confirmMessage',
-        'info',
-        '正在確認借用，請稍候...'
-      );
-
-      const result = await apiPost(
-        'confirmBorrowByCode',
-        {
-          reservationId,
-          borrowCode,
-          contact,
-          confirmRemark
+        if (
+          !reservationId ||
+          borrowCode.length !== 6 ||
+          contact.length !== 4
+        ) {
+          showMessage(
+            'confirmMessage',
+            'error',
+            '請填寫正確的預約編號、6 位數借用碼及電話尾 4 位。'
+          );
+          return;
         }
-      );
 
-      const reservation =
-        result.reservation || {};
+        try {
+          showMessage(
+            'confirmMessage',
+            'info',
+            '正在確認借用，請稍候...'
+          );
 
-      showMessage(
-        'confirmMessage',
-        'success',
-        `借用確認成功！\n預約編號：${
-          reservation.reservationId || reservationId
-        }\n請取走桌遊並按時歸還。`
-      );
+          const result = await apiPost(
+            'confirmBorrowByCode',
+            {
+              reservationId,
+              borrowCode,
+              contact,
+              confirmRemark
+            }
+          );
 
-      document.getElementById('confirmForm').reset();
+          const reservation =
+            result.reservation || {};
 
-      document
-        .getElementById('reservationStatusPanel')
-        .classList.add('hidden');
+          showMessage(
+            'confirmMessage',
+            'success',
+            `借用確認成功！\n預約編號：${
+              reservation.reservationId || reservationId
+            }\n請取走桌遊並按時歸還。`
+          );
 
-      await loadGames();
+          document.getElementById('confirmForm').reset();
 
-    } catch (err) {
-      const userMsg =
-        mapConfirmBorrowError(err.message);
+          document
+            .getElementById('reservationStatusPanel')
+            .classList.add('hidden');
 
-      showMessage(
-        'confirmMessage',
-        'error',
-        userMsg
-      );
+          await loadGames();
+
+        } catch (err) {
+          const userMsg =
+            mapConfirmBorrowError(err.message);
+
+          showMessage(
+            'confirmMessage',
+            'error',
+            userMsg
+          );
+        }
+      });
     }
-  });
-}
 
     // 查詢預約狀態
     const checkStatusBtn = document.getElementById('checkStatusBtn');
@@ -1900,30 +1881,30 @@ if (confirmForm) {
 
         try {
           showMessage('confirmMessage', 'info', '正在查詢預約狀態...');
-const json = await apiPost(
-  'getReservationPublicStatus',
-  {
-    reservationId
-  }
-);
+          const json = await apiPost(
+            'getReservationPublicStatus',
+            {
+              reservationId
+            }
+          );
           const res = json.reservation || {};
 
           const panel = document.getElementById('reservationStatusPanel');
           panel.classList.remove('hidden');
-panel.innerHTML = `
-  <div class="status-title">
-    預約狀態：${escapeHtml(getStatusLabel(res.status))}
-  </div>
+          panel.innerHTML = `
+            <div class="status-title">
+              預約狀態：${escapeHtml(getStatusLabel(res.status))}
+            </div>
 
-  <div class="status-text">
-    預約編號：${escapeHtml(res.reservationId || reservationId)}<br>
-    桌遊名稱：${escapeHtml(res.gameName || res.gameId || '—')}<br>
-    會員編號：${escapeHtml(res.memberIdMasked || '已隱藏')}<br>
-    借用天數：${escapeHtml(String(res.borrowDays || 7))} 天<br>
-    建立時間：${escapeHtml(formatDateTime(res.createdAt))}<br>
-    預計到期：${escapeHtml(formatDateOnly(res.dueAt))}
-  </div>
-`;
+            <div class="status-text">
+              預約編號：${escapeHtml(res.reservationId || reservationId)}<br>
+              桌遊名稱：${escapeHtml(res.gameName || res.gameId || '—')}<br>
+              會員編號：${escapeHtml(res.memberIdMasked || '已隱藏')}<br>
+              借用天數：${escapeHtml(String(res.borrowDays || 7))} 天<br>
+              建立時間：${escapeHtml(formatDateTime(res.createdAt))}<br>
+              預計到期：${escapeHtml(formatDateOnly(res.dueAt))}
+            </div>
+          `;
 
           clearMessage('confirmMessage');
         } catch (err) {
@@ -1933,6 +1914,7 @@ panel.innerHTML = `
         }
       });
     }
+
     // 初始載入
     loadGames();
     updateBorrowDuePreview();
