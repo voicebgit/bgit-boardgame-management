@@ -504,6 +504,45 @@
       font-size: 14px;
     }
 
+    .detail-info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .detail-info-card {
+      display: grid;
+      gap: 3px;
+      padding: 11px 12px;
+      background: #f7f5ef;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      font-size: 14px;
+    }
+
+    .detail-info-label {
+      color: var(--text-soft);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .item-row.important-item {
+      background: var(--amber-soft);
+      border-color: rgba(145, 96, 26, 0.35);
+      box-shadow: 0 0 0 2px rgba(145, 96, 26, 0.08);
+    }
+
+    .item-row.important-item .item-key {
+      background: var(--amber-text);
+      color: #fff;
+    }
+
+    .important-label {
+      color: var(--amber-text);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
     .item-key {
       display: inline-flex;
       align-items: center;
@@ -717,7 +756,8 @@
 
       .top-actions,
       .games-grid,
-      .two-col {
+      .two-col,
+      .detail-info-grid {
         grid-template-columns: 1fr;
       }
 
@@ -1325,6 +1365,30 @@
           </div>
 
           <div
+            id="detailInfoWrap"
+            class="detail-info-grid hidden"
+            style="margin-top: 12px;"
+          >
+            <div class="detail-info-card">
+              <span class="detail-info-label">遊玩人數</span>
+              <span id="detailPlayers">—</span>
+            </div>
+            <div class="detail-info-card">
+              <span class="detail-info-label">遊玩時間</span>
+              <span id="detailPlayTime">—</span>
+            </div>
+            <div class="detail-info-card">
+              <span class="detail-info-label">建議年齡</span>
+              <span id="detailAge">—</span>
+            </div>
+          </div>
+
+          <div id="detailPublicNoteWrap" class="hidden" style="margin-top: 12px;">
+            <h4 style="font-size: 16px; margin-bottom: 6px; color: var(--primary-hover);">公開備註</h4>
+            <div id="detailPublicNote" class="detail-text" style="background: var(--primary-soft); padding: 12px; border-radius: 12px;"></div>
+          </div>
+
+          <div
             id="detailPublicNoteWrap"
             class="hidden"
             style="margin-top: 12px;"
@@ -1674,6 +1738,7 @@
             <div class="meta-note">
               ${escapeHtml(game.gameId || '')}
               ${game.category ? ` · ${escapeHtml(game.category)}` : ''}
+              ${game.age ? ` · 建議年齡：${escapeHtml(game.age)}` : ''}
             </div>
 
             <div class="game-summary">
@@ -1796,6 +1861,28 @@
         document.getElementById('detailShortPlay').textContent =
           game.shortPlay || '暫時未有簡介';
 
+        const detailInfoWrap = document.getElementById('detailInfoWrap');
+        const hasDetailInfo = game.players || game.playTime || game.age;
+        if (hasDetailInfo) {
+          document.getElementById('detailPlayers').textContent = game.players || '—';
+          document.getElementById('detailPlayTime').textContent = game.playTime || '—';
+          document.getElementById('detailAge').textContent = game.age || '—';
+          detailInfoWrap.classList.remove('hidden');
+        } else {
+          detailInfoWrap.classList.add('hidden');
+        }
+
+        const publicNote = String(game.publicNote || '').trim();
+        const publicNoteWrap = document.getElementById('detailPublicNoteWrap');
+        const publicNoteEl = document.getElementById('detailPublicNote');
+        if (publicNote) {
+          publicNoteEl.textContent = publicNote;
+          publicNoteWrap.classList.remove('hidden');
+        } else {
+          publicNoteEl.textContent = '';
+          publicNoteWrap.classList.add('hidden');
+        }
+
         // 顯示公開備註
         const publicNote = String(game.publicNote || '').trim();
         const publicNoteWrap = document.getElementById('detailPublicNoteWrap');
@@ -1911,7 +1998,7 @@
               item.important === true;
 
             return `
-              <div class="item-row">
+              <div class="item-row ${itemImportant ? 'important-item' : ''}">
                 <span class="item-key">
                   ${escapeHtml(itemName)}
                 </span>
@@ -1924,9 +2011,7 @@
                 ${
                   itemImportant
                     ? `
-                      <span class="meta-note">
-                        （重要配件）
-                      </span>
+                      <span class="important-label">⚠ 重要配件，請仔細檢查</span>
                     `
                     : ''
                 }
