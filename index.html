@@ -212,6 +212,18 @@
       background: #f4fbfa;
     }
 
+    .rules-link {
+      color: var(--primary-hover);
+      text-decoration: underline;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .rules-link:hover {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
     .section-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -652,7 +664,6 @@
       font-weight: 800;
     }
 
-    /* 新增：查看規則按鈕樣式 */
     .view-rules-btn {
       appearance: none;
       border: 1px solid var(--border-strong);
@@ -933,7 +944,7 @@
               <div class="rule-title">借用期限與歸還</div>
               <div class="rule-desc">
                 每次借用最長 14 天。預約建立後 2 日內須到中心完成確認，否則系統會自動取消。
-                請按時歸還，逾期可能影響日後 <strong>借用資格</strong>。
+                請按時歸還，逾期可能影響日後 <strong>借用資格</strong> 。
               </div>
             </div>
           </div>
@@ -1116,7 +1127,7 @@
                 required
               >
               <span>
-                我已仔細閱讀並同意遵守<strong>《借用規則與聲明》</strong>的所有條款，
+                我已仔細閱讀並同意遵守<a href="#rulesSection" class="rules-link"><strong>《借用規則與聲明》</strong></a>的所有條款，
                 並確認本人符合<strong>6-24 歲中心會員</strong>的借用資格。
               </span>
             </label>
@@ -1311,6 +1322,21 @@
             class="detail-text"
           >
             —
+          </div>
+
+          <div
+            id="detailPublicNoteWrap"
+            class="hidden"
+            style="margin-top: 12px;"
+          >
+            <h4 style="font-size: 16px; margin-bottom: 6px; color: var(--primary-hover);">
+              公開備註
+            </h4>
+            <div
+              id="detailPublicNote"
+              class="detail-text"
+              style="background: var(--primary-soft); padding: 12px; border-radius: 12px;"
+            ></div>
           </div>
 
           <div
@@ -1770,6 +1796,19 @@
         document.getElementById('detailShortPlay').textContent =
           game.shortPlay || '暫時未有簡介';
 
+        // 顯示公開備註
+        const publicNote = String(game.publicNote || '').trim();
+        const publicNoteWrap = document.getElementById('detailPublicNoteWrap');
+        const publicNoteEl = document.getElementById('detailPublicNote');
+
+        if (publicNote) {
+          publicNoteEl.textContent = publicNote;
+          publicNoteWrap.classList.remove('hidden');
+        } else {
+          publicNoteWrap.classList.add('hidden');
+          publicNoteEl.textContent = '';
+        }
+
         const metaEl =
           document.getElementById('detailMeta');
 
@@ -2023,6 +2062,20 @@
         }
       });
     }
+
+    // 讓《借用規則與聲明》連結可以平滑滾動到規則區域
+    document.querySelectorAll('.rules-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const rulesSection = document.getElementById('rulesSection');
+        if (rulesSection) {
+          rulesSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
 
     const reloadGamesBtn = document.getElementById('reloadGamesBtn');
     if (reloadGamesBtn) {
