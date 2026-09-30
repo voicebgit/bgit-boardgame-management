@@ -76,6 +76,30 @@
       flex-wrap: wrap;
     }
 
+    .hero-logo-wrap {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .hero-logo {
+      width: 200px;
+      max-width: 28vw;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .hero-logo-swd {
+      width: 120px;
+      max-width: 18vw;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
     #heroIntro {
       flex: 1 1 620px;
     }
@@ -612,6 +636,16 @@
       .staff-panel {
         min-width: 100%;
       }
+
+      .hero-logo {
+        width: 110px;
+        max-width: 40vw;
+      }
+
+      .hero-logo-swd {
+        width: 80px;
+        max-width: 30vw;
+      }
     }
   </style>
 </head>
@@ -625,6 +659,19 @@
           <p>
             用於管理桌遊資料、查看會員預約、產生借用碼、取消或刪除紀錄，以及辦理歸還。
           </p>
+        </div>
+
+        <div class="hero-logo-wrap">
+          <img
+            src="./bgit-logo.jpg"
+            alt="中心 Logo"
+            class="hero-logo"
+          >
+          <img
+            src="./社會福利署資助服務標誌 (白底).jpg"
+            alt="社會福利署資助服務標誌"
+            class="hero-logo-swd"
+          >
         </div>
 
         <div class="staff-panel" id="staffPanel">
@@ -986,82 +1033,37 @@
 
     function addItemRow(itemData = {}) {
       const wrap = document.getElementById('itemsWrap');
-
       const row = document.createElement('div');
-
       row.className = 'item-row';
 
       const nameVal = itemData.name || '';
-
-      const qtyVal = itemData.qty !== undefined
-        ? itemData.qty
-        : (itemData.count !== undefined ? itemData.count : 1);
-
+      const qtyVal = itemData.qty !== undefined ? itemData.qty : (itemData.count !== undefined ? itemData.count : 1);
       const unitVal = itemData.unit || itemData.note || '';
-
       const importantVal = itemData.important === true;
 
       row.innerHTML = `
         <div class="field">
-          <input
-            type="text"
-            class="item-name"
-            placeholder="配件名稱（例如：說明書）"
-            value="${escapeHtml(nameVal)}"
-          >
+          <input type="text" class="item-name" placeholder="配件名稱（例如：說明書）" value="${escapeHtml(nameVal)}">
         </div>
-
         <div class="field">
-          <input
-            type="number"
-            class="item-qty"
-            placeholder="數量"
-            value="${escapeHtml(qtyVal)}"
-            min="0"
-          >
+          <input type="number" class="item-qty" placeholder="數量" value="${escapeHtml(qtyVal)}" min="0">
         </div>
-
         <div class="field">
-          <input
-            type="text"
-            class="item-unit"
-            placeholder="單位／備註（例如：張／紅棋）"
-            value="${escapeHtml(unitVal)}"
-          >
+          <input type="text" class="item-unit" placeholder="單位／備註（例如：張／紅棋）" value="${escapeHtml(unitVal)}">
         </div>
-
         <div class="field">
-          <label
-            style="
-              display:flex;
-              align-items:center;
-              gap:8px;
-              font-weight:normal;
-            "
-          >
-            <input
-              type="checkbox"
-              class="item-important"
-              ${importantVal ? 'checked' : ''}
-            >
+          <label style="display:flex;align-items:center;gap:8px;font-weight:normal;">
+            <input type="checkbox" class="item-important" ${importantVal ? 'checked' : ''}>
             重要配件
           </label>
         </div>
-
-        <button
-          type="button"
-          class="btn-danger small remove-item-btn"
-        >
-          刪除
-        </button>
+        <button type="button" class="btn-danger small remove-item-btn">刪除</button>
       `;
 
-      row
-        .querySelector('.remove-item-btn')
-        .addEventListener('click', () => {
-          row.remove();
-          ensureOneItemRow();
-        });
+      row.querySelector('.remove-item-btn').addEventListener('click', () => {
+        row.remove();
+        ensureOneItemRow();
+      });
 
       wrap.appendChild(row);
     }
@@ -1092,19 +1094,10 @@
 
     async function loginAdmin() {
       clearMessage('heroLoginMessage');
-
-      // 強制要求先輸入同事名稱
-      const staffName = document.getElementById('staffName').value.trim();
-      if (!staffName) {
-        showMessage('heroLoginMessage', 'error', '請先輸入同事名稱，然後再輸入管理密碼進行登入。');
-        document.getElementById('staffName').focus();
-        return;
-      }
-
       const password = document.getElementById('adminPassword').value.trim();
 
       if (!password) {
-        showMessage('heroLoginMessage', 'error', '請輸入管理密碼。');
+        showMessage('heroLoginMessage', 'error', '請先輸入管理密碼。');
         return;
       }
 
@@ -1112,10 +1105,8 @@
         const json = await apiPost('adminLogin', { password });
         state.token = json.token || password;
         state.isLoggedIn = true;
-        state.staffName = staffName;
         document.getElementById('adminPassword').value = password;
         document.getElementById('adminApp').classList.remove('hidden');
-
         applyLoggedInLayout();
         showMessage('heroLoginMessage', 'success', '已登入成功，正在載入資料。');
         await loadAllAdminData();
@@ -1221,7 +1212,7 @@
             <span class="chip count-chip">借用次數：${escapeHtml(String(game.borrowCount || 0))}</span>
           </div>
           <div class="game-mini-title">${escapeHtml(game.name || '未命名桌遊')}</div>
-          <div class="meta-line">${escapeHtml(game.gameId || '')}${game.category ? ` · ${escapeHtml(game.category)}` : ''}</div>
+          <div class="meta-line">${escapeHtml(game.gameId || '')}${game.category ? ` ・ ${escapeHtml(game.category)}` : ''}</div>
           <div class="meta-line">${escapeHtml(game.shortPlay || '暫時未有簡介')}</div>
         </article>
       `).join('');
@@ -1327,7 +1318,6 @@
             ${r.borrowCode ? `<div>借用碼：<strong style="color:var(--primary);">${escapeHtml(r.borrowCode)}</strong> (有效至：${escapeHtml(formatDateTime(r.codeExpiresAt))})</div>` : ''}
             ${r.remark ? `<div>預約備註：${escapeHtml(r.remark)}</div>` : ''}
             ${r.confirmRemark ? `<div>確認備註：${escapeHtml(r.confirmRemark)}</div>` : ''}
-            ${r.confirmedBy ? `<div>出碼職員：<strong style="color:var(--primary);">${escapeHtml(r.confirmedBy)}</strong></div>` : ''}
           </div>
         </article>
       `).join('');
@@ -1438,9 +1428,6 @@
             `${expiresAt ? `\n有效至：${formatDateTime(expiresAt)}` : ''}`
           );
 
-          // 自動刷新預約資料
-          await loadReservationsOnly();
-
         } else if (action === 'returnGame') {
           const returnNote = document.getElementById('dialogReturnNote')
             ? document.getElementById('dialogReturnNote').value.trim()
@@ -1459,9 +1446,6 @@
             `預約 ${reservationId} 已完成歸還，桌遊已恢復為可借狀態。`
           );
 
-          // 自動刷新預約資料
-          await loadReservationsOnly();
-
         } else if (action === 'cancelRes') {
           await apiPost('cancelReservation', {
             reservationId,
@@ -1475,9 +1459,6 @@
             `預約 ${reservationId} 已取消。`
           );
 
-          // 自動刷新預約資料
-          await loadReservationsOnly();
-
         } else if (action === 'deleteRes') {
           await apiPost('deleteReservation', {
             reservationId,
@@ -1490,9 +1471,6 @@
             `預約紀錄 ${reservationId} 已刪除。`
           );
 
-          // 自動刷新預約資料
-          await loadReservationsOnly();
-
         } else if (action === 'forceConfirm') {
           throw new Error(
             'Worker 尚未提供管理員強制確認功能。請使用借用碼由會員公開頁完成確認，或先在 Worker 新增 forceConfirm action。'
@@ -1500,6 +1478,7 @@
         }
 
         document.getElementById('actionDialog').classList.remove('show');
+        await loadAllAdminData();
 
       } catch (err) {
         alert(`操作失敗：${err.message}`);
@@ -1569,7 +1548,6 @@
         const staffName = getStaffNameRequired();
 
         const items = [];
-
         document.querySelectorAll('#itemsWrap .item-row').forEach(row => {
           const nameInput = row.querySelector('.item-name');
           const qtyInput = row.querySelector('.item-qty');
@@ -1663,8 +1641,7 @@
         '狀態': getStatusLabel(r.status),
         '借用天數': r.borrowDays,
         '建立時間': formatDateTime(r.createdAt),
-        '預計到期': formatDateOnly(r.dueAt),
-        '出碼職員': r.confirmedBy || ''
+        '預計到期': formatDateOnly(r.dueAt)
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(data);
