@@ -523,11 +523,19 @@
       border: 1px solid rgba(1, 105, 111, 0.12);
     }
 
-    .message-success {
-      background: var(--green-soft);
-      color: var(--green-text);
-      border: 1px solid rgba(44, 114, 70, 0.14);
-    }
+.message-success {
+  background: var(--green-soft);
+  color: var(--green-text);
+  border: 1px solid rgba(44, 114, 70, 0.14);
+}
+
+.borrow-success-message {
+  display: block;
+  margin-bottom: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.8;
+}
 
     .message-error {
       background: var(--pink-soft);
@@ -3454,15 +3462,6 @@
               'hidden'
             );
 
-            const confirmSection =
-              document.getElementById(
-                'confirmSection'
-              );
-
-            confirmSection.classList.remove(
-              'hidden'
-            );
-
             confirmSection.scrollIntoView({
               behavior: 'smooth',
               block: 'start'
@@ -3549,38 +3548,55 @@
                 }
               );
 
-            const reservation =
-              result.reservation ||
-              {};
+const reservation =
+  result.reservation || {};
 
-            showMessage(
-              'confirmMessage',
-              'success',
-              `借用確認成功！\n預約編號：${
-                reservation.reservationId ||
-                reservationId
-              }\n請取走桌遊並按時歸還。`
-            );
+const returnedReservationId =
+  reservation.reservationId ||
+  reservationId;
 
-            document.getElementById(
-              'confirmForm'
-            ).reset();
+const returnedGameName =
+  reservation.gameName ||
+  '所選桌遊';
 
-            document.getElementById(
-              'confirmSection'
-            ).classList.add(
-              'hidden'
-            );
+const dueDate =
+  formatDateOnly(
+    reservation.dueAt
+  );
 
-            await loadGames();
+const confirmMessage =
+  document.getElementById(
+    'confirmMessage'
+  );
 
-            document.getElementById(
-              'gamesSection'
-            ).scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
-          } catch (error) {
+if (confirmMessage) {
+  confirmMessage.className =
+    'message-box show message-success borrow-success-message';
+
+  confirmMessage.textContent =
+    `已完成借用確認！\n` +
+    `桌遊：${returnedGameName}\n` +
+    `預約編號：${returnedReservationId}\n` +
+    `請於 ${dueDate} 前歸還中心。\n` +
+    `請妥善保管桌遊及所有配件。`;
+}
+
+confirmForm.reset();
+
+await loadGames();
+
+const gamesSection =
+  document.getElementById(
+    'gamesSection'
+  );
+
+if (gamesSection) {
+  gamesSection.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+          catch (error) {
             showMessage(
               'confirmMessage',
               'error',
