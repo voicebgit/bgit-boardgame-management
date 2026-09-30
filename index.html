@@ -2,17 +2,14 @@
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BG 桌遊借用系統</title>
 
   <style>
     :root {
-      --surface: #ffffff;
+      --surface: #fff;
       --surface-2: #fbfaf7;
-      --border: rgba(40, 37, 29, 0.10);
+      --border: rgba(40, 37, 29, 0.1);
       --border-strong: rgba(40, 37, 29, 0.18);
       --text: #27241d;
       --text-muted: #706d66;
@@ -20,15 +17,15 @@
       --primary: #01696f;
       --primary-hover: #0d4f54;
       --primary-soft: #d8ebe9;
-      --blue-soft: #e4eff8;
-      --blue-text: #285f8f;
       --green-soft: #e0f2e6;
       --green-text: #2c7246;
+      --blue-soft: #e4eff8;
+      --blue-text: #285f8f;
       --amber-soft: #f9ecd9;
       --amber-text: #91601a;
       --pink-soft: #f9e2ea;
       --pink-text: #a53b6b;
-      --shadow: 0 18px 40px rgba(18, 16, 12, 0.10);
+      --shadow: 0 18px 40px rgba(18, 16, 12, 0.1);
       --radius-pill: 999px;
     }
 
@@ -72,11 +69,16 @@
       padding: 26px 0 46px;
     }
 
-    .hero {
+    .hero,
+    .section-card,
+    .rules-section {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 32px;
       box-shadow: var(--shadow);
+    }
+
+    .hero {
+      border-radius: 32px;
       padding: 28px;
       margin-bottom: 22px;
     }
@@ -97,9 +99,8 @@
     .hero-logo-wrap {
       flex: 0 0 auto;
       display: flex;
-      justify-content: flex-end;
-      align-items: flex-start;
       gap: 16px;
+      align-items: flex-start;
     }
 
     .hero-logo,
@@ -170,72 +171,9 @@
       font-size: 14px;
     }
 
-    .btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .btn,
-    .btn-secondary,
-    .btn-ghost {
-      appearance: none;
-      border-radius: var(--radius-pill);
-      padding: 11px 16px;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: 0.18s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn {
-      border: none;
-      background: var(--primary);
-      color: #fff;
-    }
-
-    .btn:hover {
-      background: var(--primary-hover);
-    }
-
-    .btn-secondary {
-      background: #f3f1eb;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      background: #eae7df;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--primary-hover);
-      border: 1px solid rgba(1, 105, 111, 0.18);
-    }
-
-    .btn-ghost:hover {
-      background: #f4fbfa;
-    }
-
-    .rules-link {
-      color: var(--primary-hover);
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
     .section-card,
     .rules-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
       border-radius: 28px;
-      box-shadow: var(--shadow);
       overflow: hidden;
       margin-bottom: 22px;
     }
@@ -265,292 +203,6 @@
     .section-body,
     .rules-body {
       padding: 24px;
-    }
-
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-    }
-
-    .game-card {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      overflow: hidden;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .game-thumb {
-      position: relative;
-      aspect-ratio: 3 / 4;
-      background-color: #ece8df;
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      border-bottom: 1px solid var(--border);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-    }
-
-    .game-thumb.image-missing {
-      background: linear-gradient(
-        135deg,
-        #eee8dc 0%,
-        #ddd5c6 100%
-      );
-    }
-
-    .image-placeholder {
-      display: none;
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 700;
-      background: rgba(255, 255, 255, 0.72);
-      border-radius: var(--radius-pill);
-      padding: 8px 12px;
-    }
-
-    .game-thumb.image-missing .image-placeholder {
-      display: inline-flex;
-    }
-
-    .game-content {
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .game-content > * {
-      flex: 0 0 auto;
-    }
-
-    .game-title {
-      font-size: 20px;
-      line-height: 1.2;
-      font-weight: 800;
-      overflow-wrap: anywhere;
-      margin-top: 10px;
-    }
-
-    .game-info-line {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-soft);
-      font-size: 13px;
-      line-height: 1.4;
-      overflow-wrap: anywhere;
-      margin-top: 8px;
-    }
-
-    .info-separator {
-      color: var(--text-soft);
-      font-weight: 800;
-    }
-
-    .game-age-badge {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      border-radius: var(--radius-pill);
-      padding: 6px 11px;
-      background: var(--primary-soft);
-      color: var(--primary-hover);
-      font-size: 12px;
-      font-weight: 800;
-      margin-top: 8px;
-    }
-
-    .game-age-badge.is-empty {
-      background: #efede7;
-      color: var(--text-soft);
-      font-weight: 700;
-    }
-
-    .game-summary {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      height: calc(1.6em * 3);
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-      line-clamp: 3;
-      overflow: hidden;
-      overflow-wrap: anywhere;
-      margin-top: 10px;
-      position: relative;
-    }
-
-    .game-summary.is-empty {
-      color: var(--text-soft);
-    }
-
-    .game-actions {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: auto;
-      padding-top: 16px;
-      align-items: stretch;
-    }
-
-    .game-actions .btn,
-    .game-actions .btn-secondary,
-    .game-actions .btn-ghost {
-      width: 100%;
-      min-height: 44px;
-      white-space: nowrap;
-    }
-
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      border-radius: var(--radius-pill);
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-    }
-
-    .status-available {
-      background: var(--green-soft);
-      color: var(--green-text);
-    }
-
-    .status-reserved {
-      background: var(--blue-soft);
-      color: var(--blue-text);
-    }
-
-    .status-borrowed {
-      background: var(--amber-soft);
-      color: var(--amber-text);
-    }
-
-    .status-maintenance,
-    .status-inactive,
-    .status-cancelled {
-      background: var(--pink-soft);
-      color: var(--pink-text);
-    }
-
-    .status-pending,
-    .status-code_ready,
-    .status-returned,
-    .count-chip {
-      background: #efede7;
-      color: var(--text-muted);
-    }
-
-    .form-grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    .field {
-      display: grid;
-      gap: 6px;
-    }
-
-    .field label {
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .field input,
-    .field select,
-    .field textarea {
-      width: 100%;
-      border-radius: 14px;
-      border: 1px solid var(--border-strong);
-      background: #fff;
-      color: var(--text);
-      font-size: 14px;
-      padding: 12px 14px;
-      outline: none;
-    }
-
-    .field textarea {
-      resize: vertical;
-      min-height: 104px;
-    }
-
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(1, 105, 111, 0.08);
-    }
-
-    .two-col {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .message-box {
-      border-radius: 18px;
-      padding: 14px 16px;
-      font-size: 14px;
-      display: none;
-      white-space: pre-line;
-    }
-
-    .message-box.show {
-      display: block;
-    }
-
-    .message-info {
-      background: #eef5f5;
-      color: #20555a;
-      border: 1px solid rgba(1, 105, 111, 0.12);
-    }
-
-.message-success {
-  background: var(--green-soft);
-  color: var(--green-text);
-  border: 1px solid rgba(44, 114, 70, 0.14);
-}
-
-.borrow-success-message {
-  display: block;
-  margin-bottom: 14px;
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1.8;
-}
-
-    .message-error {
-      background: var(--pink-soft);
-      color: var(--pink-text);
-      border: 1px solid rgba(165, 59, 107, 0.14);
-    }
-
-    .message-warning {
-      background: var(--amber-soft);
-      color: var(--amber-text);
-      border: 1px solid rgba(145, 96, 26, 0.14);
-    }
-
-    .hidden {
-      display: none !important;
     }
 
     .rules-head {
@@ -583,12 +235,12 @@
       flex: 0 0 24px;
       width: 24px;
       height: 24px;
-      background: var(--primary-soft);
-      color: var(--primary-hover);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: var(--primary-soft);
+      color: var(--primary-hover);
       font-size: 14px;
       font-weight: 800;
     }
@@ -604,8 +256,8 @@
     }
 
     .rule-desc {
-      font-size: 14px;
       color: var(--text-muted);
+      font-size: 14px;
       line-height: 1.6;
     }
 
@@ -631,12 +283,290 @@
       color: var(--pink-text);
     }
 
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .game-card {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+    }
+
+    .game-thumb {
+      position: relative;
+      aspect-ratio: 3 / 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      background-color: #ece8df;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .game-thumb.image-missing,
+    .detail-cover.image-missing {
+      background: linear-gradient(
+        135deg,
+        #eee8dc 0%,
+        #ddd5c6 100%
+      );
+    }
+
+    .image-placeholder {
+      display: none;
+      padding: 8px 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .game-thumb.image-missing .image-placeholder {
+      display: inline-flex;
+    }
+
+    .game-content {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+      padding: 16px;
+    }
+
+    .game-title {
+      margin-top: 10px;
+      font-size: 20px;
+      line-height: 1.2;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .game-info-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .info-separator {
+      font-weight: 800;
+    }
+
+    .game-age-badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      margin-top: 8px;
+      padding: 6px 11px;
+      border-radius: var(--radius-pill);
+      background: var(--primary-soft);
+      color: var(--primary-hover);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .game-age-badge.is-empty {
+      background: #efede7;
+      color: var(--text-soft);
+    }
+
+    .game-summary {
+      height: calc(1.6em * 3);
+      margin-top: 10px;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+    }
+
+    .game-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 16px;
+    }
+
+    .game-actions button {
+      width: 100%;
+      min-height: 44px;
+      white-space: nowrap;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status-available {
+      background: var(--green-soft);
+      color: var(--green-text);
+    }
+
+    .status-reserved {
+      background: var(--blue-soft);
+      color: var(--blue-text);
+    }
+
+    .status-borrowed {
+      background: var(--amber-soft);
+      color: var(--amber-text);
+    }
+
+    .status-maintenance,
+    .status-inactive,
+    .status-cancelled {
+      background: var(--pink-soft);
+      color: var(--pink-text);
+    }
+
+    .status-pending,
+    .status-code_ready,
+    .status-returned,
+    .count-chip {
+      background: #efede7;
+      color: var(--text-muted);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn,
+    .btn-secondary,
+    .btn-ghost {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 11px 16px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: 0.18s ease;
+    }
+
+    .btn {
+      border: 0;
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      border: 1px solid var(--border);
+      background: #f3f1eb;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #eae7df;
+    }
+
+    .btn-ghost {
+      border: 1px solid rgba(1, 105, 111, 0.18);
+      background: transparent;
+      color: var(--primary-hover);
+    }
+
+    .btn-ghost:hover {
+      background: #f4fbfa;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      outline: none;
+      background: #fff;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(1, 105, 111, 0.08);
+    }
+
+    .field textarea {
+      min-height: 104px;
+      resize: vertical;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
     .agreement-wrap,
     .rule-box {
-      background: #f9f7f2;
+      padding: 16px;
       border: 1px solid var(--border-strong);
       border-radius: 16px;
-      padding: 16px;
+      background: #f9f7f2;
     }
 
     .agreement-checkbox {
@@ -662,30 +592,63 @@
       color: var(--primary-hover);
     }
 
-    .view-rules-btn {
-      appearance: none;
-      border: 1px solid var(--border-strong);
-      background: var(--surface-2);
-      color: var(--primary-hover);
-      border-radius: var(--radius-pill);
-      padding: 8px 14px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+    .message-box {
+      display: none;
+      padding: 14px 16px;
+      border-radius: 18px;
+      white-space: pre-line;
+      font-size: 14px;
+    }
+
+    .message-box.show {
+      display: block;
+    }
+
+    .message-info {
+      border: 1px solid rgba(1, 105, 111, 0.12);
+      background: #eef5f5;
+      color: #20555a;
+    }
+
+    .message-success {
+      border: 1px solid rgba(44, 114, 70, 0.14);
+      background: var(--green-soft);
+      color: var(--green-text);
+    }
+
+    .message-error {
+      border: 1px solid rgba(165, 59, 107, 0.14);
+      background: var(--pink-soft);
+      color: var(--pink-text);
+    }
+
+    .message-warning {
+      border: 1px solid rgba(145, 96, 26, 0.14);
+      background: var(--amber-soft);
+      color: var(--amber-text);
+    }
+
+    .borrow-success-message {
+      display: block;
+      margin-bottom: 14px;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.8;
+    }
+
+    .hidden {
+      display: none !important;
     }
 
     .detail-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(28, 25, 19, 0.45);
+      z-index: 90;
       display: none;
       align-items: center;
       justify-content: center;
       padding: 18px;
-      z-index: 90;
+      background: rgba(28, 25, 19, 0.45);
     }
 
     .detail-overlay.show {
@@ -696,9 +659,9 @@
       width: min(860px, 100%);
       max-height: 92vh;
       overflow: auto;
-      background: var(--surface);
-      border-radius: 28px;
       border: 1px solid var(--border);
+      border-radius: 28px;
+      background: var(--surface);
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
     }
 
@@ -706,30 +669,30 @@
       position: relative;
       width: 100%;
       aspect-ratio: 3 / 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
       background-color: #ece8df;
       background-position: center;
       background-size: cover;
       background-repeat: no-repeat;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .detail-cover.image-missing::after {
-      content: '暫無封面';
-      color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.72);
-      border-radius: var(--radius-pill);
+      content: "暫無封面";
       padding: 8px 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--text-muted);
       font-size: 14px;
       font-weight: 700;
     }
 
     .detail-body {
-      padding: 22px;
       display: grid;
       gap: 16px;
+      padding: 22px;
     }
 
     .detail-title {
@@ -740,8 +703,8 @@
     }
 
     .detail-text {
-      font-size: 14px;
       color: var(--text-muted);
+      font-size: 14px;
       white-space: pre-line;
       overflow-wrap: anywhere;
     }
@@ -750,15 +713,16 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
+      margin-top: 12px;
     }
 
     .detail-info-card {
       display: grid;
       gap: 3px;
       padding: 11px 12px;
-      background: #f7f5ef;
       border: 1px solid var(--border);
       border-radius: 14px;
+      background: #f7f5ef;
       font-size: 14px;
     }
 
@@ -776,25 +740,25 @@
     .item-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
       align-items: center;
+      gap: 8px;
       padding: 12px 14px;
-      background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: 16px;
+      background: var(--surface-2);
       font-size: 14px;
     }
 
     .item-row.important-item {
-      background: var(--amber-soft);
       border-color: rgba(145, 96, 26, 0.35);
+      background: var(--amber-soft);
     }
 
     .item-key {
       display: inline-flex;
       align-items: center;
-      border-radius: var(--radius-pill);
       padding: 4px 9px;
+      border-radius: var(--radius-pill);
       background: var(--primary-soft);
       color: var(--primary-hover);
       font-size: 12px;
@@ -813,14 +777,14 @@
     }
 
     .empty-state {
+      grid-column: 1 / -1;
       padding: 28px 18px;
-      border-radius: 20px;
       border: 1px dashed var(--border-strong);
+      border-radius: 20px;
       background: #fcfbf8;
-      text-align: center;
       color: var(--text-muted);
       font-size: 14px;
-      grid-column: 1 / -1;
+      text-align: center;
     }
 
     @media (max-width: 980px) {
@@ -854,13 +818,13 @@
         grid-template-columns: 1fr;
       }
 
-      .hero h1 {
-        font-size: 32px;
-      }
-
       .hero-top {
         flex-direction: column;
         align-items: flex-start;
+      }
+
+      .hero h1 {
+        font-size: 32px;
       }
 
       .hero-logo-wrap {
@@ -890,7 +854,6 @@
 
 <body>
   <main class="wrap">
-
     <section class="hero">
       <div class="hero-top">
         <div class="hero-main">
@@ -1003,20 +966,15 @@
 
       <div class="rules-body">
         <div class="rules-list">
-
           <div class="rule-item rule-warning">
             <div class="rule-icon">1</div>
 
             <div class="rule-content">
-              <div class="rule-title">
-                借用資格
-              </div>
+              <div class="rule-title">借用資格</div>
 
               <div class="rule-desc">
                 本服務
-                <strong>
-                  只限 6 歲或以上之本中心會員及附屬會員
-                </strong>
+                <strong>只限 6 歲或以上之本中心會員及附屬會員</strong>
                 借用。非會員恕不提供服務。
               </div>
             </div>
@@ -1026,15 +984,11 @@
             <div class="rule-icon">2</div>
 
             <div class="rule-content">
-              <div class="rule-title">
-                愛惜公物
-              </div>
+              <div class="rule-title">愛惜公物</div>
 
               <div class="rule-desc">
                 請愛惜中心桌遊及配件。
-                <strong>
-                  如發現有損壞或遺失物品以致不能正常遊玩
-                </strong>
+                <strong>如發現有損壞或遺失物品以致不能正常遊玩</strong>
                 ，則有機會被要求進行「中心服務令」；
                 如情況嚴重，或會被列入
                 <strong>黑名單</strong>
@@ -1048,14 +1002,10 @@
             <div class="rule-icon">3</div>
 
             <div class="rule-content">
-              <div class="rule-title">
-                使用限制
-              </div>
+              <div class="rule-title">使用限制</div>
 
               <div class="rule-desc">
-                <strong>
-                  嚴禁使用本中心之桌遊以進行任何違法、商業活動
-                </strong>
+                <strong>嚴禁使用本中心之桌遊以進行任何違法、商業活動</strong>
                 。如有涉及相關情況，本中心不作出任何負責行為，
                 <strong>均為借用人承擔所有責任</strong>。
               </div>
@@ -1066,9 +1016,7 @@
             <div class="rule-icon">4</div>
 
             <div class="rule-content">
-              <div class="rule-title">
-                物品盤點責任
-              </div>
+              <div class="rule-title">物品盤點責任</div>
 
               <div class="rule-desc">
                 請借用人於借用時
@@ -1084,9 +1032,7 @@
             <div class="rule-icon">5</div>
 
             <div class="rule-content">
-              <div class="rule-title">
-                借用期限與歸還
-              </div>
+              <div class="rule-title">借用期限與歸還</div>
 
               <div class="rule-desc">
                 每次借用最長 14 天。預約建立後 2 日內須到中心完成確認，
@@ -1100,9 +1046,7 @@
             <div class="rule-icon">6</div>
 
             <div class="rule-content">
-              <div class="rule-title">
-                會員借用上限
-              </div>
+              <div class="rule-title">會員借用上限</div>
 
               <div class="rule-desc">
                 每位會員同時間最多只可有
@@ -1110,7 +1054,6 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </section>
@@ -1125,7 +1068,7 @@
 
           <p>
             顯示封面、名稱、分類、建議年齡、簡介、借用次數與目前狀態；
-            點擊可查看詳細玩法、配件與教學連結。
+            點擊可查看遊玩人數、遊玩時間、完整玩法、配件與教學連結。
           </p>
         </div>
       </div>
@@ -1492,7 +1435,6 @@
           <div
             id="detailInfoWrap"
             class="detail-info-grid"
-            style="margin-top: 12px;"
           >
             <div class="detail-info-card">
               <span class="detail-info-label">
@@ -1651,22 +1593,16 @@
     }
 
     function normalizeImageUrl(value = '') {
-      const raw =
-        String(value || '').trim();
+      const raw = String(value || '').trim();
 
       if (!raw) {
         return '';
       }
 
       try {
-        const url =
-          new URL(raw, window.location.href);
+        const url = new URL(raw, window.location.href);
 
-        if (
-          !['http:', 'https:'].includes(
-            url.protocol
-          )
-        ) {
+        if (!['http:', 'https:'].includes(url.protocol)) {
           return '';
         }
 
@@ -1680,62 +1616,25 @@
       switch (status) {
         case 'available':
           return '可借';
-
         case 'reserved':
           return '預約中';
-
         case 'borrowed':
           return '借出中';
-
         case 'maintenance':
           return '維修 / 缺件';
-
         case 'inactive':
           return '已下架';
-
         case 'pending':
           return '待盤點';
-
         case 'code_ready':
           return '已出碼';
-
         case 'returned':
           return '已歸還';
-
         case 'cancelled':
           return '已取消';
-
         default:
           return '未設定';
       }
-    }
-
-    function formatDateTime(value) {
-      if (!value) {
-        return '—';
-      }
-
-      const date =
-        new Date(value);
-
-      if (
-        Number.isNaN(
-          date.getTime()
-        )
-      ) {
-        return '—';
-      }
-
-      return date.toLocaleString(
-        'zh-HK',
-        {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit'
-        }
-      );
     }
 
     function formatDateOnly(value) {
@@ -1743,36 +1642,22 @@
         return '—';
       }
 
-      const date =
-        new Date(value);
+      const date = new Date(value);
 
-      if (
-        Number.isNaN(
-          date.getTime()
-        )
-      ) {
+      if (Number.isNaN(date.getTime())) {
         return '—';
       }
 
-      return date.toLocaleDateString(
-        'zh-HK',
-        {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        }
-      );
+      return date.toLocaleDateString('zh-HK', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
     }
 
-    function showMessage(
-      elementId,
-      type,
-      text
-    ) {
+    function showMessage(elementId, type, text) {
       const element =
-        document.getElementById(
-          elementId
-        );
+        document.getElementById(elementId);
 
       if (!element) {
         return;
@@ -1781,15 +1666,12 @@
       element.className =
         `message-box show message-${type}`;
 
-      element.textContent =
-        text;
+      element.textContent = text;
     }
 
     function clearMessage(elementId) {
       const element =
-        document.getElementById(
-          elementId
-        );
+        document.getElementById(elementId);
 
       if (!element) {
         return;
@@ -1798,13 +1680,10 @@
       element.className =
         'message-box message-info';
 
-      element.textContent =
-        '';
+      element.textContent = '';
     }
 
-    function mapConfirmBorrowError(
-      message = ''
-    ) {
+    function mapConfirmBorrowError(message = '') {
       switch (message) {
         case 'reservation not found':
           return '找不到這個預約編號，請重新檢查。';
@@ -1829,35 +1708,26 @@
       }
     }
 
-    async function apiPost(
-      action,
-      payload = {}
-    ) {
+    async function apiPost(action, payload = {}) {
       const response =
-        await fetch(
-          API_URL,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type':
-                'application/json;charset=utf-8'
-            },
-            body: JSON.stringify({
-              action,
-              ...payload
-            })
-          }
-        );
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type':
+              'application/json;charset=utf-8'
+          },
+          body: JSON.stringify({
+            action,
+            ...payload
+          })
+        });
 
       const json =
         await response
           .json()
           .catch(() => ({}));
 
-      if (
-        !response.ok ||
-        json.ok === false
-      ) {
+      if (!response.ok || json.ok === false) {
         throw new Error(
           json.error ||
           `HTTP ${response.status}`
@@ -1867,10 +1737,7 @@
       return json;
     }
 
-    function setBackgroundImage(
-      element,
-      imageUrl
-    ) {
+    function setBackgroundImage(element, imageUrl) {
       if (!element) {
         return;
       }
@@ -1888,10 +1755,6 @@
 
         return;
       }
-
-      element.classList.remove(
-        'image-missing'
-      );
 
       const image =
         new Image();
@@ -1919,8 +1782,7 @@
           );
         };
 
-      image.src =
-        url;
+      image.src = url;
     }
 
     function computeDuePreview(days) {
@@ -1939,7 +1801,8 @@
         new Date();
 
       date.setDate(
-        date.getDate() + safeDays
+        date.getDate() +
+        safeDays
       );
 
       date.setHours(
@@ -1965,10 +1828,7 @@
           'reserveDuePreview'
         );
 
-      if (
-        !daysElement ||
-        !previewElement
-      ) {
+      if (!daysElement || !previewElement) {
         return;
       }
 
@@ -1995,9 +1855,7 @@
 
       const availableGames =
         state.games.filter(
-          game =>
-            game.status ===
-            'available'
+          game => game.status === 'available'
         );
 
       select.innerHTML = `
@@ -2028,33 +1886,24 @@
       if (
         availableGames.some(
           game =>
-            game.gameId ===
-            current
+            game.gameId === current
         )
       ) {
-        select.value =
-          current;
+        select.value = current;
       }
     }
 
-    function selectGameForReservation(
-      gameId
-    ) {
+    function selectGameForReservation(gameId) {
       const game =
         state.games.find(
-          item =>
-            item.gameId ===
-            gameId
+          item => item.gameId === gameId
         );
 
       if (!game) {
         return;
       }
 
-      if (
-        game.status !==
-        'available'
-      ) {
+      if (game.status !== 'available') {
         showMessage(
           'gamesMessage',
           'warning',
@@ -2132,9 +1981,7 @@
         state.games.map(
           game => {
             const gameId =
-              String(
-                game.gameId || ''
-              );
+              String(game.gameId || '');
 
             const gameName =
               String(
@@ -2143,19 +1990,13 @@
               );
 
             const status =
-              String(
-                game.status || ''
-              );
+              String(game.status || '');
 
             const category =
-              String(
-                game.category || ''
-              );
+              String(game.category || '');
 
             const age =
-              String(
-                game.age || ''
-              ).trim();
+              String(game.age || '').trim();
 
             const shortPlay =
               String(
@@ -2197,8 +2038,12 @@
                   </span>
                 </div>
 
-                <div class="game-content">
-                  <div class="chip-row">
+                <div
+                  class="game-content"
+                >
+                  <div
+                    class="chip-row"
+                  >
                     <span
                       class="chip status-${escapeHtml(
                         status
@@ -2272,11 +2117,7 @@
                   </div>
 
                   <div
-                    class="game-summary ${
-                      shortPlay
-                        ? ''
-                        : 'is-empty'
-                    }"
+                    class="game-summary"
                     title="${escapeHtml(
                       shortPlay
                     )}"
@@ -2459,9 +2300,7 @@
         renderGames();
         populateGameSelect();
 
-        if (
-          !state.games.length
-        ) {
+        if (!state.games.length) {
           showMessage(
             'gamesMessage',
             'warning',
@@ -2580,35 +2419,29 @@
             '暫時未有簡介';
         }
 
-        const players =
-          String(
-            game.players || ''
-          ).trim();
-
-        const playTime =
-          String(
-            game.playTime || ''
-          ).trim();
-
-        const age =
-          String(
-            game.age || ''
-          ).trim();
-
         document.getElementById(
           'detailPlayers'
         ).textContent =
-          players || '未設定';
+          String(
+            game.players || ''
+          ).trim() ||
+          '未設定';
 
         document.getElementById(
           'detailPlayTime'
         ).textContent =
-          playTime || '未設定';
+          String(
+            game.playTime || ''
+          ).trim() ||
+          '未設定';
 
         document.getElementById(
           'detailAge'
         ).textContent =
-          age || '未設定';
+          String(
+            game.age || ''
+          ).trim() ||
+          '未設定';
 
         const publicNote =
           String(
@@ -2646,58 +2479,52 @@
             'detailMeta'
           );
 
-        if (metaElement) {
-          metaElement.innerHTML = `
-            <span
-              class="chip status-${escapeHtml(
-                game.status || ''
-              )}"
-            >
-              ${escapeHtml(
-                getStatusLabel(
-                  game.status
+        metaElement.innerHTML = `
+          <span
+            class="chip status-${escapeHtml(
+              game.status || ''
+            )}"
+          >
+            ${escapeHtml(
+              getStatusLabel(
+                game.status
+              )
+            )}
+          </span>
+
+          <span class="chip count-chip">
+            編號：
+            ${escapeHtml(
+              game.gameId || ''
+            )}
+          </span>
+
+          ${
+            game.category
+              ? `
+                <span
+                  class="chip count-chip"
+                >
+                  ${escapeHtml(
+                    game.category
+                  )}
+                </span>
+              `
+              : ''
+          }
+
+          <span class="chip count-chip">
+            借用次數：
+            ${escapeHtml(
+              String(
+                safeNumber(
+                  game.borrowCount,
+                  0
                 )
-              )}
-            </span>
-
-            <span
-              class="chip count-chip"
-            >
-              編號：
-              ${escapeHtml(
-                game.gameId || ''
-              )}
-            </span>
-
-            ${
-              game.category
-                ? `
-                  <span
-                    class="chip count-chip"
-                  >
-                    ${escapeHtml(
-                      game.category
-                    )}
-                  </span>
-                `
-                : ''
-            }
-
-            <span
-              class="chip count-chip"
-            >
-              借用次數：
-              ${escapeHtml(
-                String(
-                  safeNumber(
-                    game.borrowCount,
-                    0
-                  )
-                )
-              )}
-            </span>
-          `;
-        }
+              )
+            )}
+          </span>
+        `;
 
         const detailPlayWrap =
           document.getElementById(
@@ -2779,89 +2606,87 @@
             ? game.items
             : [];
 
-        if (itemsElement) {
-          if (!items.length) {
-            itemsElement.innerHTML = `
-              <div
-                class="empty-state"
-                style="padding: 14px;"
-              >
-                暫時未有配件資料
-              </div>
-            `;
-          } else {
-            itemsElement.innerHTML =
-              items.map(
-                item => {
-                  const itemName =
-                    String(
-                      item.name || ''
-                    ).trim() ||
-                    '未命名配件';
+        if (!items.length) {
+          itemsElement.innerHTML = `
+            <div
+              class="empty-state"
+              style="padding: 14px;"
+            >
+              暫時未有配件資料
+            </div>
+          `;
+        } else {
+          itemsElement.innerHTML =
+            items.map(
+              item => {
+                const itemName =
+                  String(
+                    item.name || ''
+                  ).trim() ||
+                  '未命名配件';
 
-                  const itemQuantity =
-                    Number.isFinite(
-                      Number(item.qty)
-                    )
-                      ? Number(item.qty)
-                      : 0;
+                const itemQuantity =
+                  Number.isFinite(
+                    Number(item.qty)
+                  )
+                    ? Number(item.qty)
+                    : 0;
 
-                  const itemUnit =
-                    String(
-                      item.unit || ''
-                    ).trim();
+                const itemUnit =
+                  String(
+                    item.unit || ''
+                  ).trim();
 
-                  const important =
-                    item.important === true;
+                const important =
+                  item.important === true;
 
-                  return `
-                    <div
-                      class="item-row ${
-                        important
-                          ? 'important-item'
-                          : ''
-                      }"
+                return `
+                  <div
+                    class="item-row ${
+                      important
+                        ? 'important-item'
+                        : ''
+                    }"
+                  >
+                    <span
+                      class="item-key"
                     >
-                      <span
-                        class="item-key"
-                      >
-                        ${escapeHtml(
-                          itemName
-                        )}
-                      </span>
+                      ${escapeHtml(
+                        itemName
+                      )}
+                    </span>
 
-                      <span>
-                        數量：
-                        ${escapeHtml(
-                          String(
-                            itemQuantity
-                          )
-                        )}
-                        ${
-                          itemUnit
-                            ? ` · ${escapeHtml(
-                                itemUnit
-                              )}`
-                            : ''
-                        }
-                      </span>
-
+                    <span>
+                      數量：
+                      ${escapeHtml(
+                        String(
+                          itemQuantity
+                        )
+                      )}
                       ${
-                        important
-                          ? `
-                            <span
-                              class="important-label"
-                            >
-                              ⚠ 重要配件
-                            </span>
-                          `
+                        itemUnit
+                          ? ` · ${escapeHtml(
+                              itemUnit
+                            )}`
                           : ''
                       }
-                    </div>
-                  `;
-                }
-              ).join('');
-          }
+                    </span>
+
+                    ${
+                      important
+                        ? `
+                          <span
+                            class="important-label"
+                          >
+                            ⚠ 重要配件
+                          </span>
+                        `
+                        : ''
+                    }
+                  </div>
+                `;
+              }
+            ).join('');
         }
 
         const youtubeButton =
@@ -3062,15 +2887,6 @@
               0,
               maxLength
             );
-
-          input.dispatchEvent(
-            new Event(
-              'input',
-              {
-                bubbles: true
-              }
-            )
-          );
         }
       );
     }
@@ -3251,8 +3067,7 @@
           'click',
           event => {
             if (
-              event.target ===
-              overlay
+              event.target === overlay
             ) {
               closeDetailModal();
             }
@@ -3356,9 +3171,6 @@
               document.getElementById(
                 'reserveMemberId'
               ).value
-            ).slice(
-              0,
-              6
             );
 
           const contact =
@@ -3366,9 +3178,6 @@
               document.getElementById(
                 'reserveContact'
               ).value
-            ).slice(
-              0,
-              4
             );
 
           const borrowDays =
@@ -3385,17 +3194,13 @@
 
           if (
             !gameId ||
-            !/^\d{1,6}$/.test(
-              memberId
-            ) ||
-            !/^\d{4}$/.test(
-              contact
-            )
+            !memberId ||
+            contact.length !== 4
           ) {
             showMessage(
               'reserveMessage',
               'error',
-              '請輸入正確的會員編號及電話尾 4 位。會員編號最多 6 位，電話必須是 4 位數字。'
+              '請填寫完整的預約資料。'
             );
 
             return;
@@ -3462,6 +3267,15 @@
               'hidden'
             );
 
+            const confirmSection =
+              document.getElementById(
+                'confirmSection'
+              );
+
+            confirmSection.classList.remove(
+              'hidden'
+            );
+
             confirmSection.scrollIntoView({
               behavior: 'smooth',
               block: 'start'
@@ -3479,134 +3293,130 @@
         }
       );
 
-      document.getElementById(
-        'confirmForm'
-      ).addEventListener(
-        'submit',
-        async event => {
-          event.preventDefault();
+      const confirmForm =
+        document.getElementById(
+          'confirmForm'
+        );
 
-          const reservationId =
-            normalizeReservationInput(
-              document.getElementById(
-                'confirmReservationId'
-              ).value
-            );
+      if (confirmForm) {
+        confirmForm.addEventListener(
+          'submit',
+          async event => {
+            event.preventDefault();
 
-          const borrowCode =
-            digitsOnly(
-              document.getElementById(
-                'confirmBorrowCode'
-              ).value
-            );
-
-          const contact =
-            digitsOnly(
-              document.getElementById(
-                'confirmSignature'
-              ).value
-            );
-
-          const confirmRemark =
-            document.getElementById(
-              'confirmRemark'
-            ).value.trim();
-
-          if (
-            !reservationId ||
-            !/^\d{6}$/.test(
-              borrowCode
-            ) ||
-            !/^\d{4}$/.test(
-              contact
-            )
-          ) {
-            showMessage(
-              'confirmMessage',
-              'error',
-              '請輸入正確的預約編號、6 位借用碼及 4 位電話尾數。'
-            );
-
-            return;
-          }
-
-          try {
-            showMessage(
-              'confirmMessage',
-              'info',
-              '正在確認借用，請稍候……'
-            );
-
-            const result =
-              await apiPost(
-                'confirmBorrowByCode',
-                {
-                  reservationId,
-                  borrowCode,
-                  contact,
-                  confirmRemark
-                }
+            const reservationId =
+              normalizeReservationInput(
+                document.getElementById(
+                  'confirmReservationId'
+                ).value
               );
 
-const reservation =
-  result.reservation || {};
+            const borrowCode =
+              digitsOnly(
+                document.getElementById(
+                  'confirmBorrowCode'
+                ).value
+              );
 
-const returnedReservationId =
-  reservation.reservationId ||
-  reservationId;
+            const contact =
+              digitsOnly(
+                document.getElementById(
+                  'confirmSignature'
+                ).value
+              );
 
-const returnedGameName =
-  reservation.gameName ||
-  '所選桌遊';
+            const confirmRemark =
+              document.getElementById(
+                'confirmRemark'
+              ).value.trim();
 
-const dueDate =
-  formatDateOnly(
-    reservation.dueAt
-  );
+            if (
+              !reservationId ||
+              borrowCode.length !== 6 ||
+              contact.length !== 4
+            ) {
+              showMessage(
+                'confirmMessage',
+                'error',
+                '請填寫正確的預約編號、6 位數借用碼及電話尾 4 位。'
+              );
 
-const confirmMessage =
-  document.getElementById(
-    'confirmMessage'
-  );
+              return;
+            }
 
-if (confirmMessage) {
-  confirmMessage.className =
-    'message-box show message-success borrow-success-message';
+            try {
+              showMessage(
+                'confirmMessage',
+                'info',
+                '正在確認借用，請稍候……'
+              );
 
-  confirmMessage.textContent =
-    `已完成借用確認！\n` +
-    `桌遊：${returnedGameName}\n` +
-    `預約編號：${returnedReservationId}\n` +
-    `請於 ${dueDate} 前歸還中心。\n` +
-    `請妥善保管桌遊及所有配件。`;
-}
+              const result =
+                await apiPost(
+                  'confirmBorrowByCode',
+                  {
+                    reservationId,
+                    borrowCode,
+                    contact,
+                    confirmRemark
+                  }
+                );
 
-confirmForm.reset();
+              const reservation =
+                result.reservation ||
+                {};
 
-await loadGames();
+              const dueDate =
+                formatDateOnly(
+                  reservation.dueAt
+                );
 
-const gamesSection =
-  document.getElementById(
-    'gamesSection'
-  );
+              const successText =
+                `已完成借用確認！\n` +
+                `桌遊：${
+                  reservation.gameName ||
+                  '所選桌遊'
+                }\n` +
+                `預約編號：${
+                  reservation.reservationId ||
+                  reservationId
+                }\n` +
+                `請於 ${dueDate} 前歸還中心。\n` +
+                `請妥善保管桌遊及所有配件。`;
 
-if (gamesSection) {
-  gamesSection.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  });
-}
-          catch (error) {
-            showMessage(
-              'confirmMessage',
-              'error',
-              mapConfirmBorrowError(
-                error.message || ''
-              )
-            );
+              const confirmMessage =
+                document.getElementById(
+                  'confirmMessage'
+                );
+
+              confirmMessage.className =
+                'message-box show message-success borrow-success-message';
+
+              confirmMessage.textContent =
+                successText;
+
+              confirmForm.reset();
+
+              await loadGames();
+
+              document.getElementById(
+                'confirmSection'
+              ).scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            } catch (error) {
+              showMessage(
+                'confirmMessage',
+                'error',
+                mapConfirmBorrowError(
+                  error.message || ''
+                )
+              );
+            }
           }
-        }
-      );
+        );
+      }
     }
 
     document.addEventListener(
