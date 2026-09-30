@@ -1413,41 +1413,41 @@
             —
           </div>
 
-          <div
-            id="detailInfoWrap"
-            class="detail-info-grid hidden"
-            style="margin-top: 12px;"
-          >
-            <div class="detail-info-card">
-              <span class="detail-info-label">
-                遊玩人數
-              </span>
+         <div
+  id="detailInfoWrap"
+  class="detail-info-grid"
+  style="margin-top: 12px;"
+>
+  <div class="detail-info-card">
+    <span class="detail-info-label">
+      遊玩人數
+    </span>
 
-              <span id="detailPlayers">
-                —
-              </span>
-            </div>
+    <span id="detailPlayers">
+      未設定
+    </span>
+  </div>
 
-            <div class="detail-info-card">
-              <span class="detail-info-label">
-                遊玩時間
-              </span>
+  <div class="detail-info-card">
+    <span class="detail-info-label">
+      遊玩時間
+    </span>
 
-              <span id="detailPlayTime">
-                —
-              </span>
-            </div>
+    <span id="detailPlayTime">
+      未設定
+    </span>
+  </div>
 
-            <div class="detail-info-card">
-              <span class="detail-info-label">
-                建議年齡
-              </span>
+  <div class="detail-info-card">
+    <span class="detail-info-label">
+      建議年齡
+    </span>
 
-              <span id="detailAge">
-                —
-              </span>
-            </div>
-          </div>
+    <span id="detailAge">
+      未設定
+    </span>
+  </div>
+</div>
 
           <div
             id="detailPublicNoteWrap"
@@ -2032,310 +2032,226 @@
       );
     }
 
-    function renderGames() {
-      const grid =
-        document.getElementById(
-          'gamesGrid'
-        );
+function renderGames() {
+  const grid =
+    document.getElementById('gamesGrid');
 
-      if (!grid) {
-        return;
-      }
+  if (!grid) {
+    return;
+  }
 
-      if (
-        !Array.isArray(state.games) ||
-        state.games.length === 0
-      ) {
-        grid.innerHTML = `
-          <div class="empty-state">
-            暫時未有桌遊資料
+  if (
+    !Array.isArray(state.games) ||
+    state.games.length === 0
+  ) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        暫時未有桌遊資料
+      </div>
+    `;
+
+    return;
+  }
+
+  grid.innerHTML =
+    state.games.map(game => {
+      const gameId =
+        String(game.gameId || '');
+
+      const gameName =
+        String(game.name || '未命名桌遊');
+
+      const status =
+        String(game.status || '');
+
+      const category =
+        String(game.category || '');
+
+      const age =
+        String(game.age || '').trim();
+
+      const shortPlay =
+        String(game.shortPlay || '暫時未有簡介');
+
+      const borrowCount =
+        safeNumber(game.borrowCount, 0);
+
+      return `
+        <article class="game-card">
+          <div
+            class="game-thumb ${
+              normalizeImageUrl(game.coverImageUrl)
+                ? ''
+                : 'image-missing'
+            }"
+            data-cover-url="${escapeHtml(
+              game.coverImageUrl || ''
+            )}"
+            role="img"
+            aria-label="${escapeHtml(
+              gameName
+            )} 封面"
+          >
+            <span class="image-placeholder">
+              暫無封面
+            </span>
           </div>
-        `;
 
-        return;
-      }
+          <div class="game-content">
+            <div class="chip-row">
+              <span class="chip status-${escapeHtml(status)}">
+                ${escapeHtml(
+                  getStatusLabel(status)
+                )}
+              </span>
 
-      grid.innerHTML =
-        state.games.map(
-          game => {
-            const gameId =
-              String(
-                game.gameId || ''
-              );
+              <span class="chip count-chip">
+                借用次數：
+                ${escapeHtml(
+                  String(borrowCount)
+                )}
+              </span>
+            </div>
 
-            const gameName =
-              String(
-                game.name ||
-                '未命名桌遊'
-              );
+            <div class="game-title">
+              ${escapeHtml(gameName)}
+            </div>
 
-            const status =
-              String(
-                game.status || ''
-              );
+            <div class="game-info-line">
+              <span>
+                ${escapeHtml(gameId)}
+              </span>
 
-            const category =
-              String(
-                game.category || ''
-              );
-
-            const age =
-              String(
-                game.age || ''
-              );
-
-            const shortPlay =
-              String(
-                game.shortPlay ||
-                '暫時未有簡介'
-              );
-
-            const borrowCount =
-              safeNumber(
-                game.borrowCount,
-                0
-              );
-
-            return `
-              <article
-                class="game-card"
-              >
-                <div
-                  class="game-thumb ${
-                    normalizeImageUrl(
-                      game.coverImageUrl
-                    )
-                      ? ''
-                      : 'image-missing'
-                  }"
-                  data-cover-url="${escapeHtml(
-                    game.coverImageUrl ||
-                    ''
-                  )}"
-                  role="img"
-                  aria-label="${escapeHtml(
-                    gameName
-                  )} 封面"
-                >
-                  <span
-                    class="image-placeholder"
-                  >
-                    暫無封面
-                  </span>
-                </div>
-
-                <div class="game-content">
-                  <div class="chip-row">
-                    <span
-                      class="chip status-${escapeHtml(
-                        status
-                      )}"
-                    >
-                      ${escapeHtml(
-                        getStatusLabel(
-                          status
-                        )
-                      )}
+              ${
+                category
+                  ? `
+                    <span class="info-separator">
+                      ·
                     </span>
 
-                    <span
-                      class="chip count-chip"
-                    >
-                      借用次數：
-                      ${escapeHtml(
-                        String(
-                          borrowCount
-                        )
-                      )}
-                    </span>
-                  </div>
-
-                  <div class="game-title">
-                    ${escapeHtml(
-                      gameName
-                    )}
-                  </div>
-
-                  <div
-                    class="game-info-line"
-                  >
                     <span>
-                      ${escapeHtml(
-                        gameId
-                      )}
+                      ${escapeHtml(category)}
                     </span>
+                  `
+                  : ''
+              }
+            </div>
 
-                    ${
-                      category
-                        ? `
-                          <span
-                            class="info-separator"
-                          >
-                            ·
-                          </span>
+            <div
+              class="game-age-badge ${
+                age ? '' : 'is-empty'
+              }"
+            >
+              建議年齡：
+              ${escapeHtml(age || '未設定')}
+            </div>
 
-                          <span>
-                            ${escapeHtml(
-                              category
-                            )}
-                          </span>
-                        `
-                        : ''
-                    }
-                  </div>
+            <div class="game-summary">
+              ${escapeHtml(shortPlay)}
+            </div>
 
-                  <div
-                    class="game-age-badge ${
-                      age
-                        ? ''
-                        : 'is-empty'
-                    }"
-                  >
-                    建議年齡：
-                    ${escapeHtml(
-                      age ||
-                      '未設定'
-                    )}
-                  </div>
+            <div class="btn-row">
+              <button
+                type="button"
+                class="btn-secondary"
+                data-detail="${escapeHtml(gameId)}"
+              >
+                查看詳情
+              </button>
 
-                  <div
-                    class="game-summary"
-                  >
-                    ${escapeHtml(
-                      shortPlay
-                    )}
-                  </div>
-
-                  <div class="btn-row">
+              ${
+                status === 'available'
+                  ? `
                     <button
                       type="button"
-                      class="btn-secondary"
-                      data-detail="${escapeHtml(
-                        gameId
-                      )}"
+                      class="btn"
+                      data-use="${escapeHtml(gameId)}"
                     >
-                      查看詳情
+                      選擇這款
                     </button>
-
-                    ${
-                      status ===
-                      'available'
-                        ? `
-                          <button
-                            type="button"
-                            class="btn"
-                            data-use="${escapeHtml(
-                              gameId
-                            )}"
-                          >
-                            選擇這款
-                          </button>
-                        `
-                        : `
-                          <button
-                            type="button"
-                            class="btn-ghost"
-                            data-check="${escapeHtml(
-                              gameId
-                            )}"
-                          >
-                            查看狀態
-                          </button>
-                        `
-                    }
-                  </div>
-                </div>
-              </article>
-            `;
-          }
-        ).join('');
-
-      grid.querySelectorAll(
-        '[data-cover-url]'
-      ).forEach(
-        element => {
-          const imageUrl =
-            element.getAttribute(
-              'data-cover-url'
-            ) || '';
-
-          setBackgroundImage(
-            element,
-            imageUrl
-          );
-        }
-      );
-
-      grid.querySelectorAll(
-        '[data-detail]'
-      ).forEach(
-        button => {
-          button.addEventListener(
-            'click',
-            async () => {
-              const gameId =
-                button.getAttribute(
-                  'data-detail'
-                ) || '';
-
-              if (!gameId) {
-                return;
+                  `
+                  : `
+                    <button
+                      type="button"
+                      class="btn-ghost"
+                      data-check="${escapeHtml(gameId)}"
+                    >
+                      查看狀態
+                    </button>
+                  `
               }
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
 
-              await openGameDetail(
-                gameId
-              );
-            }
-          );
+  grid.querySelectorAll(
+    '[data-cover-url]'
+  ).forEach(element => {
+    const imageUrl =
+      element.getAttribute('data-cover-url') || '';
+
+    setBackgroundImage(
+      element,
+      imageUrl
+    );
+  });
+
+  grid.querySelectorAll(
+    '[data-detail]'
+  ).forEach(button => {
+    button.addEventListener(
+      'click',
+      async () => {
+        const gameId =
+          button.getAttribute('data-detail') || '';
+
+        if (!gameId) {
+          return;
         }
-      );
 
-      grid.querySelectorAll(
-        '[data-use]'
-      ).forEach(
-        button => {
-          button.addEventListener(
-            'click',
-            () => {
-              const gameId =
-                button.getAttribute(
-                  'data-use'
-                ) || '';
+        await openGameDetail(gameId);
+      }
+    );
+  });
 
-              if (!gameId) {
-                return;
-              }
+  grid.querySelectorAll(
+    '[data-use]'
+  ).forEach(button => {
+    button.addEventListener(
+      'click',
+      () => {
+        const gameId =
+          button.getAttribute('data-use') || '';
 
-              selectGameForReservation(
-                gameId
-              );
-            }
-          );
+        if (!gameId) {
+          return;
         }
-      );
 
-      grid.querySelectorAll(
-        '[data-check]'
-      ).forEach(
-        button => {
-          button.addEventListener(
-            'click',
-            () => {
-              const gameId =
-                button.getAttribute(
-                  'data-check'
-                ) || '';
+        selectGameForReservation(gameId);
+      }
+    );
+  });
 
-              showMessage(
-                'gamesMessage',
-                'info',
-                `桌遊 ${gameId} 目前非可借狀態。如需查詢預約，請直接向職員查詢。`
-              );
-            }
-          );
-        }
-      );
-    }
+  grid.querySelectorAll(
+    '[data-check]'
+  ).forEach(button => {
+    button.addEventListener(
+      'click',
+      () => {
+        const gameId =
+          button.getAttribute('data-check') || '';
+
+        showMessage(
+          'gamesMessage',
+          'info',
+          `桌遊 ${gameId} 目前非可借狀態。如需查詢預約，請直接向職員查詢。`
+        );
+      }
+    );
+  });
+}
 
     async function loadGames() {
       const grid =
@@ -2498,59 +2414,55 @@
             '暫時未有簡介';
         }
 
-        const detailInfoWrap =
-          document.getElementById(
-            'detailInfoWrap'
-          );
+const detailInfoWrap =
+  document.getElementById(
+    'detailInfoWrap'
+  );
 
-        const players =
-          String(
-            game.players || ''
-          ).trim();
+const players =
+  String(game.players || '').trim();
 
-        const playTime =
-          String(
-            game.playTime || ''
-          ).trim();
+const playTime =
+  String(game.playTime || '').trim();
 
-        const age =
-          String(
-            game.age || ''
-          ).trim();
+const age =
+  String(game.age || '').trim();
 
-        const hasDetailInfo =
-          Boolean(
-            players ||
-            playTime ||
-            age
-          );
+const playersElement =
+  document.getElementById(
+    'detailPlayers'
+  );
 
-        if (detailInfoWrap) {
-          if (hasDetailInfo) {
-            document.getElementById(
-              'detailPlayers'
-            ).textContent =
-              players || '未設定';
+const playTimeElement =
+  document.getElementById(
+    'detailPlayTime'
+  );
 
-            document.getElementById(
-              'detailPlayTime'
-            ).textContent =
-              playTime || '未設定';
+const ageElement =
+  document.getElementById(
+    'detailAge'
+  );
 
-            document.getElementById(
-              'detailAge'
-            ).textContent =
-              age || '未設定';
+if (playersElement) {
+  playersElement.textContent =
+    players || '未設定';
+}
 
-            detailInfoWrap.classList.remove(
-              'hidden'
-            );
-          } else {
-            detailInfoWrap.classList.add(
-              'hidden'
-            );
-          }
-        }
+if (playTimeElement) {
+  playTimeElement.textContent =
+    playTime || '未設定';
+}
+
+if (ageElement) {
+  ageElement.textContent =
+    age || '未設定';
+}
+
+if (detailInfoWrap) {
+  detailInfoWrap.classList.remove(
+    'hidden'
+  );
+}
 
         const publicNote =
           String(
