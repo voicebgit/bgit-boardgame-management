@@ -92,11 +92,20 @@
       display: flex;
       justify-content: flex-end;
       align-items: flex-start;
+      gap: 16px;
     }
 
     .hero-logo {
       width: 200px;
       max-width: 28vw;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .hero-logo-swd {
+      width: 120px;
+      max-width: 18vw;
       height: auto;
       object-fit: contain;
       display: block;
@@ -731,6 +740,11 @@
         max-width: 40vw;
       }
 
+      .hero-logo-swd {
+        width: 80px;
+        max-width: 30vw;
+      }
+
       .btn-row .btn,
       .btn-row .btn-secondary,
       .btn-row .btn-ghost {
@@ -783,6 +797,11 @@
             src="./bgit-logo.jpg"
             alt="中心 Logo"
             class="hero-logo"
+          >
+          <img
+            src="./社會福利署資助服務標誌 (白底).jpg"
+            alt="社會福利署資助服務標誌"
+            class="hero-logo-swd"
           >
         </div>
       </div>
@@ -914,7 +933,7 @@
               <div class="rule-title">借用期限與歸還</div>
               <div class="rule-desc">
                 每次借用最長 14 天。預約建立後 2 日內須到中心完成確認，否則系統會自動取消。
-                請按時歸還，逾期可能影響日後 <strong>借用資格<strong> 。
+                請按時歸還，逾期可能影響日後 <strong>借用資格</strong>。
               </div>
             </div>
           </div>
