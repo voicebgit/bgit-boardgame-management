@@ -76,30 +76,6 @@
       flex-wrap: wrap;
     }
 
-    .hero-logo-wrap {
-      flex: 0 0 auto;
-      display: flex;
-      justify-content: flex-end;
-      align-items: flex-start;
-      gap: 16px;
-    }
-
-    .hero-logo {
-      width: 200px;
-      max-width: 28vw;
-      height: auto;
-      object-fit: contain;
-      display: block;
-    }
-
-    .hero-logo-swd {
-      width: 120px;
-      max-width: 18vw;
-      height: auto;
-      object-fit: contain;
-      display: block;
-    }
-
     #heroIntro {
       flex: 1 1 620px;
     }
@@ -259,8 +235,11 @@
 
     .section-head {
       padding: 22px 22px 0;
-      display: grid;
-      gap: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .section-head h2 {
@@ -318,7 +297,6 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
-      align-items: start;
     }
 
     .tool-card {
@@ -338,6 +316,29 @@
     .inline-note {
       color: var(--text-soft);
       font-size: 13px;
+    }
+
+    .section-logos {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .admin-logo {
+      width: 140px;
+      max-width: 22vw;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .admin-logo-swd {
+      width: 90px;
+      max-width: 14vw;
+      height: auto;
+      object-fit: contain;
+      display: block;
     }
 
     .games-layout {
@@ -598,42 +599,20 @@
       font-size: 14px;
     }
 
-    .admin-logo-wrap {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 16px;
-      padding: 12px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-    }
-
-    .admin-logo {
-      width: 160px;
-      max-width: 24vw;
-      height: auto;
-      object-fit: contain;
-      display: block;
-    }
-
-    .admin-logo-swd {
-      width: 100px;
-      max-width: 15vw;
-      height: auto;
-      object-fit: contain;
-      display: block;
-    }
-
     @media (max-width: 1100px) {
       .games-layout,
       .top-tools {
         grid-template-columns: 1fr;
       }
 
-      .admin-logo-wrap {
+      .section-head {
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
+      }
+
+      .section-logos {
+        justify-content: flex-start;
+        margin-top: 8px;
       }
     }
 
@@ -670,24 +649,14 @@
         min-width: 100%;
       }
 
-      .hero-logo {
-        width: 110px;
-        max-width: 40vw;
-      }
-
-      .hero-logo-swd {
-        width: 80px;
-        max-width: 30vw;
-      }
-
       .admin-logo {
-        width: 120px;
+        width: 110px;
         max-width: 35vw;
       }
 
       .admin-logo-swd {
-        width: 80px;
-        max-width: 25vw;
+        width: 70px;
+        max-width: 22vw;
       }
     }
   </style>
@@ -732,9 +701,25 @@
     <div id="adminApp" class="hidden">
       <section class="section-card">
         <div class="section-head">
-          <h2>系統工具</h2>
-          <p>載入資料、匯出借用紀錄、匯出整體備份。</p>
+          <div>
+            <h2>系統工具</h2>
+            <p>載入資料、匯出借用紀錄、匯出整體備份。</p>
+          </div>
+
+          <div class="section-logos">
+            <img
+              src="./bgit-logo.jpg"
+              alt="中心 Logo"
+              class="admin-logo"
+            >
+            <img
+              src="./社會福利署資助服務標誌 (白底).jpg"
+              alt="社會福利署資助服務標誌"
+              class="admin-logo-swd"
+            >
+          </div>
         </div>
+
         <div class="section-body">
           <div id="systemMessage" class="message-box message-info"></div>
 
@@ -756,19 +741,6 @@
                 <button id="exportBackupBtn" type="button" class="btn-secondary">匯出完整備份 JSON</button>
               </div>
               <div class="inline-note">瀏覽器可直接使用 SheetJS 將資料匯出。</div>
-            </div>
-
-            <div class="admin-logo-wrap">
-              <img
-                src="./bgit-logo.jpg"
-                alt="中心 Logo"
-                class="admin-logo"
-              >
-              <img
-                src="./社會福利署資助服務標誌 (白底).jpg"
-                alt="社會福利署資助服務標誌"
-                class="admin-logo-swd"
-              >
             </div>
           </div>
         </div>
