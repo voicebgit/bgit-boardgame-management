@@ -1670,9 +1670,10 @@
     return date.toLocaleDateString(
       'zh-HK',
       {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
+      timeZone: 'Asia/Hong_Kong',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
       }
     );
   }
@@ -3268,8 +3269,8 @@
           reserveMessage.textContent =
             `預約已成功提交！\n` +
             `預約編號：${reservationId}\n` +
-            `請立即截圖或記錄此預約編號，以便日後確認借用。\n` +
-            `請於 ${dueDate} 前完成借用確認；完成借用後，請按此日期前歸還中心。`;
+            `請立即截圖或記錄此預約編號，以便確認借用。\n` +
+            `請於 ${dueDate} 前完成借用確認；如有問題請直接聯絡職員處理。`;
 
           document.getElementById(
             'reserveForm'
