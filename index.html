@@ -214,6 +214,11 @@
 
     .section-head {
       padding: 24px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .section-head h2 {
@@ -638,6 +643,34 @@
       font-weight: 800;
     }
 
+    /* 新增：查看規則按鈕樣式 */
+    .view-rules-btn {
+      appearance: none;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      color: var(--primary-hover);
+      border-radius: var(--radius-pill);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .view-rules-btn:hover {
+      background: var(--primary-soft);
+      border-color: var(--primary-hover);
+    }
+
+    .view-rules-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
     @media (max-width: 980px) {
       .games-grid,
       .top-actions {
@@ -711,6 +744,17 @@
 
       .rule-icon {
         flex: 0 0 auto;
+      }
+
+      .section-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .view-rules-btn {
+        width: 100%;
+        justify-content: center;
       }
     }
   </style>
@@ -811,7 +855,7 @@
       </div>
     </section>
 
-    <section class="rules-section">
+    <section class="rules-section" id="rulesSection">
       <div class="rules-head">
         <h2>借用規則與聲明</h2>
         <p>
@@ -916,13 +960,25 @@
       id="reserveSection"
     >
       <div class="section-head">
-        <h2>借用預約表單</h2>
+        <div>
+          <h2>借用預約表單</h2>
 
-        <p>
-          每位會員同時間最多只可有 2 筆未完成借用。
-          每次借用最長 14 天。預約建立後 2 日內須到中心完成確認，
-          否則系統會自動取消。
-        </p>
+          <p>
+            每位會員同時間最多只可有 2 筆未完成借用。
+            每次借用最長 14 天。預約建立後 2 日內須到中心完成確認，
+            否則系統會自動取消。
+          </p>
+        </div>
+
+        <button
+          id="viewRulesBtn"
+          type="button"
+          class="view-rules-btn"
+          title="返回查看借用規則與聲明"
+        >
+          <span class="view-rules-icon">↑</span>
+          查看規則
+        </button>
       </div>
 
       <div class="section-body">
@@ -1926,6 +1982,22 @@
 
         if (gamesSection) {
           gamesSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    }
+
+    // 新增：查看規則按鈕事件
+    const viewRulesBtn = document.getElementById('viewRulesBtn');
+    if (viewRulesBtn) {
+      viewRulesBtn.addEventListener('click', () => {
+        const rulesSection =
+          document.getElementById('rulesSection');
+
+        if (rulesSection) {
+          rulesSection.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
           });
