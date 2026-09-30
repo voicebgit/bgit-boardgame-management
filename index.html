@@ -470,7 +470,8 @@
 
     .btn,
     .btn-secondary,
-    .btn-ghost {
+    .btn-ghost,
+    .view-rules-btn {
       appearance: none;
       display: inline-flex;
       align-items: center;
@@ -505,13 +506,15 @@
       background: #eae7df;
     }
 
-    .btn-ghost {
+    .btn-ghost,
+    .view-rules-btn {
       border: 1px solid rgba(1, 105, 111, 0.18);
       background: transparent;
       color: var(--primary-hover);
     }
 
-    .btn-ghost:hover {
+    .btn-ghost:hover,
+    .view-rules-btn:hover {
       background: #f4fbfa;
     }
 
@@ -1229,7 +1232,7 @@
               >
 
               <span>
-                我已仔細閱讀並同意遵守
+                我已仔細閱讀並同意
                 <a
                   href="#rulesSection"
                   class="rules-link"
@@ -1325,12 +1328,12 @@
           </div>
 
           <div class="field">
-            <label for="confirmSignature">
+            <label for="confirmContact">
               確認電話（電話尾 4 位）
             </label>
 
             <input
-              id="confirmSignature"
+              id="confirmContact"
               type="text"
               inputmode="numeric"
               pattern="[0-9]{4}"
@@ -1670,11 +1673,73 @@
     return date.toLocaleDateString(
       'zh-HK',
       {
-      timeZone: 'Asia/Hong_Kong',
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric'
+        timeZone: 'Asia/Hong_Kong',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
       }
+    );
+  }
+
+  function getHongKongDateParts(date = new Date()) {
+    const parts = new Intl.DateTimeFormat(
+      'en-CA',
+      {
+        timeZone: 'Asia/Hong_Kong',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }
+    ).formatToParts(date);
+
+    const result = {};
+
+    for (const part of parts) {
+      if (
+        ['year', 'month', 'day'].includes(
+          part.type
+        )
+      ) {
+        result[part.type] = Number(part.value);
+      }
+    }
+
+    return result;
+  }
+
+  function computeWorkerCompatibleDueAt(days) {
+    const safeDays = Math.max(
+      1,
+      Math.min(
+        14,
+        Number.isFinite(Number(days))
+          ? Math.floor(Number(days))
+          : 7
+      )
+    );
+
+    const {
+      year,
+      month,
+      day
+    } = getHongKongDateParts();
+
+    return new Date(
+      Date.UTC(
+        year,
+        month - 1,
+        day + safeDays,
+        15,
+        59,
+        59,
+        999
+      )
+    );
+  }
+
+  function computeDuePreview(days) {
+    return formatDateOnly(
+      computeWorkerCompatibleDueAt(days)
     );
   }
 
@@ -1833,38 +1898,6 @@
 
     image.src =
       url;
-  }
-
-  function computeDuePreview(days) {
-    const number =
-      Number(days || 7);
-
-    const safeDays =
-      Number.isFinite(number)
-        ? Math.max(
-            1,
-            Math.min(14, number)
-          )
-        : 7;
-
-    const date =
-      new Date();
-
-    date.setDate(
-      date.getDate() +
-      safeDays
-    );
-
-    date.setHours(
-      23,
-      59,
-      59,
-      999
-    );
-
-    return formatDateOnly(
-      date.toISOString()
-    );
   }
 
   function updateBorrowDuePreview() {
@@ -2965,8 +2998,33 @@
     );
 
     bindNumericInput(
-      'confirmSignature',
+      'confirmContact',
       4
+    );
+
+    document.getElementById(
+      'reserveGameId'
+    ).addEventListener(
+      'change',
+      event => {
+        const gameId =
+          event.target.value;
+
+        if (gameId) {
+          state.selectedGameId =
+            gameId;
+
+          const game =
+            state.games.find(
+              item =>
+                item.gameId ===
+                gameId
+            );
+
+          state.selectedGameName =
+            game?.name || '';
+        }
+      }
     );
 
     document.getElementById(
@@ -3110,6 +3168,7 @@
 
         populateGameSelect();
         updateBorrowDuePreview();
+
         clearMessage(
           'reserveMessage'
         );
@@ -3270,7 +3329,8 @@
             `預約已成功提交！\n` +
             `預約編號：${reservationId}\n` +
             `請立即截圖或記錄此預約編號，以便確認借用。\n` +
-            `請於 ${dueDate} 前完成借用確認；如有問題請直接聯絡職員處理。`;
+            `預計到期日：${dueDate}\n` +
+            `請於預約建立後 2 日內到中心完成借用確認。`;
 
           document.getElementById(
             'reserveForm'
@@ -3329,7 +3389,7 @@
         const contact =
           digitsOnly(
             document.getElementById(
-              'confirmSignature'
+              'confirmContact'
             ).value
           );
 
