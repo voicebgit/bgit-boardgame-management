@@ -316,8 +316,9 @@
 
     .top-tools {
       display: grid;
-      grid-template-columns: 1.2fr .8fr;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
+      align-items: start;
     }
 
     .tool-card {
@@ -597,10 +598,42 @@
       font-size: 14px;
     }
 
+    .admin-logo-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      padding: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+    }
+
+    .admin-logo {
+      width: 160px;
+      max-width: 24vw;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .admin-logo-swd {
+      width: 100px;
+      max-width: 15vw;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
     @media (max-width: 1100px) {
       .games-layout,
       .top-tools {
         grid-template-columns: 1fr;
+      }
+
+      .admin-logo-wrap {
+        flex-direction: column;
+        align-items: center;
       }
     }
 
@@ -646,6 +679,16 @@
         width: 80px;
         max-width: 30vw;
       }
+
+      .admin-logo {
+        width: 120px;
+        max-width: 35vw;
+      }
+
+      .admin-logo-swd {
+        width: 80px;
+        max-width: 25vw;
+      }
     }
   </style>
 </head>
@@ -659,19 +702,6 @@
           <p>
             用於管理桌遊資料、查看會員預約、產生借用碼、取消或刪除紀錄，以及辦理歸還。
           </p>
-        </div>
-
-        <div class="hero-logo-wrap">
-          <img
-            src="./bgit-logo.jpg"
-            alt="中心 Logo"
-            class="hero-logo"
-          >
-          <img
-            src="./社會福利署資助服務標誌 (白底).jpg"
-            alt="社會福利署資助服務標誌"
-            class="hero-logo-swd"
-          >
         </div>
 
         <div class="staff-panel" id="staffPanel">
@@ -726,6 +756,19 @@
                 <button id="exportBackupBtn" type="button" class="btn-secondary">匯出完整備份 JSON</button>
               </div>
               <div class="inline-note">瀏覽器可直接使用 SheetJS 將資料匯出。</div>
+            </div>
+
+            <div class="admin-logo-wrap">
+              <img
+                src="./bgit-logo.jpg"
+                alt="中心 Logo"
+                class="admin-logo"
+              >
+              <img
+                src="./社會福利署資助服務標誌 (白底).jpg"
+                alt="社會福利署資助服務標誌"
+                class="admin-logo-swd"
+              >
             </div>
           </div>
         </div>
@@ -994,20 +1037,14 @@
 
     function applyLoggedInLayout() {
       document.getElementById('heroIntro').classList.add('hidden');
-      document.getElementById('passwordFieldWrap').classList.add('hidden');
-      document.getElementById('loginBtn').classList.add('hidden');
+      document.getElementById('staffPanel').classList.add('hidden');
       document.getElementById('logoutBtn').classList.remove('hidden');
-      document.getElementById('staffPanelTitle').textContent = '目前登入資料';
-      document.getElementById('staffPanelNote').textContent = '已登入，可直接執行管理操作。';
     }
 
     function applyLoggedOutLayout() {
       document.getElementById('heroIntro').classList.remove('hidden');
-      document.getElementById('passwordFieldWrap').classList.remove('hidden');
-      document.getElementById('loginBtn').classList.remove('hidden');
+      document.getElementById('staffPanel').classList.remove('hidden');
       document.getElementById('logoutBtn').classList.add('hidden');
-      document.getElementById('staffPanelTitle').textContent = '處理同事資料';
-      document.getElementById('staffPanelNote').textContent = '先登入後才可載入資料及執行管理操作。';
     }
 
     function showEmptyEditor() {
