@@ -130,7 +130,7 @@
 
     .top-actions {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 18px;
       margin-top: 20px;
     }
@@ -407,26 +407,6 @@
       border: 1px solid rgba(145, 96, 26, 0.14);
     }
 
-    .status-panel {
-      display: grid;
-      gap: 10px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 16px;
-    }
-
-    .status-title {
-      font-size: 18px;
-      font-weight: 800;
-      line-height: 1.2;
-    }
-
-    .status-text {
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-
     .hidden {
       display: none !important;
     }
@@ -528,7 +508,6 @@
       font-size: 14px;
     }
 
-    /* 新增：借用規則與聲明樣式 */
     .rules-section {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -624,7 +603,6 @@
       color: var(--pink-text);
     }
 
-    /* 新增：同意條款 checkbox 樣式 */
     .agreement-wrap {
       background: #f9f7f2;
       border: 1px solid var(--border-strong);
@@ -661,7 +639,8 @@
     }
 
     @media (max-width: 980px) {
-      .games-grid {
+      .games-grid,
+      .top-actions {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
@@ -766,11 +745,30 @@
 
       <div class="top-actions">
         <article class="action-card">
+          <h2>查看桌遊</h2>
+
+          <p>
+            查看目前可借用的桌遊、封面、簡介、配件清單及教學影片，
+            選擇合適的桌遊後再開始預約。
+          </p>
+
+          <div class="btn-row">
+            <button
+              id="goGamesBtn"
+              type="button"
+              class="btn"
+            >
+              查看桌遊列表
+            </button>
+          </div>
+        </article>
+
+        <article class="action-card">
           <h2>提交借用預約</h2>
 
           <p>
-            先填桌遊、會員編號、電話尾 4 位及借用天數，
-            提交後會取得預約編號。
+            選擇桌遊後填寫會員編號、電話尾 4 位及借用天數，
+            再提交借用預約。
           </p>
 
           <div class="btn-row">
@@ -808,20 +806,11 @@
             >
               前往代碼確認
             </button>
-
-            <button
-              id="checkStatusBtn"
-              type="button"
-              class="btn-ghost"
-            >
-              查詢預約狀態
-            </button>
           </div>
         </article>
       </div>
     </section>
 
-    <!-- 新增：借用規則與聲明區塊 -->
     <section class="rules-section">
       <div class="rules-head">
         <h2>借用規則與聲明</h2>
@@ -899,8 +888,31 @@
       </div>
     </section>
 
+    <section class="section-card" id="gamesSection">
+      <div class="section-head">
+        <h2>桌遊列表</h2>
+
+        <p>
+          顯示封面、名稱、簡介、借用次數與目前狀態；
+          點擊可看詳細玩法、配件與教學連結。
+        </p>
+      </div>
+
+      <div class="section-body">
+        <div
+          id="gamesMessage"
+          class="message-box message-info"
+        ></div>
+
+        <div
+          id="gamesGrid"
+          class="games-grid"
+        ></div>
+      </div>
+    </section>
+
     <section
-      class="section-card"
+      class="section-card hidden"
       id="reserveSection"
     >
       <div class="section-head">
@@ -1021,7 +1033,6 @@
             ></textarea>
           </div>
 
-          <!-- 新增：同意條款 checkbox -->
           <div class="agreement-wrap">
             <label class="agreement-checkbox">
               <input
@@ -1063,7 +1074,7 @@
     </section>
 
     <section
-      class="section-card"
+      class="section-card hidden"
       id="confirmSection"
     >
       <div class="section-head">
@@ -1171,30 +1182,6 @@
             </button>
           </div>
         </form>
-
-        <div
-          id="reservationStatusPanel"
-          class="status-panel hidden"
-          style="margin-top: 16px;"
-        ></div>
-      </div>
-    </section>
-
-    <section class="section-card">
-      <div class="section-head">
-        <h2>桌遊列表</h2>
-
-        <p>
-          顯示封面、名稱、簡介、借用次數與目前狀態；
-          點擊可看詳細玩法、配件與教學連結。
-        </p>
-      </div>
-
-      <div class="section-body">
-        <div
-          id="gamesGrid"
-          class="games-grid"
-        ></div>
       </div>
     </section>
 
@@ -1405,19 +1392,6 @@
       element.textContent = '';
     }
 
-    function mapReservationStatusError(message = '') {
-      switch (message) {
-        case 'reservation not found':
-          return '找不到這個預約編號，請檢查是否輸入正確。';
-        case 'reservation cancelled':
-          return '此預約已因超過 2 日未完成中心確認而取消，請重新提交預約。';
-        case 'missing reservationId':
-          return '請先輸入預約編號。';
-        default:
-          return `查詢狀態失敗：${message}`;
-      }
-    }
-
     function mapConfirmBorrowError(message = '') {
       switch (message) {
         case 'reservation not found':
@@ -1526,7 +1500,19 @@
 
     function selectGameForReservation(gameId) {
       const game = state.games.find(item => item.gameId === gameId);
-      if (!game) return;
+
+      if (!game) {
+        return;
+      }
+
+      if (game.status !== 'available') {
+        showMessage(
+          'gamesMessage',
+          'warning',
+          '這款桌遊目前未能借用，請選擇其他可借桌遊。'
+        );
+        return;
+      }
 
       state.selectedGameId = game.gameId;
       state.selectedGameName = game.name || '';
@@ -1538,6 +1524,8 @@
 
       const reserveSectionEl = document.getElementById('reserveSection');
       if (reserveSectionEl) {
+        reserveSectionEl.classList.remove('hidden');
+
         reserveSectionEl.scrollIntoView({
           behavior: 'smooth',
           block: 'start'
@@ -1647,16 +1635,11 @@
       grid.querySelectorAll('[data-check]').forEach(button => {
         button.addEventListener('click', () => {
           const gameId = button.getAttribute('data-check');
-          document.getElementById('confirmReservationId').focus();
           showMessage(
-            'confirmMessage',
+            'gamesMessage',
             'info',
-            `桌遊 ${gameId} 目前非可借狀態。如果你已有預約編號，請直接於下方輸入查詢。`
+            `桌遊 ${gameId} 目前非可借狀態。如需查詢預約，請直接向職員查詢。`
           );
-          document.getElementById('confirmSection').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
         });
       });
     }
@@ -1676,7 +1659,7 @@
         return state.games;
       } catch (error) {
         console.error('載入桌遊失敗:', error);
-        showMessage('confirmMessage', 'error', `無法載入桌遊列表：${error.message}`);
+        showMessage('gamesMessage', 'error', `無法載入桌遊列表：${error.message}`);
       }
     }
 
@@ -1878,7 +1861,7 @@
         );
 
         showMessage(
-          'confirmMessage',
+          'gamesMessage',
           'error',
           `無法載入桌遊詳情：${error.message}`
         );
@@ -1892,7 +1875,6 @@
         .remove('show');
     }
 
-    // 事件監聽綁定
     const reserveBorrowDaysEl = document.getElementById('reserveBorrowDays');
     if (reserveBorrowDaysEl) {
       reserveBorrowDaysEl.addEventListener('change', updateBorrowDuePreview);
@@ -1901,14 +1883,53 @@
     const goReserveBtn = document.getElementById('goReserveBtn');
     if (goReserveBtn) {
       goReserveBtn.addEventListener('click', () => {
-        document.getElementById('reserveSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const gamesSection =
+          document.getElementById('gamesSection');
+
+        if (gamesSection) {
+          gamesSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+
+        showMessage(
+          'gamesMessage',
+          'info',
+          '請先在桌遊列表選擇一款可借桌遊。'
+        );
       });
     }
 
     const goConfirmBtn = document.getElementById('goConfirmBtn');
     if (goConfirmBtn) {
       goConfirmBtn.addEventListener('click', () => {
-        document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const confirmSection =
+          document.getElementById('confirmSection');
+
+        if (confirmSection) {
+          confirmSection.classList.remove('hidden');
+
+          confirmSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    }
+
+    const goGamesBtn = document.getElementById('goGamesBtn');
+    if (goGamesBtn) {
+      goGamesBtn.addEventListener('click', () => {
+        const gamesSection =
+          document.getElementById('gamesSection');
+
+        if (gamesSection) {
+          gamesSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
       });
     }
 
@@ -1935,11 +1956,17 @@
     if (clearReserveBtn) {
       clearReserveBtn.addEventListener('click', () => {
         document.getElementById('reserveForm').reset();
+
         state.selectedGameId = '';
         state.selectedGameName = '';
+
         populateGameSelect();
         updateBorrowDuePreview();
         clearMessage('reserveMessage');
+
+        document
+          .getElementById('reserveSection')
+          .classList.add('hidden');
       });
     }
 
@@ -1947,7 +1974,6 @@
     if (clearConfirmBtn) {
       clearConfirmBtn.addEventListener('click', () => {
         document.getElementById('confirmForm').reset();
-        document.getElementById('reservationStatusPanel').classList.add('hidden');
         clearMessage('confirmMessage');
       });
     }
@@ -1957,13 +1983,11 @@
       copyReservationIdBtn.addEventListener('click', copyReservationId);
     }
 
-    // 提交預約表單
     const reserveForm = document.getElementById('reserveForm');
     if (reserveForm) {
       reserveForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // 檢查是否同意規則
         const agreeCheckbox = document.getElementById('agreeRules');
         if (!agreeCheckbox || !agreeCheckbox.checked) {
           showMessage('reserveMessage', 'error', '請先閱讀並同意《借用規則與聲明》的所有條款，然後勾選同意框再提交預約。');
@@ -2013,14 +2037,23 @@
           updateBorrowDuePreview();
           await loadGames();
 
-          document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document
+            .getElementById('reserveSection')
+            .classList.add('hidden');
+
+          document
+            .getElementById('confirmSection')
+            .classList.remove('hidden');
+
+          document
+            .getElementById('confirmSection')
+            .scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (err) {
           showMessage('reserveMessage', 'error', `提交預約失敗：${err.message}`);
         }
       });
     }
 
-    // 確認借用表單
     const confirmForm = document.getElementById('confirmForm');
 
     if (confirmForm) {
@@ -2089,10 +2122,14 @@
           document.getElementById('confirmForm').reset();
 
           document
-            .getElementById('reservationStatusPanel')
+            .getElementById('confirmSection')
             .classList.add('hidden');
 
           await loadGames();
+
+          document
+            .getElementById('gamesSection')
+            .scrollIntoView({ behavior: 'smooth', block: 'start' });
 
         } catch (err) {
           const userMsg =
@@ -2107,60 +2144,6 @@
       });
     }
 
-    // 查詢預約狀態
-    const checkStatusBtn = document.getElementById('checkStatusBtn');
-    if (checkStatusBtn) {
-      checkStatusBtn.addEventListener('click', async () => {
-        const input = document.getElementById('confirmReservationId');
-        const reservationId = normalizeReservationInput(input.value || state.lastReservationId);
-
-        if (!reservationId) {
-          input.focus();
-          showMessage('confirmMessage', 'warning', '請先在「預約編號」欄位輸入編號，再點擊查詢預約狀態。');
-          document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          return;
-        }
-
-        input.value = reservationId;
-        state.lastReservationId = reservationId;
-
-        try {
-          showMessage('confirmMessage', 'info', '正在查詢預約狀態...');
-          const json = await apiPost(
-            'getReservationPublicStatus',
-            {
-              reservationId
-            }
-          );
-          const res = json.reservation || {};
-
-          const panel = document.getElementById('reservationStatusPanel');
-          panel.classList.remove('hidden');
-          panel.innerHTML = `
-            <div class="status-title">
-              預約狀態：${escapeHtml(getStatusLabel(res.status))}
-            </div>
-
-            <div class="status-text">
-              預約編號：${escapeHtml(res.reservationId || reservationId)}<br>
-              桌遊名稱：${escapeHtml(res.gameName || res.gameId || '—')}<br>
-              會員編號：${escapeHtml(res.memberIdMasked || '已隱藏')}<br>
-              借用天數：${escapeHtml(String(res.borrowDays || 7))} 天<br>
-              建立時間：${escapeHtml(formatDateTime(res.createdAt))}<br>
-              預計到期：${escapeHtml(formatDateOnly(res.dueAt))}
-            </div>
-          `;
-
-          clearMessage('confirmMessage');
-        } catch (err) {
-          const userMsg = mapReservationStatusError(err.message);
-          showMessage('confirmMessage', 'error', userMsg);
-          document.getElementById('reservationStatusPanel').classList.add('hidden');
-        }
-      });
-    }
-
-    // 初始載入
     loadGames();
     updateBorrowDuePreview();
   </script>
