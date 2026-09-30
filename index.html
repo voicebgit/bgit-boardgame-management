@@ -59,6 +59,11 @@
       font: inherit;
     }
 
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
     .wrap {
       width: min(1200px, calc(100% - 28px));
       margin: 0 auto;
@@ -180,6 +185,11 @@
       font-weight: 800;
       cursor: pointer;
       transition: 0.18s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     .btn {
@@ -268,12 +278,44 @@
       border: 1px solid var(--border);
       border-radius: 22px;
       overflow: hidden;
+      min-width: 0;
     }
 
     .game-thumb {
+      position: relative;
       aspect-ratio: 3 / 4;
-      background: #ece8df center / cover no-repeat;
+      background-color: #ece8df;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
       border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .game-thumb.image-missing {
+      background:
+        linear-gradient(
+          135deg,
+          #eee8dc 0%,
+          #ddd5c6 100%
+        );
+    }
+
+    .image-placeholder {
+      display: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: var(--radius-pill);
+      padding: 8px 12px;
+    }
+
+    .game-thumb.image-missing .image-placeholder {
+      display: inline-flex;
     }
 
     .game-content {
@@ -286,12 +328,15 @@
       font-size: 20px;
       line-height: 1.2;
       font-weight: 800;
+      overflow-wrap: anywhere;
     }
 
     .game-summary {
       font-size: 14px;
       color: var(--text-muted);
       min-height: 46px;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
     }
 
     .chip-row {
@@ -348,6 +393,7 @@
     .meta-note {
       font-size: 13px;
       color: var(--text-soft);
+      overflow-wrap: anywhere;
     }
 
     .form-grid {
@@ -463,10 +509,27 @@
     }
 
     .detail-cover {
+      position: relative;
       width: 100%;
       aspect-ratio: 3 / 4;
-      background: #ece8df center / cover no-repeat;
+      background-color: #ece8df;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
       border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .detail-cover.image-missing::after {
+      content: '暫無封面';
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: var(--radius-pill);
+      padding: 8px 12px;
     }
 
     .detail-body {
@@ -479,12 +542,14 @@
       font-size: 28px;
       line-height: 1.1;
       font-weight: 800;
+      overflow-wrap: anywhere;
     }
 
     .detail-text {
       font-size: 14px;
       color: var(--text-muted);
       white-space: pre-line;
+      overflow-wrap: anywhere;
     }
 
     .item-list {
@@ -562,6 +627,7 @@
       text-align: center;
       color: var(--text-muted);
       font-size: 14px;
+      grid-column: 1 / -1;
     }
 
     .rule-box {
@@ -612,6 +678,9 @@
       display: flex;
       gap: 12px;
       align-items: flex-start;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid transparent;
     }
 
     .rule-icon {
@@ -691,14 +760,14 @@
       accent-color: var(--primary);
     }
 
-    .agreement-checkbox label {
+    .agreement-checkbox span {
       font-size: 14px;
       color: var(--text);
       cursor: pointer;
       line-height: 1.5;
     }
 
-    .agreement-checkbox label strong {
+    .agreement-checkbox strong {
       color: var(--primary-hover);
       font-weight: 800;
     }
@@ -849,6 +918,7 @@
             alt="中心 Logo"
             class="hero-logo"
           >
+
           <img
             src="./社會福利署資助服務標誌 (白底).jpg"
             alt="社會福利署資助服務標誌"
@@ -925,9 +995,13 @@
       </div>
     </section>
 
-    <section class="rules-section" id="rulesSection">
+    <section
+      class="rules-section"
+      id="rulesSection"
+    >
       <div class="rules-head">
         <h2>借用規則與聲明</h2>
+
         <p>
           提交預約前，請仔細閱讀以下規則。提交預約即表示您已閱讀、理解並同意遵守所有條款。
         </p>
@@ -935,81 +1009,121 @@
 
       <div class="rules-body">
         <div class="rules-list">
+
           <div class="rule-item rule-warning">
             <div class="rule-icon">1</div>
+
             <div class="rule-content">
               <div class="rule-title">借用資格</div>
+
               <div class="rule-desc">
-                本服務<strong>只限 6 歲或以上之本中心會員及附屬會員</strong>借用。非會員恕不提供服務。
+                本服務
+                <strong>
+                  只限 6 歲或以上之本中心會員及附屬會員
+                </strong>
+                借用。非會員恕不提供服務。
               </div>
             </div>
           </div>
 
           <div class="rule-item rule-danger">
             <div class="rule-icon">2</div>
+
             <div class="rule-content">
               <div class="rule-title">愛惜公物</div>
+
               <div class="rule-desc">
-                請愛惜中心桌遊及配件。<strong>如發現有損壞或遺失物品以致不能正常遊玩</strong>，則有機會被要求進行「中心服務令」；
-                如情況嚴重，或會被列入<strong>黑名單</strong>及<strong>按價進行賠償</strong>。
+                請愛惜中心桌遊及配件。
+                <strong>
+                  如發現有損壞或遺失物品以致不能正常遊玩
+                </strong>
+                ，則有機會被要求進行「中心服務令」；
+                如情況嚴重，或會被列入
+                <strong>黑名單</strong>
+                及
+                <strong>按價進行賠償</strong>
+                。
               </div>
             </div>
           </div>
 
           <div class="rule-item rule-warning">
             <div class="rule-icon">3</div>
+
             <div class="rule-content">
               <div class="rule-title">使用限制</div>
+
               <div class="rule-desc">
-                <strong>嚴禁使用本中心之桌遊以進行任何違法、商業活動</strong>。如有涉及相關情況，本中心不作出任何負責行為，
-                <strong>均為借用人承擔所有責任</strong>。
+                <strong>
+                  嚴禁使用本中心之桌遊以進行任何違法、商業活動
+                </strong>
+                。如有涉及相關情況，本中心不作出任何負責行為，
+                <strong>均為借用人承擔所有責任</strong>
+                。
               </div>
             </div>
           </div>
 
           <div class="rule-item rule-danger">
             <div class="rule-icon">4</div>
+
             <div class="rule-content">
               <div class="rule-title">物品盤點責任</div>
+
               <div class="rule-desc">
-                請借用人於借用時<strong>親自盤點物品是否齊全</strong>，並於借用時的備註欄說明情況。
-                <strong>借出後如有遺失物品則視為借用人的責任</strong>，本中心將會保留追究的權利。
+                請借用人於借用時
+                <strong>親自盤點物品是否齊全</strong>
+                ，並於借用時的備註欄說明情況。
+                <strong>借出後如有遺失物品則視為借用人的責任</strong>
+                ，本中心將會保留追究的權利。
               </div>
             </div>
           </div>
 
           <div class="rule-item rule-warning">
             <div class="rule-icon">5</div>
+
             <div class="rule-content">
               <div class="rule-title">借用期限與歸還</div>
+
               <div class="rule-desc">
-                每次借用最長 14 天。預約建立後 2 日內須到中心完成確認，否則系統會自動取消。
-                請按時歸還，逾期可能影響日後 <strong>借用資格</strong> 。
+                每次借用最長 14 天。預約建立後 2 日內須到中心完成確認，
+                否則系統會自動取消。請按時歸還，逾期可能影響日後
+                <strong>借用資格</strong>。
               </div>
             </div>
           </div>
 
           <div class="rule-item rule-danger">
             <div class="rule-icon">6</div>
+
             <div class="rule-content">
               <div class="rule-title">會員借用上限</div>
+
               <div class="rule-desc">
-                每位會員同時間最多只可有 <strong>2 筆未完成及已完成的借用</strong> 。
+                每位會員同時間最多只可有
+                <strong>2 筆未完成及已完成的借用</strong>。
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </section>
 
-    <section class="section-card" id="gamesSection">
+    <section
+      class="section-card"
+      id="gamesSection"
+    >
       <div class="section-head">
-        <h2>桌遊列表</h2>
+        <div>
+          <h2>桌遊列表</h2>
 
-        <p>
-          顯示封面、名稱、簡介、借用次數與目前狀態；
-          點擊可看詳細玩法、配件與教學連結。
-        </p>
+          <p>
+            顯示封面、名稱、簡介、借用次數與目前狀態；
+            點擊可看詳細玩法、配件與教學連結。
+          </p>
+        </div>
       </div>
 
       <div class="section-body">
@@ -1124,7 +1238,10 @@
                 id="reserveBorrowDays"
                 required
               >
-                <option value="7" selected>
+                <option
+                  value="7"
+                  selected
+                >
                   7 天
                 </option>
 
@@ -1166,9 +1283,18 @@
                 id="agreeRules"
                 required
               >
+
               <span>
-                我已仔細閱讀並同意遵守<a href="#rulesSection" class="rules-link"><strong>《借用規則與聲明》</strong></a>的所有條款，
-                並確認本人符合<strong>6-24 歲中心會員</strong>的借用資格。
+                我已仔細閱讀並同意遵守
+                <a
+                  href="#rulesSection"
+                  class="rules-link"
+                >
+                  <strong>《借用規則與聲明》</strong>
+                </a>
+                的所有條款，並確認本人符合
+                <strong>6-24 歲中心會員</strong>
+                的借用資格。
               </span>
             </label>
           </div>
@@ -1204,12 +1330,14 @@
       id="confirmSection"
     >
       <div class="section-head">
-        <h2>代碼確認借用</h2>
+        <div>
+          <h2>代碼確認借用</h2>
 
-        <p>
-          收到職員提供的借用碼後，
-          請輸入預約編號、電話尾 4 位及借用碼完成確認。
-        </p>
+          <p>
+            收到職員提供的借用碼後，
+            請輸入預約編號、電話尾 4 位及借用碼完成確認。
+          </p>
+        </div>
       </div>
 
       <div class="section-body">
@@ -1310,7 +1438,6 @@
         </form>
       </div>
     </section>
-
   </main>
 
   <div
@@ -1320,7 +1447,7 @@
     <div class="detail-modal">
       <div
         id="detailCover"
-        class="detail-cover"
+        class="detail-cover image-missing"
       ></div>
 
       <div class="detail-body">
@@ -1370,22 +1497,34 @@
             style="margin-top: 12px;"
           >
             <div class="detail-info-card">
-              <span class="detail-info-label">遊玩人數</span>
-              <span id="detailPlayers">—</span>
-            </div>
-            <div class="detail-info-card">
-              <span class="detail-info-label">遊玩時間</span>
-              <span id="detailPlayTime">—</span>
-            </div>
-            <div class="detail-info-card">
-              <span class="detail-info-label">建議年齡</span>
-              <span id="detailAge">—</span>
-            </div>
-          </div>
+              <span class="detail-info-label">
+                遊玩人數
+              </span>
 
-          <div id="detailPublicNoteWrap" class="hidden" style="margin-top: 12px;">
-            <h4 style="font-size: 16px; margin-bottom: 6px; color: var(--primary-hover);">公開備註</h4>
-            <div id="detailPublicNote" class="detail-text" style="background: var(--primary-soft); padding: 12px; border-radius: 12px;"></div>
+              <span id="detailPlayers">
+                —
+              </span>
+            </div>
+
+            <div class="detail-info-card">
+              <span class="detail-info-label">
+                遊玩時間
+              </span>
+
+              <span id="detailPlayTime">
+                —
+              </span>
+            </div>
+
+            <div class="detail-info-card">
+              <span class="detail-info-label">
+                建議年齡
+              </span>
+
+              <span id="detailAge">
+                —
+              </span>
+            </div>
           </div>
 
           <div
@@ -1393,13 +1532,24 @@
             class="hidden"
             style="margin-top: 12px;"
           >
-            <h4 style="font-size: 16px; margin-bottom: 6px; color: var(--primary-hover);">
+            <h4
+              style="
+                font-size: 16px;
+                margin-bottom: 6px;
+                color: var(--primary-hover);
+              "
+            >
               公開備註
             </h4>
+
             <div
               id="detailPublicNote"
               class="detail-text"
-              style="background: var(--primary-soft); padding: 12px; border-radius: 12px;"
+              style="
+                background: var(--primary-soft);
+                padding: 12px;
+                border-radius: 12px;
+              "
             ></div>
           </div>
 
@@ -1494,35 +1644,79 @@
         .replace(/'/g, '&#39;');
     }
 
+    function safeNumber(value, fallback = 0) {
+      const number = Number(value);
+
+      return Number.isFinite(number)
+        ? number
+        : fallback;
+    }
+
+    function normalizeImageUrl(value = '') {
+      const raw = String(value || '').trim();
+
+      if (!raw) {
+        return '';
+      }
+
+      try {
+        const url = new URL(raw, window.location.href);
+
+        if (!['http:', 'https:'].includes(url.protocol)) {
+          return '';
+        }
+
+        return url.href;
+      } catch {
+        return '';
+      }
+    }
+
     function getStatusLabel(status) {
       switch (status) {
         case 'available':
           return '可借';
+
         case 'reserved':
           return '預約中';
+
         case 'borrowed':
           return '借出中';
+
         case 'maintenance':
           return '維修 / 缺件';
+
         case 'inactive':
           return '已下架';
+
         case 'pending':
           return '待盤點';
+
         case 'code_ready':
           return '已出碼';
+
         case 'returned':
           return '已歸還';
+
         case 'cancelled':
           return '已取消';
+
         default:
           return '未設定';
       }
     }
 
     function formatDateTime(value) {
-      if (!value) return '—';
+      if (!value) {
+        return '—';
+      }
+
       const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
+
+      if (Number.isNaN(date.getTime())) {
+        return '—';
+      }
+
       return date.toLocaleString('zh-HK', {
         year: 'numeric',
         month: '2-digit',
@@ -1533,9 +1727,16 @@
     }
 
     function formatDateOnly(value) {
-      if (!value) return '—';
+      if (!value) {
+        return '—';
+      }
+
       const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
+
+      if (Number.isNaN(date.getTime())) {
+        return '—';
+      }
+
       return date.toLocaleDateString('zh-HK', {
         year: 'numeric',
         month: '2-digit',
@@ -1545,15 +1746,27 @@
 
     function showMessage(elId, type, text) {
       const element = document.getElementById(elId);
-      if (!element) return;
-      element.className = `message-box show message-${type}`;
+
+      if (!element) {
+        return;
+      }
+
+      element.className =
+        `message-box show message-${type}`;
+
       element.textContent = text;
     }
 
     function clearMessage(elId) {
       const element = document.getElementById(elId);
-      if (!element) return;
-      element.className = 'message-box message-info';
+
+      if (!element) {
+        return;
+      }
+
+      element.className =
+        'message-box message-info';
+
       element.textContent = '';
     }
 
@@ -1561,18 +1774,25 @@
       switch (message) {
         case 'reservation not found':
           return '找不到這個預約編號，請重新檢查。';
+
         case 'reservation cancelled':
           return '此預約已因超過 2 日未完成中心確認而取消，請重新提交預約。';
+
         case 'reservation is not ready for code confirmation':
           return '此預約尚未出碼，請先請職員完成盤點及提供借用碼。';
+
         case 'invalid contact':
           return '電話驗證不正確，請輸入預約時登記的電話尾 4 位數字。';
+
         case 'invalid code':
           return '借用碼不正確，請與職員重新核對。';
+
         case 'code expired':
           return '借用碼已過期，請請職員重新產生借用碼。';
+
         case 'missing reservationId or borrowCode or contact':
           return '請先輸入預約編號、借用碼及電話尾 4 位數字。';
+
         default:
           return `確認借用失敗：${message}`;
       }
@@ -1584,87 +1804,139 @@
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
-        body: JSON.stringify({ action, ...payload })
+        body: JSON.stringify({
+          action,
+          ...payload
+        })
       });
 
-      const json = await response.json().catch(() => ({}));
+      const json = await response
+        .json()
+        .catch(() => ({}));
 
       if (!response.ok || json.ok === false) {
-        throw new Error(json.error || 'request failed');
+        throw new Error(
+          json.error || `HTTP ${response.status}`
+        );
       }
 
       return json;
     }
 
-    async function copyReservationId() {
-      const input = document.getElementById('confirmReservationId');
-      const reservationId = normalizeReservationInput(
-        input.value || state.lastReservationId || ''
-      );
-
-      if (!reservationId) {
-        showMessage('confirmMessage', 'warning', '目前沒有可複製的預約編號。');
+    function setBackgroundImage(element, imageUrl) {
+      if (!element) {
         return;
       }
 
-      input.value = reservationId;
-      state.lastReservationId = reservationId;
+      const url = normalizeImageUrl(imageUrl);
 
-      try {
-        if (!navigator.clipboard || !window.isSecureContext) {
-          throw new Error('clipboard unavailable');
-        }
+      element.style.backgroundImage = '';
 
-        await navigator.clipboard.writeText(reservationId);
-        showMessage('confirmMessage', 'success', `預約編號已複製：${reservationId}`);
-      } catch {
-        input.focus();
-        input.select();
-        input.setSelectionRange(0, input.value.length);
-        showMessage('confirmMessage', 'warning', `未能自動複製，已為你選取預約編號：${reservationId}`);
+      if (!url) {
+        element.classList.add('image-missing');
+        return;
       }
+
+      element.classList.remove('image-missing');
+
+      const image = new Image();
+
+      image.onload = () => {
+        element.style.backgroundImage =
+          `url("${url.replace(/"/g, '\\"')}")`;
+
+        element.classList.remove('image-missing');
+      };
+
+      image.onerror = () => {
+        element.style.backgroundImage = '';
+        element.classList.add('image-missing');
+      };
+
+      image.src = url;
     }
 
     function computeDuePreview(days) {
       const number = Number(days || 7);
-      const safeDays = Number.isFinite(number)
-        ? Math.max(1, Math.min(14, number))
-        : 7;
+
+      const safeDays =
+        Number.isFinite(number)
+          ? Math.max(1, Math.min(14, number))
+          : 7;
 
       const date = new Date();
-      date.setDate(date.getDate() + safeDays);
+
+      date.setDate(
+        date.getDate() + safeDays
+      );
+
       date.setHours(23, 59, 59, 999);
 
-      return formatDateOnly(date.toISOString());
+      return formatDateOnly(
+        date.toISOString()
+      );
     }
 
     function updateBorrowDuePreview() {
-      const days = document.getElementById('reserveBorrowDays').value;
-      document.getElementById('reserveDuePreview').value = `${computeDuePreview(days)} 前歸還`;
+      const daysElement =
+        document.getElementById('reserveBorrowDays');
+
+      const previewElement =
+        document.getElementById('reserveDuePreview');
+
+      if (!daysElement || !previewElement) {
+        return;
+      }
+
+      previewElement.value =
+        `${computeDuePreview(daysElement.value)} 前歸還`;
     }
 
     function populateGameSelect() {
-      const select = document.getElementById('reserveGameId');
-      if (!select) return;
-      const current = state.selectedGameId || select.value || '';
-      const availableGames = state.games.filter(game => game.status === 'available');
+      const select =
+        document.getElementById('reserveGameId');
+
+      if (!select) {
+        return;
+      }
+
+      const current =
+        state.selectedGameId ||
+        select.value ||
+        '';
+
+      const availableGames =
+        state.games.filter(
+          game => game.status === 'available'
+        );
 
       select.innerHTML = `
-        <option value="">請先選擇桌遊</option>
+        <option value="">
+          請先選擇桌遊
+        </option>
+
         ${availableGames.map(game => `
           <option value="${escapeHtml(game.gameId)}">
-            ${escapeHtml(game.name)} (${escapeHtml(game.gameId)})
+            ${escapeHtml(game.name || '未命名桌遊')}
+            (${escapeHtml(game.gameId || '')})
           </option>
         `).join('')}
       `;
 
-      if (availableGames.some(game => game.gameId === current)) {
+      if (
+        availableGames.some(
+          game => game.gameId === current
+        )
+      ) {
         select.value = current;
       }
     }
 
     function selectGameForReservation(gameId) {
-      const game = state.games.find(item => item.gameId === gameId);
+      const game =
+        state.games.find(
+          item => item.gameId === gameId
+        );
 
       if (!game) {
         return;
@@ -1676,22 +1948,33 @@
           'warning',
           '這款桌遊目前未能借用，請選擇其他可借桌遊。'
         );
+
         return;
       }
 
-      state.selectedGameId = game.gameId;
-      state.selectedGameName = game.name || '';
+      state.selectedGameId =
+        game.gameId;
+
+      state.selectedGameName =
+        game.name || '';
 
       populateGameSelect();
 
-      const reserveGameIdEl = document.getElementById('reserveGameId');
-      if (reserveGameIdEl) reserveGameIdEl.value = game.gameId;
+      const reserveGameIdElement =
+        document.getElementById('reserveGameId');
 
-      const reserveSectionEl = document.getElementById('reserveSection');
-      if (reserveSectionEl) {
-        reserveSectionEl.classList.remove('hidden');
+      if (reserveGameIdElement) {
+        reserveGameIdElement.value =
+          game.gameId;
+      }
 
-        reserveSectionEl.scrollIntoView({
+      const reserveSection =
+        document.getElementById('reserveSection');
+
+      if (reserveSection) {
+        reserveSection.classList.remove('hidden');
+
+        reserveSection.scrollIntoView({
           behavior: 'smooth',
           block: 'start'
         });
@@ -1705,354 +1988,680 @@
     }
 
     function renderGames() {
-      const grid = document.getElementById('gamesGrid');
-      if (!grid) return;
+      const grid =
+        document.getElementById('gamesGrid');
 
-      if (!state.games.length) {
-        grid.innerHTML = '<div class="empty-state">暫時未有桌遊資料</div>';
+      if (!grid) {
         return;
       }
 
-      grid.innerHTML = state.games.map(game => `
-        <article class="game-card">
-          <div
-            class="game-thumb"
-            style="background-image:url('${escapeHtml(game.coverImageUrl || '')}');"
-          ></div>
-
-          <div class="game-content">
-            <div class="chip-row">
-              <span class="chip status-${escapeHtml(game.status || '')}">
-                ${escapeHtml(getStatusLabel(game.status))}
-              </span>
-
-              <span class="chip count-chip">
-                借用次數：${escapeHtml(String(game.borrowCount || 0))}
-              </span>
-            </div>
-
-            <div class="game-title">
-              ${escapeHtml(game.name || '未命名桌遊')}
-            </div>
-
-            <div class="meta-note">
-              ${escapeHtml(game.gameId || '')}
-              ${game.category ? ` · ${escapeHtml(game.category)}` : ''}
-              ${game.age ? ` · 建議年齡：${escapeHtml(game.age)}` : ''}
-            </div>
-
-            <div class="game-summary">
-              ${escapeHtml(game.shortPlay || '暫時未有簡介')}
-            </div>
-
-            <div class="btn-row">
-              <button
-                type="button"
-                class="btn-secondary"
-                data-detail="${escapeHtml(game.gameId)}"
-              >
-                查看詳情
-              </button>
-
-              ${
-                game.status === 'available'
-                  ? `
-                    <button
-                      type="button"
-                      class="btn"
-                      data-use="${escapeHtml(game.gameId)}"
-                    >
-                      選擇這款
-                    </button>
-                  `
-                  : `
-                    <button
-                      type="button"
-                      class="btn-ghost"
-                      data-check="${escapeHtml(game.gameId)}"
-                    >
-                      查看狀態
-                    </button>
-                  `
-              }
-            </div>
+      if (
+        !Array.isArray(state.games) ||
+        state.games.length === 0
+      ) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            暫時未有桌遊資料
           </div>
-        </article>
-      `).join('');
+        `;
 
-      grid.querySelectorAll('[data-detail]').forEach(button => {
-        button.addEventListener('click', async () => {
-          const gameId = button.getAttribute('data-detail');
-          if (gameId) {
+        return;
+      }
+
+      grid.innerHTML =
+        state.games.map(game => {
+          const gameId =
+            String(game.gameId || '');
+
+          const gameName =
+            String(game.name || '未命名桌遊');
+
+          const status =
+            String(game.status || '');
+
+          const category =
+            String(game.category || '');
+
+          const age =
+            String(game.age || '');
+
+          const shortPlay =
+            String(game.shortPlay || '暫時未有簡介');
+
+          const borrowCount =
+            safeNumber(game.borrowCount, 0);
+
+          return `
+            <article class="game-card">
+              <div
+                class="game-thumb ${
+                  normalizeImageUrl(game.coverImageUrl)
+                    ? ''
+                    : 'image-missing'
+                }"
+                data-cover-url="${escapeHtml(
+                  game.coverImageUrl || ''
+                )}"
+                role="img"
+                aria-label="${escapeHtml(
+                  gameName
+                )} 封面"
+              >
+                <span class="image-placeholder">
+                  暫無封面
+                </span>
+              </div>
+
+              <div class="game-content">
+                <div class="chip-row">
+                  <span class="chip status-${escapeHtml(status)}">
+                    ${escapeHtml(
+                      getStatusLabel(status)
+                    )}
+                  </span>
+
+                  <span class="chip count-chip">
+                    借用次數：
+                    ${escapeHtml(
+                      String(borrowCount)
+                    )}
+                  </span>
+                </div>
+
+                <div class="game-title">
+                  ${escapeHtml(gameName)}
+                </div>
+
+                <div class="meta-note">
+                  ${escapeHtml(gameId)}
+                  ${
+                    category
+                      ? ` · ${escapeHtml(category)}`
+                      : ''
+                  }
+                  ${
+                    age
+                      ? ` · 建議年齡：${escapeHtml(age)}`
+                      : ''
+                  }
+                </div>
+
+                <div class="game-summary">
+                  ${escapeHtml(shortPlay)}
+                </div>
+
+                <div class="btn-row">
+                  <button
+                    type="button"
+                    class="btn-secondary"
+                    data-detail="${escapeHtml(gameId)}"
+                  >
+                    查看詳情
+                  </button>
+
+                  ${
+                    status === 'available'
+                      ? `
+                        <button
+                          type="button"
+                          class="btn"
+                          data-use="${escapeHtml(gameId)}"
+                        >
+                          選擇這款
+                        </button>
+                      `
+                      : `
+                        <button
+                          type="button"
+                          class="btn-ghost"
+                          data-check="${escapeHtml(gameId)}"
+                        >
+                          查看狀態
+                        </button>
+                      `
+                  }
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+      grid.querySelectorAll(
+        '[data-cover-url]'
+      ).forEach(element => {
+        const imageUrl =
+          element.getAttribute('data-cover-url') || '';
+
+        setBackgroundImage(
+          element,
+          imageUrl
+        );
+      });
+
+      grid.querySelectorAll(
+        '[data-detail]'
+      ).forEach(button => {
+        button.addEventListener(
+          'click',
+          async () => {
+            const gameId =
+              button.getAttribute('data-detail') || '';
+
+            if (!gameId) {
+              return;
+            }
+
             await openGameDetail(gameId);
           }
-        });
+        );
       });
 
-      grid.querySelectorAll('[data-use]').forEach(button => {
-        button.addEventListener('click', () => {
-          const gameId = button.getAttribute('data-use');
-          if (gameId) {
+      grid.querySelectorAll(
+        '[data-use]'
+      ).forEach(button => {
+        button.addEventListener(
+          'click',
+          () => {
+            const gameId =
+              button.getAttribute('data-use') || '';
+
+            if (!gameId) {
+              return;
+            }
+
             selectGameForReservation(gameId);
           }
-        });
+        );
       });
 
-      grid.querySelectorAll('[data-check]').forEach(button => {
-        button.addEventListener('click', () => {
-          const gameId = button.getAttribute('data-check');
-          showMessage(
-            'gamesMessage',
-            'info',
-            `桌遊 ${gameId} 目前非可借狀態。如需查詢預約，請直接向職員查詢。`
-          );
-        });
+      grid.querySelectorAll(
+        '[data-check]'
+      ).forEach(button => {
+        button.addEventListener(
+          'click',
+          () => {
+            const gameId =
+              button.getAttribute('data-check') || '';
+
+            showMessage(
+              'gamesMessage',
+              'info',
+              `桌遊 ${gameId} 目前非可借狀態。如需查詢預約，請直接向職員查詢。`
+            );
+          }
+        );
       });
     }
 
     async function loadGames() {
-      try {
-        const res = await apiPost('listPublicGames');
+      const grid =
+        document.getElementById('gamesGrid');
 
-        if (!res.ok) {
-          throw new Error(res.error || 'request failed');
+      if (grid) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            正在載入桌遊資料……
+          </div>
+        `;
+      }
+
+      try {
+        const response =
+          await apiPost('listPublicGames');
+
+        if (
+          !response ||
+          response.ok !== true
+        ) {
+          throw new Error(
+            response?.error ||
+            'Worker 沒有正確回傳桌遊資料'
+          );
         }
 
-        state.games = res.games || [];
+        state.games =
+          Array.isArray(response.games)
+            ? response.games
+            : [];
+
         renderGames();
         populateGameSelect();
 
+        if (!state.games.length) {
+          showMessage(
+            'gamesMessage',
+            'warning',
+            'Worker 已連線，但目前沒有任何桌遊資料。請先到 admin 頁新增桌遊。'
+          );
+        } else {
+          clearMessage('gamesMessage');
+        }
+
         return state.games;
       } catch (error) {
-        console.error('載入桌遊失敗:', error);
-        showMessage('gamesMessage', 'error', `無法載入桌遊列表：${error.message}`);
+        console.error(
+          '載入桌遊失敗：',
+          error
+        );
+
+        if (grid) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              無法載入桌遊資料
+            </div>
+          `;
+        }
+
+        showMessage(
+          'gamesMessage',
+          'error',
+          `無法載入桌遊列表：${
+            error.message || '未知錯誤'
+          }`
+        );
+
+        return [];
       }
     }
 
     async function getPublicGameDetail(gameId) {
-      const result = await apiPost(
-        'getPublicGameDetail',
-        { gameId }
-      );
+      const result =
+        await apiPost(
+          'getPublicGameDetail',
+          { gameId }
+        );
 
-      if (!result.game) {
-        throw new Error('找不到桌遊詳情');
+      if (
+        !result ||
+        result.ok !== true ||
+        !result.game
+      ) {
+        throw new Error(
+          result?.error ||
+          '找不到桌遊詳情'
+        );
       }
 
       return result.game;
     }
 
     async function openGameDetail(gameId) {
-      const basicGame = state.games.find(
-        item => item.gameId === gameId
-      );
+      const basicGame =
+        state.games.find(
+          item => String(item.gameId) === String(gameId)
+        );
 
-      if (!basicGame) return;
+      if (!basicGame) {
+        showMessage(
+          'gamesMessage',
+          'error',
+          '找不到這款桌遊，請重新載入列表。'
+        );
+
+        return;
+      }
 
       try {
-        const game = await getPublicGameDetail(gameId);
+        const game =
+          await getPublicGameDetail(gameId);
 
-        document.getElementById('detailCover').style.backgroundImage =
-          `url('${escapeHtml(game.coverImageUrl || '')}')`;
+        const detailCover =
+          document.getElementById('detailCover');
 
-        document.getElementById('detailTitle').textContent =
-          game.name || '未命名桌遊';
+        setBackgroundImage(
+          detailCover,
+          game.coverImageUrl || ''
+        );
 
-        document.getElementById('detailShortPlay').textContent =
-          game.shortPlay || '暫時未有簡介';
+        const detailTitle =
+          document.getElementById('detailTitle');
 
-        const detailInfoWrap = document.getElementById('detailInfoWrap');
-        const hasDetailInfo = game.players || game.playTime || game.age;
-        if (hasDetailInfo) {
-          document.getElementById('detailPlayers').textContent = game.players || '—';
-          document.getElementById('detailPlayTime').textContent = game.playTime || '—';
-          document.getElementById('detailAge').textContent = game.age || '—';
-          detailInfoWrap.classList.remove('hidden');
-        } else {
-          detailInfoWrap.classList.add('hidden');
+        if (detailTitle) {
+          detailTitle.textContent =
+            game.name || '未命名桌遊';
         }
 
-        const publicNote = String(game.publicNote || '').trim();
-        const publicNoteWrap = document.getElementById('detailPublicNoteWrap');
-        const publicNoteEl = document.getElementById('detailPublicNote');
+        const detailShortPlay =
+          document.getElementById('detailShortPlay');
+
+        if (detailShortPlay) {
+          detailShortPlay.textContent =
+            game.shortPlay || '暫時未有簡介';
+        }
+
+        const detailInfoWrap =
+          document.getElementById('detailInfoWrap');
+
+        const hasDetailInfo =
+          Boolean(
+            game.players ||
+            game.playTime ||
+            game.age
+          );
+
+        if (detailInfoWrap) {
+          if (hasDetailInfo) {
+            document.getElementById(
+              'detailPlayers'
+            ).textContent =
+              game.players || '—';
+
+            document.getElementById(
+              'detailPlayTime'
+            ).textContent =
+              game.playTime || '—';
+
+            document.getElementById(
+              'detailAge'
+            ).textContent =
+              game.age || '—';
+
+            detailInfoWrap.classList.remove(
+              'hidden'
+            );
+          } else {
+            detailInfoWrap.classList.add(
+              'hidden'
+            );
+          }
+        }
+
+        const publicNote =
+          String(game.publicNote || '').trim();
+
+        const publicNoteWrap =
+          document.getElementById(
+            'detailPublicNoteWrap'
+          );
+
+        const publicNoteElement =
+          document.getElementById(
+            'detailPublicNote'
+          );
+
         if (publicNote) {
-          publicNoteEl.textContent = publicNote;
-          publicNoteWrap.classList.remove('hidden');
-        } else {
-          publicNoteEl.textContent = '';
-          publicNoteWrap.classList.add('hidden');
-        }
-
-        // 顯示公開備註
-        const publicNote = String(game.publicNote || '').trim();
-        const publicNoteWrap = document.getElementById('detailPublicNoteWrap');
-        const publicNoteEl = document.getElementById('detailPublicNote');
-
-        if (publicNote) {
-          publicNoteEl.textContent = publicNote;
-          publicNoteWrap.classList.remove('hidden');
-        } else {
-          publicNoteWrap.classList.add('hidden');
-          publicNoteEl.textContent = '';
-        }
-
-        const metaEl =
-          document.getElementById('detailMeta');
-
-        metaEl.innerHTML = `
-          <span class="chip status-${escapeHtml(game.status || '')}">
-            ${escapeHtml(getStatusLabel(game.status))}
-          </span>
-
-          <span class="chip count-chip">
-            編號：${escapeHtml(game.gameId || '')}
-          </span>
-
-          ${
-            game.category
-              ? `
-                <span class="chip count-chip">
-                  ${escapeHtml(game.category)}
-                </span>
-              `
-              : ''
+          if (publicNoteElement) {
+            publicNoteElement.textContent =
+              publicNote;
           }
 
-          <span class="chip count-chip">
-            借用次數：${escapeHtml(
-              String(game.borrowCount || 0)
-            )}
-          </span>
-        `;
+          if (publicNoteWrap) {
+            publicNoteWrap.classList.remove(
+              'hidden'
+            );
+          }
+        } else {
+          if (publicNoteElement) {
+            publicNoteElement.textContent =
+              '';
+          }
+
+          if (publicNoteWrap) {
+            publicNoteWrap.classList.add(
+              'hidden'
+            );
+          }
+        }
+
+        const metaElement =
+          document.getElementById(
+            'detailMeta'
+          );
+
+        if (metaElement) {
+          metaElement.innerHTML = `
+            <span class="chip status-${escapeHtml(
+              game.status || ''
+            )}">
+              ${escapeHtml(
+                getStatusLabel(game.status)
+              )}
+            </span>
+
+            <span class="chip count-chip">
+              編號：
+              ${escapeHtml(game.gameId || '')}
+            </span>
+
+            ${
+              game.category
+                ? `
+                  <span class="chip count-chip">
+                    ${escapeHtml(game.category)}
+                  </span>
+                `
+                : ''
+            }
+
+            <span class="chip count-chip">
+              借用次數：
+              ${escapeHtml(
+                String(
+                  safeNumber(game.borrowCount, 0)
+                )
+              )}
+            </span>
+          `;
+        }
 
         const detailPlayWrap =
-          document.getElementById('detailPlayWrap');
+          document.getElementById(
+            'detailPlayWrap'
+          );
 
         const detailFullPlay =
-          document.getElementById('detailFullPlay');
+          document.getElementById(
+            'detailFullPlay'
+          );
 
-        const toggleDetailPlayBtn =
-          document.getElementById('toggleDetailPlayBtn');
+        const toggleDetailPlayButton =
+          document.getElementById(
+            'toggleDetailPlayBtn'
+          );
 
         const fullPlay =
           String(game.detailPlay || '').trim();
 
-        detailFullPlay.classList.add('hidden');
-        detailFullPlay.textContent = fullPlay;
+        if (detailFullPlay) {
+          detailFullPlay.textContent =
+            fullPlay;
+
+          detailFullPlay.classList.add(
+            'hidden'
+          );
+        }
 
         if (fullPlay) {
-          detailPlayWrap.classList.remove('hidden');
-          toggleDetailPlayBtn.textContent =
-            '顯示完整玩法介紹';
+          if (detailPlayWrap) {
+            detailPlayWrap.classList.remove(
+              'hidden'
+            );
+          }
 
-          toggleDetailPlayBtn.onclick = () => {
-            const isHidden =
-              detailFullPlay.classList.contains('hidden');
+          if (toggleDetailPlayButton) {
+            toggleDetailPlayButton.textContent =
+              '顯示完整玩法介紹';
 
-            if (isHidden) {
-              detailFullPlay.classList.remove('hidden');
-              toggleDetailPlayBtn.textContent =
-                '收起完整玩法介紹';
-            } else {
-              detailFullPlay.classList.add('hidden');
-              toggleDetailPlayBtn.textContent =
-                '顯示完整玩法介紹';
-            }
-          };
+            toggleDetailPlayButton.onclick =
+              () => {
+                const isHidden =
+                  detailFullPlay.classList.contains(
+                    'hidden'
+                  );
+
+                if (isHidden) {
+                  detailFullPlay.classList.remove(
+                    'hidden'
+                  );
+
+                  toggleDetailPlayButton.textContent =
+                    '收起完整玩法介紹';
+                } else {
+                  detailFullPlay.classList.add(
+                    'hidden'
+                  );
+
+                  toggleDetailPlayButton.textContent =
+                    '顯示完整玩法介紹';
+                }
+              };
+          }
         } else {
-          detailPlayWrap.classList.add('hidden');
-          toggleDetailPlayBtn.onclick = null;
+          if (detailPlayWrap) {
+            detailPlayWrap.classList.add(
+              'hidden'
+            );
+          }
+
+          if (toggleDetailPlayButton) {
+            toggleDetailPlayButton.onclick =
+              null;
+          }
         }
 
-        const itemsEl =
-          document.getElementById('detailItems');
+        const itemsElement =
+          document.getElementById(
+            'detailItems'
+          );
 
-        const items = Array.isArray(game.items)
-          ? game.items
-          : [];
+        const items =
+          Array.isArray(game.items)
+            ? game.items
+            : [];
 
-        if (!items.length) {
-          itemsEl.innerHTML = `
-            <div
-              class="empty-state"
-              style="padding: 14px;"
-            >
-              暫時未有詳細配件清單
-            </div>
-          `;
-        } else {
-          itemsEl.innerHTML = items.map(item => {
-            const itemName =
-              String(item.name || '').trim() ||
-              '未命名配件';
-
-            const itemQty =
-              Number.isFinite(Number(item.qty))
-                ? Number(item.qty)
-                : 0;
-
-            const itemUnit =
-              String(item.unit || '').trim();
-
-            const itemImportant =
-              item.important === true;
-
-            return `
-              <div class="item-row ${itemImportant ? 'important-item' : ''}">
-                <span class="item-key">
-                  ${escapeHtml(itemName)}
-                </span>
-
-                <span>
-                  數量：${escapeHtml(String(itemQty))}
-                  ${itemUnit ? escapeHtml(itemUnit) : ''}
-                </span>
-
-                ${
-                  itemImportant
-                    ? `
-                      <span class="important-label">⚠ 重要配件，請仔細檢查</span>
-                    `
-                    : ''
-                }
+        if (itemsElement) {
+          if (!items.length) {
+            itemsElement.innerHTML = `
+              <div
+                class="empty-state"
+                style="padding: 14px;"
+              >
+                暫時未有配件資料
               </div>
             `;
-          }).join('');
+          } else {
+            itemsElement.innerHTML =
+              items.map(item => {
+                const itemName =
+                  String(item.name || '').trim() ||
+                  '未命名配件';
+
+                const itemQuantity =
+                  Number.isFinite(
+                    Number(item.qty)
+                  )
+                    ? Number(item.qty)
+                    : 0;
+
+                const itemUnit =
+                  String(item.unit || '').trim();
+
+                const itemImportant =
+                  item.important === true;
+
+                return `
+                  <div class="item-row ${
+                    itemImportant
+                      ? 'important-item'
+                      : ''
+                  }">
+                    <span class="item-key">
+                      ${escapeHtml(itemName)}
+                    </span>
+
+                    <span>
+                      數量：
+                      ${escapeHtml(
+                        String(itemQuantity)
+                      )}
+                      ${
+                        itemUnit
+                          ? ` · ${escapeHtml(itemUnit)}`
+                          : ''
+                      }
+                    </span>
+
+                    ${
+                      itemImportant
+                        ? `
+                          <span class="important-label">
+                            ⚠ 重要配件
+                          </span>
+                        `
+                        : ''
+                    }
+                  </div>
+                `;
+              }).join('');
+          }
         }
 
-        const ytBtn =
-          document.getElementById('detailYoutubeBtn');
+        const youtubeButton =
+          document.getElementById(
+            'detailYoutubeBtn'
+          );
 
         const youtubeUrl =
           String(game.youtubeUrl || '').trim();
 
-        if (youtubeUrl) {
-          ytBtn.href = youtubeUrl;
-          ytBtn.classList.remove('hidden');
-        } else {
-          ytBtn.href = '#';
-          ytBtn.classList.add('hidden');
+        if (youtubeButton) {
+          if (
+            /^https?:\/\//i.test(youtubeUrl)
+          ) {
+            youtubeButton.href =
+              youtubeUrl;
+
+            youtubeButton.classList.remove(
+              'hidden'
+            );
+          } else {
+            youtubeButton.href =
+              '#';
+
+            youtubeButton.classList.add(
+              'hidden'
+            );
+          }
         }
 
-        const useBtn =
-          document.getElementById('detailUseThisBtn');
+        const useThisButton =
+          document.getElementById(
+            'detailUseThisBtn'
+          );
 
-        if (game.status === 'available') {
-          useBtn.classList.remove('hidden');
+        if (useThisButton) {
+          if (game.status === 'available') {
+            useThisButton.classList.remove(
+              'hidden'
+            );
 
-          useBtn.onclick = () => {
-            closeDetailModal();
-            selectGameForReservation(game.gameId);
-          };
-        } else {
-          useBtn.classList.add('hidden');
-          useBtn.onclick = null;
+            useThisButton.onclick =
+              () => {
+                closeDetailModal();
+                selectGameForReservation(
+                  game.gameId
+                );
+              };
+          } else {
+            useThisButton.classList.add(
+              'hidden'
+            );
+
+            useThisButton.onclick =
+              null;
+          }
         }
 
-        document
-          .getElementById('detailOverlay')
-          .classList.add('show');
+        const detailOverlay =
+          document.getElementById(
+            'detailOverlay'
+          );
 
+        if (detailOverlay) {
+          detailOverlay.classList.add(
+            'show'
+          );
+        }
       } catch (error) {
         console.error(
           '載入桌遊詳情失敗：',
@@ -2062,319 +2671,658 @@
         showMessage(
           'gamesMessage',
           'error',
-          `無法載入桌遊詳情：${error.message}`
+          `無法載入桌遊詳情：${
+            error.message || '未知錯誤'
+          }`
         );
       }
     }
 
     function closeDetailModal() {
-      document
-        .getElementById('detailOverlay')
-        .classList
-        .remove('show');
+      const overlay =
+        document.getElementById(
+          'detailOverlay'
+        );
+
+      if (overlay) {
+        overlay.classList.remove(
+          'show'
+        );
+      }
     }
 
-    const reserveBorrowDaysEl = document.getElementById('reserveBorrowDays');
-    if (reserveBorrowDaysEl) {
-      reserveBorrowDaysEl.addEventListener('change', updateBorrowDuePreview);
-    }
+    async function copyReservationId() {
+      const input =
+        document.getElementById(
+          'confirmReservationId'
+        );
 
-    const goReserveBtn = document.getElementById('goReserveBtn');
-    if (goReserveBtn) {
-      goReserveBtn.addEventListener('click', () => {
-        const gamesSection =
-          document.getElementById('gamesSection');
+      if (!input) {
+        return;
+      }
 
-        if (gamesSection) {
-          gamesSection.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
+      const reservationId =
+        normalizeReservationInput(
+          input.value ||
+          state.lastReservationId ||
+          ''
+        );
+
+      if (!reservationId) {
+        showMessage(
+          'confirmMessage',
+          'warning',
+          '目前沒有可複製的預約編號。'
+        );
+
+        return;
+      }
+
+      input.value =
+        reservationId;
+
+      state.lastReservationId =
+        reservationId;
+
+      try {
+        if (
+          !navigator.clipboard ||
+          !window.isSecureContext
+        ) {
+          throw new Error(
+            'clipboard unavailable'
+          );
         }
+
+        await navigator.clipboard.writeText(
+          reservationId
+        );
 
         showMessage(
-          'gamesMessage',
-          'info',
-          '請先在桌遊列表選擇一款可借桌遊。'
+          'confirmMessage',
+          'success',
+          `預約編號已複製：${reservationId}`
         );
-      });
+      } catch {
+        input.focus();
+        input.select();
+        input.setSelectionRange(
+          0,
+          input.value.length
+        );
+
+        showMessage(
+          'confirmMessage',
+          'warning',
+          `未能自動複製，已為你選取預約編號：${reservationId}`
+        );
+      }
     }
 
-    const goConfirmBtn = document.getElementById('goConfirmBtn');
-    if (goConfirmBtn) {
-      goConfirmBtn.addEventListener('click', () => {
-        const confirmSection =
-          document.getElementById('confirmSection');
+    function bindEvents() {
+      const reserveBorrowDaysElement =
+        document.getElementById(
+          'reserveBorrowDays'
+        );
 
-        if (confirmSection) {
-          confirmSection.classList.remove('hidden');
+      if (reserveBorrowDaysElement) {
+        reserveBorrowDaysElement.addEventListener(
+          'change',
+          updateBorrowDuePreview
+        );
+      }
 
-          confirmSection.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      });
-    }
+      const goReserveButton =
+        document.getElementById(
+          'goReserveBtn'
+        );
 
-    const goGamesBtn = document.getElementById('goGamesBtn');
-    if (goGamesBtn) {
-      goGamesBtn.addEventListener('click', () => {
-        const gamesSection =
-          document.getElementById('gamesSection');
+      if (goReserveButton) {
+        goReserveButton.addEventListener(
+          'click',
+          () => {
+            const gamesSection =
+              document.getElementById(
+                'gamesSection'
+              );
 
-        if (gamesSection) {
-          gamesSection.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      });
-    }
+            if (gamesSection) {
+              gamesSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
 
-    // 新增：查看規則按鈕事件
-    const viewRulesBtn = document.getElementById('viewRulesBtn');
-    if (viewRulesBtn) {
-      viewRulesBtn.addEventListener('click', () => {
-        const rulesSection =
-          document.getElementById('rulesSection');
-
-        if (rulesSection) {
-          rulesSection.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      });
-    }
-
-    // 讓《借用規則與聲明》連結可以平滑滾動到規則區域
-    document.querySelectorAll('.rules-link').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const rulesSection = document.getElementById('rulesSection');
-        if (rulesSection) {
-          rulesSection.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      });
-    });
-
-    const reloadGamesBtn = document.getElementById('reloadGamesBtn');
-    if (reloadGamesBtn) {
-      reloadGamesBtn.addEventListener('click', loadGames);
-    }
-
-    const closeDetailBtn = document.getElementById('closeDetailBtn');
-    if (closeDetailBtn) {
-      closeDetailBtn.addEventListener('click', closeDetailModal);
-    }
-
-    const detailOverlay = document.getElementById('detailOverlay');
-    if (detailOverlay) {
-      detailOverlay.addEventListener('click', (e) => {
-        if (e.target.id === 'detailOverlay') {
-          closeDetailModal();
-        }
-      });
-    }
-
-    const clearReserveBtn = document.getElementById('clearReserveBtn');
-    if (clearReserveBtn) {
-      clearReserveBtn.addEventListener('click', () => {
-        document.getElementById('reserveForm').reset();
-
-        state.selectedGameId = '';
-        state.selectedGameName = '';
-
-        populateGameSelect();
-        updateBorrowDuePreview();
-        clearMessage('reserveMessage');
-
-        document
-          .getElementById('reserveSection')
-          .classList.add('hidden');
-      });
-    }
-
-    const clearConfirmBtn = document.getElementById('clearConfirmBtn');
-    if (clearConfirmBtn) {
-      clearConfirmBtn.addEventListener('click', () => {
-        document.getElementById('confirmForm').reset();
-        clearMessage('confirmMessage');
-      });
-    }
-
-    const copyReservationIdBtn = document.getElementById('copyReservationIdBtn');
-    if (copyReservationIdBtn) {
-      copyReservationIdBtn.addEventListener('click', copyReservationId);
-    }
-
-    const reserveForm = document.getElementById('reserveForm');
-    if (reserveForm) {
-      reserveForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const agreeCheckbox = document.getElementById('agreeRules');
-        if (!agreeCheckbox || !agreeCheckbox.checked) {
-          showMessage('reserveMessage', 'error', '請先閱讀並同意《借用規則與聲明》的所有條款，然後勾選同意框再提交預約。');
-          agreeCheckbox?.focus();
-          return;
-        }
-
-        const gameId = document.getElementById('reserveGameId').value;
-        const memberId = digitsOnly(document.getElementById('reserveMemberId').value);
-        const contact = digitsOnly(document.getElementById('reserveContact').value);
-        const borrowDays = Number(document.getElementById('reserveBorrowDays').value);
-        const remark = document.getElementById('reserveRemark').value;
-
-        if (!gameId || !memberId || contact.length !== 4) {
-          showMessage('reserveMessage', 'error', '請填寫完整的預約資料（會員編號與電話尾 4 位必須正確）。');
-          return;
-        }
-
-        try {
-          showMessage('reserveMessage', 'info', '正在提交預約，請稍候...');
-          const json = await apiPost('createReservation', {
-            gameId,
-            memberId,
-            contact,
-            borrowDays,
-            remark
-          });
-
-          const reservation = json.reservation || {};
-          const resId = reservation.reservationId || '';
-
-          if (!resId) {
-            throw new Error('Worker 沒有回傳預約編號');
+            showMessage(
+              'gamesMessage',
+              'info',
+              '請先在桌遊列表選擇一款可借桌遊。'
+            );
           }
+        );
+      }
 
-          state.lastReservationId = resId;
+      const goConfirmButton =
+        document.getElementById(
+          'goConfirmBtn'
+        );
 
-          document.getElementById('confirmReservationId').value = resId;
+      if (goConfirmButton) {
+        goConfirmButton.addEventListener(
+          'click',
+          () => {
+            const confirmSection =
+              document.getElementById(
+                'confirmSection'
+              );
 
-          showMessage(
-            'reserveMessage',
-            'success',
-            `預約成功！\n預約編號：${resId}\n請記低此編號，並於 2 日內到中心完成核對與確認。`
-          );
+            if (confirmSection) {
+              confirmSection.classList.remove(
+                'hidden'
+              );
 
-          document.getElementById('reserveForm').reset();
-          updateBorrowDuePreview();
-          await loadGames();
+              confirmSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
+          }
+        );
+      }
 
-          document
-            .getElementById('reserveSection')
-            .classList.add('hidden');
+      const goGamesButton =
+        document.getElementById(
+          'goGamesBtn'
+        );
 
-          document
-            .getElementById('confirmSection')
-            .classList.remove('hidden');
+      if (goGamesButton) {
+        goGamesButton.addEventListener(
+          'click',
+          () => {
+            const gamesSection =
+              document.getElementById(
+                'gamesSection'
+              );
 
-          document
-            .getElementById('confirmSection')
-            .scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (err) {
-          showMessage('reserveMessage', 'error', `提交預約失敗：${err.message}`);
-        }
-      });
-    }
+            if (gamesSection) {
+              gamesSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
+          }
+        );
+      }
 
-    const confirmForm = document.getElementById('confirmForm');
+      const viewRulesButton =
+        document.getElementById(
+          'viewRulesBtn'
+        );
 
-    if (confirmForm) {
-      confirmForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+      if (viewRulesButton) {
+        viewRulesButton.addEventListener(
+          'click',
+          () => {
+            const rulesSection =
+              document.getElementById(
+                'rulesSection'
+              );
 
-        const reservationId =
-          normalizeReservationInput(
-            document.getElementById('confirmReservationId').value
-          );
+            if (rulesSection) {
+              rulesSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
+          }
+        );
+      }
 
-        const borrowCode =
-          digitsOnly(
-            document.getElementById('confirmBorrowCode').value
-          );
+      document
+        .querySelectorAll('.rules-link')
+        .forEach(link => {
+          link.addEventListener(
+            'click',
+            event => {
+              event.preventDefault();
 
-        const contact =
-          digitsOnly(
-            document.getElementById('confirmSignature').value
-          );
+              const rulesSection =
+                document.getElementById(
+                  'rulesSection'
+                );
 
-        const confirmRemark =
-          document.getElementById('confirmRemark').value.trim();
-
-        if (
-          !reservationId ||
-          borrowCode.length !== 6 ||
-          contact.length !== 4
-        ) {
-          showMessage(
-            'confirmMessage',
-            'error',
-            '請填寫正確的預約編號、6 位數借用碼及電話尾 4 位。'
-          );
-          return;
-        }
-
-        try {
-          showMessage(
-            'confirmMessage',
-            'info',
-            '正在確認借用，請稍候...'
-          );
-
-          const result = await apiPost(
-            'confirmBorrowByCode',
-            {
-              reservationId,
-              borrowCode,
-              contact,
-              confirmRemark
+              if (rulesSection) {
+                rulesSection.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start'
+                });
+              }
             }
           );
+        });
 
-          const reservation =
-            result.reservation || {};
+      const reloadGamesButton =
+        document.getElementById(
+          'reloadGamesBtn'
+        );
 
-          showMessage(
-            'confirmMessage',
-            'success',
-            `借用確認成功！\n預約編號：${
-              reservation.reservationId || reservationId
-            }\n請取走桌遊並按時歸還。`
-          );
+      if (reloadGamesButton) {
+        reloadGamesButton.addEventListener(
+          'click',
+          loadGames
+        );
+      }
 
-          document.getElementById('confirmForm').reset();
+      const closeDetailButton =
+        document.getElementById(
+          'closeDetailBtn'
+        );
 
-          document
-            .getElementById('confirmSection')
-            .classList.add('hidden');
+      if (closeDetailButton) {
+        closeDetailButton.addEventListener(
+          'click',
+          closeDetailModal
+        );
+      }
 
-          await loadGames();
+      const detailOverlay =
+        document.getElementById(
+          'detailOverlay'
+        );
 
-          document
-            .getElementById('gamesSection')
-            .scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (detailOverlay) {
+        detailOverlay.addEventListener(
+          'click',
+          event => {
+            if (
+              event.target === detailOverlay
+            ) {
+              closeDetailModal();
+            }
+          }
+        );
+      }
 
-        } catch (err) {
-          const userMsg =
-            mapConfirmBorrowError(err.message);
+      const clearReserveButton =
+        document.getElementById(
+          'clearReserveBtn'
+        );
 
-          showMessage(
-            'confirmMessage',
-            'error',
-            userMsg
-          );
-        }
-      });
+      if (clearReserveButton) {
+        clearReserveButton.addEventListener(
+          'click',
+          () => {
+            const reserveForm =
+              document.getElementById(
+                'reserveForm'
+              );
+
+            if (reserveForm) {
+              reserveForm.reset();
+            }
+
+            state.selectedGameId =
+              '';
+
+            state.selectedGameName =
+              '';
+
+            populateGameSelect();
+            updateBorrowDuePreview();
+            clearMessage('reserveMessage');
+
+            const reserveSection =
+              document.getElementById(
+                'reserveSection'
+              );
+
+            if (reserveSection) {
+              reserveSection.classList.add(
+                'hidden'
+              );
+            }
+          }
+        );
+      }
+
+      const clearConfirmButton =
+        document.getElementById(
+          'clearConfirmBtn'
+        );
+
+      if (clearConfirmButton) {
+        clearConfirmButton.addEventListener(
+          'click',
+          () => {
+            const confirmForm =
+              document.getElementById(
+                'confirmForm'
+              );
+
+            if (confirmForm) {
+              confirmForm.reset();
+            }
+
+            clearMessage(
+              'confirmMessage'
+            );
+          }
+        );
+      }
+
+      const copyReservationButton =
+        document.getElementById(
+          'copyReservationIdBtn'
+        );
+
+      if (copyReservationButton) {
+        copyReservationButton.addEventListener(
+          'click',
+          copyReservationId
+        );
+      }
+
+      const reserveForm =
+        document.getElementById(
+          'reserveForm'
+        );
+
+      if (reserveForm) {
+        reserveForm.addEventListener(
+          'submit',
+          async event => {
+            event.preventDefault();
+
+            const agreeCheckbox =
+              document.getElementById(
+                'agreeRules'
+              );
+
+            if (
+              !agreeCheckbox ||
+              !agreeCheckbox.checked
+            ) {
+              showMessage(
+                'reserveMessage',
+                'error',
+                '請先閱讀並同意《借用規則與聲明》的所有條款，然後勾選同意框再提交預約。'
+              );
+
+              agreeCheckbox?.focus();
+              return;
+            }
+
+            const gameId =
+              document.getElementById(
+                'reserveGameId'
+              ).value;
+
+            const memberId =
+              digitsOnly(
+                document.getElementById(
+                  'reserveMemberId'
+                ).value
+              );
+
+            const contact =
+              digitsOnly(
+                document.getElementById(
+                  'reserveContact'
+                ).value
+              );
+
+            const borrowDays =
+              Number(
+                document.getElementById(
+                  'reserveBorrowDays'
+                ).value
+              );
+
+            const remark =
+              document.getElementById(
+                'reserveRemark'
+              ).value.trim();
+
+            if (
+              !gameId ||
+              !memberId ||
+              contact.length !== 4
+            ) {
+              showMessage(
+                'reserveMessage',
+                'error',
+                '請填寫完整的預約資料（會員編號與電話尾 4 位必須正確）。'
+              );
+
+              return;
+            }
+
+            try {
+              showMessage(
+                'reserveMessage',
+                'info',
+                '正在提交預約，請稍候……'
+              );
+
+              const result =
+                await apiPost(
+                  'createReservation',
+                  {
+                    gameId,
+                    memberId,
+                    contact,
+                    borrowDays,
+                    remark
+                  }
+                );
+
+              const reservation =
+                result.reservation || {};
+
+              const reservationId =
+                reservation.reservationId || '';
+
+              if (!reservationId) {
+                throw new Error(
+                  'Worker 沒有回傳預約編號'
+                );
+              }
+
+              state.lastReservationId =
+                reservationId;
+
+              const confirmIdInput =
+                document.getElementById(
+                  'confirmReservationId'
+                );
+
+              if (confirmIdInput) {
+                confirmIdInput.value =
+                  reservationId;
+              }
+
+              showMessage(
+                'reserveMessage',
+                'success',
+                `預約成功！\n預約編號：${reservationId}\n請記低此編號，並於 2 日內到中心完成核對與確認。`
+              );
+
+              reserveForm.reset();
+              updateBorrowDuePreview();
+
+              await loadGames();
+
+              const reserveSection =
+                document.getElementById(
+                  'reserveSection'
+                );
+
+              if (reserveSection) {
+                reserveSection.classList.add(
+                  'hidden'
+                );
+              }
+
+              const confirmSection =
+                document.getElementById(
+                  'confirmSection'
+                );
+
+              if (confirmSection) {
+                confirmSection.classList.remove(
+                  'hidden'
+                );
+
+                confirmSection.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start'
+                });
+              }
+            } catch (error) {
+              showMessage(
+                'reserveMessage',
+                'error',
+                `提交預約失敗：${
+                  error.message || '未知錯誤'
+                }`
+              );
+            }
+          }
+        );
+      }
+
+      const confirmForm =
+        document.getElementById(
+          'confirmForm'
+        );
+
+      if (confirmForm) {
+        confirmForm.addEventListener(
+          'submit',
+          async event => {
+            event.preventDefault();
+
+            const reservationId =
+              normalizeReservationInput(
+                document.getElementById(
+                  'confirmReservationId'
+                ).value
+              );
+
+            const borrowCode =
+              digitsOnly(
+                document.getElementById(
+                  'confirmBorrowCode'
+                ).value
+              );
+
+            const contact =
+              digitsOnly(
+                document.getElementById(
+                  'confirmSignature'
+                ).value
+              );
+
+            const confirmRemark =
+              document.getElementById(
+                'confirmRemark'
+              ).value.trim();
+
+            if (
+              !reservationId ||
+              borrowCode.length !== 6 ||
+              contact.length !== 4
+            ) {
+              showMessage(
+                'confirmMessage',
+                'error',
+                '請填寫正確的預約編號、6 位數借用碼及電話尾 4 位。'
+              );
+
+              return;
+            }
+
+            try {
+              showMessage(
+                'confirmMessage',
+                'info',
+                '正在確認借用，請稍候……'
+              );
+
+              const result =
+                await apiPost(
+                  'confirmBorrowByCode',
+                  {
+                    reservationId,
+                    borrowCode,
+                    contact,
+                    confirmRemark
+                  }
+                );
+
+              const reservation =
+                result.reservation || {};
+
+              showMessage(
+                'confirmMessage',
+                'success',
+                `借用確認成功！\n預約編號：${
+                  reservation.reservationId ||
+                  reservationId
+                }\n請取走桌遊並按時歸還。`
+              );
+
+              confirmForm.reset();
+
+              const confirmSection =
+                document.getElementById(
+                  'confirmSection'
+                );
+
+              if (confirmSection) {
+                confirmSection.classList.add(
+                  'hidden'
+                );
+              }
+
+              await loadGames();
+
+              const gamesSection =
+                document.getElementById(
+                  'gamesSection'
+                );
+
+              if (gamesSection) {
+                gamesSection.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start'
+                });
+              }
+            } catch (error) {
+              const userMessage =
+                mapConfirmBorrowError(
+                  error.message || ''
+                );
+
+              showMessage(
+                'confirmMessage',
+                'error',
+                userMessage
+              );
+            }
+          }
+        );
+      }
     }
 
-    loadGames();
-    updateBorrowDuePreview();
+    document.addEventListener(
+      'DOMContentLoaded',
+      () => {
+        bindEvents();
+        updateBorrowDuePreview();
+        loadGames();
+      }
+    );
   </script>
 </body>
 </html>
