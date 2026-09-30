@@ -76,6 +76,29 @@
       flex-wrap: wrap;
     }
 
+    .hero-logos {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .hero-logo {
+      width: 140px;
+      max-width: 22vw;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .hero-logo-swd {
+      width: 90px;
+      max-width: 14vw;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
     #heroIntro {
       flex: 1 1 620px;
     }
@@ -658,6 +681,16 @@
         width: 70px;
         max-width: 22vw;
       }
+
+      .hero-logo {
+        width: 110px;
+        max-width: 35vw;
+      }
+
+      .hero-logo-swd {
+        width: 70px;
+        max-width: 22vw;
+      }
     }
   </style>
 </head>
@@ -671,6 +704,19 @@
           <p>
             用於管理桌遊資料、查看會員預約、產生借用碼、取消或刪除紀錄，以及辦理歸還。
           </p>
+        </div>
+
+        <div class="hero-logos">
+          <img
+            src="./bgit-logo.jpg"
+            alt="中心 Logo"
+            class="hero-logo"
+          >
+          <img
+            src="./社會福利署資助服務標誌 (白底).jpg"
+            alt="社會福利署資助服務標誌"
+            class="hero-logo-swd"
+          >
         </div>
 
         <div class="staff-panel" id="staffPanel">
@@ -841,7 +887,7 @@
                 <div class="two-col">
                   <div class="field">
                     <label for="gamePublicNote">公開備註</label>
-                    <textarea id="gamePublicNote" placeholder="會顯示在公開頁"></textarea>
+                    <textarea id="gamePublicNote" placeholder="會顯示在公開頁詳情（例如：適合 4-8 人、遊戲時間約 30 分鐘）"></textarea>
                   </div>
                   <div class="field">
                     <label for="gameInternalNote">內部備註</label>
