@@ -2185,270 +2185,297 @@ function renderReservations() {
     });
 }
 
-  function handleReservationActionPrompt(
-    action,
-    reservationId
-  ) {
-    const reservation =
-      state.reservations.find(
-        item =>
-          item.reservationId ===
-          reservationId
-      );
+function handleReservationActionPrompt(
+  action,
+  reservationId
+) {
+  const reservation =
+    state.reservations.find(
+      item =>
+        item.reservationId ===
+        reservationId
+    );
 
-    if (!reservation) {
-      return;
-    }
-
-    state.dialogAction = action;
-    state.dialogReservationId =
-      reservationId;
-
-    const title =
-      document.getElementById(
-        'dialogTitle'
-      );
-
-    const note =
-      document.getElementById(
-        'dialogNote'
-      );
-
-    const fields =
-      document.getElementById(
-        'dialogFields'
-      );
-
-    if (!title || !note || !fields) {
-      return;
-    }
-
-    fields.innerHTML = '';
-
-    // 不再顯示職員輸入欄，直接使用登入時儲存的 staffName
-    if (action === 'readyCode') {
-      title.textContent =
-        '產生借用碼（待盤點 → 已出碼）';
-
-      note.textContent =
-        `請確認預約 ${reservationId} 的桌遊及配件無誤，系統將產生 6 位數借用碼。`;
-
-      fields.innerHTML = `
-        <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover);">
-          處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
-        </div>
-      `;
-    }
-
-    if (action === 'returnGame') {
-      title.textContent =
-        '辦理歸還';
-
-      note.textContent =
-        `點算預約 ${reservationId} 的配件後辦理歸還。`;
-
-      fields.innerHTML = `
-        <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover); margin-bottom: 12px;">
-          處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
-        </div>
-
-        <div class="field">
-          <label for="dialogReturnNote">
-            歸還備註
-          </label>
-
-          <textarea
-            id="dialogReturnNote"
-            placeholder="例如：配件齊全、外盒良好"
-          ></textarea>
-        </div>
-      `;
-    }
-
-    if (action === 'cancelRes') {
-      title.textContent =
-        '取消預約';
-
-      note.textContent =
-        `確定要取消預約 ${reservationId} 嗎？`;
-
-      fields.innerHTML = `
-        <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover); margin-bottom: 12px;">
-          處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
-        </div>
-
-        <div class="field">
-          <label for="dialogCancelReason">
-            取消原因
-          </label>
-
-          <textarea
-            id="dialogCancelReason"
-            placeholder="可填寫取消原因"
-          ></textarea>
-        </div>
-      `;
-    }
-
-    if (action === 'deleteRes') {
-      title.textContent =
-        '刪除預約紀錄';
-
-      note.textContent =
-        `警告：刪除後將無法在管理頁查看此紀錄。`;
-
-      fields.innerHTML = `
-        <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover);">
-          處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
-        </div>
-      `;
-    }
-
-    document
-      .getElementById('actionDialog')
-      ?.classList.add('show');
+  if (!reservation) {
+    return;
   }
 
-  async function executeDialogAction() {
-    const action =
-      state.dialogAction;
+  state.dialogAction = action;
+  state.dialogReservationId =
+    reservationId;
 
-    const reservationId =
-      state.dialogReservationId;
+  const title =
+    document.getElementById(
+      'dialogTitle'
+    );
 
-    // 直接使用登入時儲存的 staffName，不再從 dialog 獲取
-    const staffName = state.staffName;
+  const note =
+    document.getElementById(
+      'dialogNote'
+    );
 
-    if (!staffName) {
-      showMessage(
-        'reservationsMessage',
-        'error',
-        '請先登入以確認處理職員。'
-      );
+  const fields =
+    document.getElementById(
+      'dialogFields'
+    );
 
-      return;
-    }
+  if (!title || !note || !fields) {
+    return;
+  }
 
-    try {
-      if (action === 'readyCode') {
-        const result =
-          await apiPost(
-            'generateBorrowCode',
-            {
-              reservationId,
-              staffName
-            }
-          );
+  fields.innerHTML = '';
 
-        const borrowCode =
-          result.reservation?.borrowCode ||
-          '';
+  // 顯示出碼職員名稱
+  const codeReadyByDisplay = reservation.confirmedBy && reservation.status === 'code_ready'
+    ? `<div class="rule-box" style="background: var(--green-soft); color: var(--green-text); margin-bottom: 12px;">
+        出碼職員：<strong>${escapeHtml(reservation.confirmedBy)}</strong>
+      </div>`
+    : '';
 
-        const expiresAt =
-          result.reservation?.codeExpiresAt ||
-          '';
+  // 顯示歸還職員名稱
+  const returnedByDisplay = reservation.returnedBy && reservation.status === 'returned'
+    ? `<div class="rule-box" style="background: var(--green-soft); color: var(--green-text); margin-bottom: 12px;">
+        歸還職員：<strong>${escapeHtml(reservation.returnedBy)}</strong>
+      </div>`
+    : '';
 
-        showMessage(
-          'reservationsMessage',
-          'success',
-          `預約 ${reservationId} 已成功產生借用碼！` +
-          `${
-            borrowCode
-              ? `\n借用碼：${borrowCode}`
-              : ''
-          }` +
-          `${
-            expiresAt
-              ? `\n有效至：${formatDateTime(
-                  expiresAt
-                )}`
-              : ''
-          }`
-        );
-      }
+  // 不再顯示職員輸入欄，直接使用登入時儲存的 staffName
+  if (action === 'readyCode') {
+    title.textContent =
+      '產生借用碼（待盤點 → 已出碼）';
 
-      if (action === 'returnGame') {
-        const returnNote =
-          normalizeText(
-            document
-              .getElementById(
-                'dialogReturnNote'
-              )
-              ?.value || ''
-          );
+    note.textContent =
+      `請確認預約 ${reservationId} 的桌遊及配件無誤，系統將產生 6 位數借用碼。`;
 
+    fields.innerHTML = `
+      ${codeReadyByDisplay}
+      <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover);">
+        處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
+      </div>
+    `;
+  }
+
+  if (action === 'returnGame') {
+    title.textContent =
+      '辦理歸還';
+
+    note.textContent =
+      `點算預約 ${reservationId} 的配件後辦理歸還。`;
+
+    fields.innerHTML = `
+      ${returnedByDisplay}
+      <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover); margin-bottom: 12px;">
+        處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
+      </div>
+
+      <div class="field">
+        <label for="dialogReturnNote">
+          歸還備註
+        </label>
+
+        <textarea
+          id="dialogReturnNote"
+          placeholder="例如：配件齊全、外盒良好"
+        ></textarea>
+      </div>
+    `;
+  }
+
+  if (action === 'cancelRes') {
+    title.textContent =
+      '取消預約';
+
+    note.textContent =
+      `確定要取消預約 ${reservationId} 嗎？`;
+
+    fields.innerHTML = `
+      <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover); margin-bottom: 12px;">
+        處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
+      </div>
+
+      <div class="field">
+        <label for="dialogCancelReason">
+          取消原因
+        </label>
+
+        <textarea
+          id="dialogCancelReason"
+          placeholder="可填寫取消原因"
+        ></textarea>
+      </div>
+    `;
+  }
+
+  if (action === 'deleteRes') {
+    title.textContent =
+      '刪除預約紀錄';
+
+    note.textContent =
+      `警告：刪除後將無法在管理頁查看此紀錄。`;
+
+    fields.innerHTML = `
+      <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover);">
+        處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
+      </div>
+    `;
+  }
+
+  document
+    .getElementById('actionDialog')
+    ?.classList.add('show');
+}
+
+ async function executeDialogAction() {
+  const action =
+    state.dialogAction;
+
+  const reservationId =
+    state.dialogReservationId;
+
+  // 直接使用登入時儲存的 staffName，不再從 dialog 獲取
+  const staffName = state.staffName;
+
+  if (!staffName) {
+    showMessage(
+      'reservationsMessage',
+      'error',
+      '請先登入以確認處理職員。'
+    );
+
+    return;
+  }
+
+  try {
+    if (action === 'readyCode') {
+      const result =
         await apiPost(
-          'markReturned',
-          {
-            reservationId,
-            staffName,
-            nextGameStatus: 'available',
-            returnNote
-          }
-        );
-
-        showMessage(
-          'reservationsMessage',
-          'success',
-          `預約 ${reservationId} 已完成歸還，桌遊狀態已更新。`
-        );
-      }
-
-      if (action === 'cancelRes') {
-        const cancelReason =
-          normalizeText(
-            document
-              .getElementById(
-                'dialogCancelReason'
-              )
-              ?.value || ''
-          );
-
-        await apiPost(
-          'cancelReservation',
-          {
-            reservationId,
-            staffName,
-            cancelReason
-          }
-        );
-
-        showMessage(
-          'reservationsMessage',
-          'success',
-          `預約 ${reservationId} 已取消。`
-        );
-      }
-
-      if (action === 'deleteRes') {
-        await apiPost(
-          'deleteReservation',
+          'generateBorrowCode',
           {
             reservationId,
             staffName
           }
         );
 
-        showMessage(
-          'reservationsMessage',
-          'success',
-          `預約紀錄 ${reservationId} 已刪除。`
-        );
-      }
+      const borrowCode =
+        result.reservation?.borrowCode ||
+        '';
 
-      document
-        .getElementById('actionDialog')
-        ?.classList.remove('show');
+      const expiresAt =
+        result.reservation?.codeExpiresAt ||
+        '';
 
-      await loadAllAdminData();
-    } catch (error) {
       showMessage(
         'reservationsMessage',
-        'error',
-        `操作失敗：${error.message}`
+        'success',
+        `預約 ${reservationId} 已成功產生借用碼！` +
+        `${
+          borrowCode
+            ? `\n借用碼：${borrowCode}`
+            : ''
+        }` +
+        `${
+          expiresAt
+            ? `\n有效至：${formatDateTime(
+                expiresAt
+              )}`
+            : ''
+        }`
       );
+
+      // 自動刷新預約記錄
+      await loadReservationsOnly();
     }
+
+    if (action === 'returnGame') {
+      const returnNote =
+        normalizeText(
+          document
+            .getElementById(
+              'dialogReturnNote'
+            )
+            ?.value || ''
+        );
+
+      await apiPost(
+        'markReturned',
+        {
+          reservationId,
+          staffName,
+          nextGameStatus: 'available',
+          returnNote
+        }
+      );
+
+      showMessage(
+        'reservationsMessage',
+        'success',
+        `預約 ${reservationId} 已完成歸還，桌遊狀態已更新。`
+      );
+
+      // 自動刷新預約記錄和桌遊資料
+      await loadReservationsOnly();
+      await loadGamesOnly();
+    }
+
+    if (action === 'cancelRes') {
+      const cancelReason =
+        normalizeText(
+          document
+            .getElementById(
+              'dialogCancelReason'
+            )
+            ?.value || ''
+        );
+
+      await apiPost(
+        'cancelReservation',
+        {
+          reservationId,
+          staffName,
+          cancelReason
+        }
+      );
+
+      showMessage(
+        'reservationsMessage',
+        'success',
+        `預約 ${reservationId} 已取消。`
+      );
+
+      // 自動刷新預約記錄
+      await loadReservationsOnly();
+    }
+
+    if (action === 'deleteRes') {
+      await apiPost(
+        'deleteReservation',
+        {
+          reservationId,
+          staffName
+        }
+      );
+
+      showMessage(
+        'reservationsMessage',
+        'success',
+        `預約紀錄 ${reservationId} 已刪除。`
+      );
+
+      // 自動刷新預約記錄
+      await loadReservationsOnly();
+    }
+
+    document
+      .getElementById('actionDialog')
+      ?.classList.remove('show');
+  } catch (error) {
+    showMessage(
+      'reservationsMessage',
+      'error',
+      `操作失敗：${error.message}`
+    );
   }
+}
 
   function prepareNewGame() {
     state.selectedGameId = '';
