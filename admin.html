@@ -2325,7 +2325,7 @@ function handleReservationActionPrompt(
     ?.classList.add('show');
 }
 
- async function executeDialogAction() {
+async function executeDialogAction() {
   const action =
     state.dialogAction;
 
@@ -2382,6 +2382,11 @@ function handleReservationActionPrompt(
         }`
       );
 
+      // 先關閉 dialog 再刷新
+      document
+        .getElementById('actionDialog')
+        ?.classList.remove('show');
+
       // 自動刷新預約記錄
       await loadReservationsOnly();
     }
@@ -2411,6 +2416,11 @@ function handleReservationActionPrompt(
         'success',
         `預約 ${reservationId} 已完成歸還，桌遊狀態已更新。`
       );
+
+      // 先關閉 dialog 再刷新
+      document
+        .getElementById('actionDialog')
+        ?.classList.remove('show');
 
       // 自動刷新預約記錄和桌遊資料
       await loadReservationsOnly();
@@ -2442,6 +2452,11 @@ function handleReservationActionPrompt(
         `預約 ${reservationId} 已取消。`
       );
 
+      // 先關閉 dialog 再刷新
+      document
+        .getElementById('actionDialog')
+        ?.classList.remove('show');
+
       // 自動刷新預約記錄
       await loadReservationsOnly();
     }
@@ -2461,13 +2476,18 @@ function handleReservationActionPrompt(
         `預約紀錄 ${reservationId} 已刪除。`
       );
 
+      // 先關閉 dialog 再刷新
+      document
+        .getElementById('actionDialog')
+        ?.classList.remove('show');
+
       // 自動刷新預約記錄
       await loadReservationsOnly();
     }
 
-    document
-      .getElementById('actionDialog')
-      ?.classList.remove('show');
+    // 重置 dialog 狀態
+    state.dialogAction = null;
+    state.dialogReservationId = '';
   } catch (error) {
     showMessage(
       'reservationsMessage',
