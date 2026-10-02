@@ -2461,29 +2461,27 @@ async function executeDialogAction() {
       await loadReservationsOnly();
     }
 
-    if (action === 'deleteRes') {
-      await apiPost(
-        'deleteReservation',
-        {
-          reservationId,
-          staffName
-        }
-      );
-
-      showMessage(
-        'reservationsMessage',
-        'success',
-        `預約紀錄 ${reservationId} 已刪除。`
-      );
-
-      // 先關閉 dialog 再刷新
-      document
-        .getElementById('actionDialog')
-        ?.classList.remove('show');
-
-      // 自動刷新預約記錄
-      await loadReservationsOnly();
+if (action === 'deleteRes') {
+  await apiPost(
+    'deleteReservation',
+    {
+      reservationId,
+      staffName
     }
+  );
+
+  showMessage(
+    'reservationsMessage',
+    'success',
+    `記錄 ${reservationId} 已刪除`
+  );
+
+  document
+    .getElementById('actionDialog')
+    ?.classList.remove('show');
+
+  await loadReservationsOnly();
+}
 
     // 重置 dialog 狀態
     state.dialogAction = null;
