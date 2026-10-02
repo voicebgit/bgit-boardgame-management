@@ -3714,6 +3714,8 @@
       }
     );
 
+let isSubmittingReservation = false;
+
 document.getElementById(
   'reserveForm'
 ).addEventListener(
@@ -3721,12 +3723,21 @@ document.getElementById(
   async event => {
     event.preventDefault();
 
+    // 防止重複提交
+    if (isSubmittingReservation) {
+      showMessage(
+        'reserveMessage',
+        'warning',
+        '正在提交中，請勿重複點擊。'
+      );
+      return;
+    }
+
     const agreement =
       document.getElementById(
         'agreeRules'
       );
 
-    // 強制檢查勾選框
     if (!agreement || !agreement.checked) {
       showMessage(
         'reserveMessage',
@@ -3785,7 +3796,27 @@ document.getElementById(
       return;
     }
 
+    // 檢查借用天數
+    if (!borrowDays || borrowDays < 1 || borrowDays > 14) {
+      showMessage(
+        'reserveMessage',
+        'error',
+        '借用天數必須為 1-14 天。'
+      );
+      return;
+    }
+
     try {
+      // 設置提交狀態
+      isSubmittingReservation = true;
+
+      // 禁用提交按鈕
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = '提交中……';
+      }
+
       showMessage(
         'reserveMessage',
         'info',
@@ -3875,6 +3906,16 @@ document.getElementById(
           '未知錯誤'
         }`
       );
+    } finally {
+      // 重置提交狀態
+      isSubmittingReservation = false;
+
+      // 恢復提交按鈕
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = '提交預約';
+      }
     }
   }
 );
