@@ -1812,154 +1812,164 @@
     }
   }
 
-  function renderReservations() {
-    const wrap =
-      document.getElementById(
-        'reservationList'
-      );
-
-    if (!wrap) {
-      return;
-    }
-
-    const search =
-      normalizeText(
-        document
-          .getElementById(
-            'reservationSearch'
-          )
-          ?.value || ''
-      ).toLowerCase();
-
-    const sort =
-      document
-        .getElementById(
-          'reservationSort'
-        )
-        ?.value || 'desc';
-
-    let list =
-      [...state.reservations];
-
-    if (
-      state.activeReservationTab !==
-      'all'
-    ) {
-      list =
-        list.filter(
-          reservation =>
-            reservation.status ===
-            state.activeReservationTab
-        );
-    }
-
-    if (search) {
-      list =
-        list.filter(
-          reservation => {
-            const values = [
-              reservation.reservationId,
-              reservation.memberId,
-              reservation.gameName,
-              reservation.gameId,
-              reservation.contact
-            ];
-
-            return values.some(
-              value =>
-                String(value || '')
-                  .toLowerCase()
-                  .includes(search)
-            );
-          }
-        );
-    }
-
-    list.sort(
-      (a, b) => {
-        const aTime =
-          new Date(
-            a.createdAt || 0
-          ).getTime();
-
-        const bTime =
-          new Date(
-            b.createdAt || 0
-          ).getTime();
-
-        return sort === 'asc'
-          ? aTime - bTime
-          : bTime - aTime;
-      }
+function renderReservations() {
+  const wrap =
+    document.getElementById(
+      'reservationList'
     );
 
-    if (!list.length) {
-      wrap.innerHTML =
-        '<div class="empty-state">沒有符合條件的預約紀錄</div>';
+  if (!wrap) {
+    return;
+  }
 
-      return;
-    }
+  const search =
+    normalizeText(
+      document
+        .getElementById(
+          'reservationSearch'
+        )
+        ?.value || ''
+    ).toLowerCase();
 
-    wrap.innerHTML =
-      list.map(
+  const sort =
+    document
+      .getElementById(
+        'reservationSort'
+      )
+      ?.value || 'desc';
+
+  let list =
+    [...state.reservations];
+
+  if (
+    state.activeReservationTab !==
+    'all'
+  ) {
+    list =
+      list.filter(
+        reservation =>
+          reservation.status ===
+          state.activeReservationTab
+      );
+  }
+
+  if (search) {
+    list =
+      list.filter(
         reservation => {
-          const memberId =
-            String(
-              reservation.memberId || ''
-            );
+          const values = [
+            reservation.reservationId,
+            reservation.memberId,
+            reservation.gameName,
+            reservation.gameId,
+            reservation.contact
+          ];
 
-          // 顯示完整會員號碼，不再遮罩
-          const displayMemberId = memberId;
+          return values.some(
+            value =>
+              String(value || '')
+                .toLowerCase()
+                .includes(search)
+          );
+        }
+      );
+  }
 
-          // 顯示處理職員名稱
-          const confirmedByDisplay = reservation.confirmedBy
-            ? `<div class="meta-line">處理職員：<strong style="color: var(--primary);">${escapeHtml(reservation.confirmedBy)}</strong></div>`
-            : '';
+  list.sort(
+    (a, b) => {
+      const aTime =
+        new Date(
+          a.createdAt || 0
+        ).getTime();
 
-          return `
-            <article class="reservation-card">
-              <div class="reservation-head">
-                <div>
-                  <div
-                    class="chip-row"
-                    style="margin-bottom: 6px;"
+      const bTime =
+        new Date(
+          b.createdAt || 0
+        ).getTime();
+
+      return sort === 'asc'
+        ? aTime - bTime
+        : bTime - aTime;
+    }
+  );
+
+  if (!list.length) {
+    wrap.innerHTML =
+      '<div class="empty-state">沒有符合條件的預約紀錄</div>';
+
+    return;
+  }
+
+  wrap.innerHTML =
+    list.map(
+      reservation => {
+        const memberId =
+          String(
+            reservation.memberId || ''
+          );
+
+        // 顯示完整會員號碼
+        const displayMemberId = memberId;
+
+        // 顯示出碼職員
+        const codeReadyByDisplay = reservation.confirmedBy && reservation.status === 'code_ready'
+          ? `<div class="meta-line">出碼職員：<strong style="color: var(--primary);">${escapeHtml(reservation.confirmedBy)}</strong></div>`
+          : '';
+
+        // 顯示歸還職員
+        const returnedByDisplay = reservation.returnedBy && reservation.status === 'returned'
+          ? `<div class="meta-line">歸還職員：<strong style="color: var(--green-text);">${escapeHtml(reservation.returnedBy)}</strong></div>`
+          : '';
+
+        // 顯示處理職員（已確認借用）
+        const confirmedByDisplay = reservation.confirmedBy && reservation.status === 'borrowed'
+          ? `<div class="meta-line">處理職員：<strong style="color: var(--primary);">${escapeHtml(reservation.confirmedBy)}</strong></div>`
+          : '';
+
+        return `
+          <article class="reservation-card">
+            <div class="reservation-head">
+              <div>
+                <div
+                  class="chip-row"
+                  style="margin-bottom: 6px;"
+                >
+                  <span
+                    class="chip status-${escapeHtml(
+                      reservation.status || ''
+                    )}"
                   >
-                    <span
-                      class="chip status-${escapeHtml(
-                        reservation.status || ''
-                      )}"
-                    >
-                      ${escapeHtml(
-                        getStatusLabel(
-                          reservation.status
-                        )
-                      )}
-                    </span>
-
-                    <span class="chip count-chip">
-                      預約編號：
-                      ${escapeHtml(
-                        reservation.reservationId
-                      )}
-                    </span>
-                  </div>
-
-                  <div class="reservation-title">
                     ${escapeHtml(
-                      reservation.gameName ||
-                      reservation.gameId
+                      getStatusLabel(
+                        reservation.status
+                      )
                     )}
-                    (${escapeHtml(
-                      reservation.gameId
-                    )})
-                  </div>
+                  </span>
+
+                  <span class="chip count-chip">
+                    預約編號：
+                    ${escapeHtml(
+                      reservation.reservationId
+                    )}
+                  </span>
                 </div>
 
-                <div class="reservation-actions">
-                  ${
-                    reservation.status ===
-                    'pending'
-                      ? `
+                <div class="reservation-title">
+                  ${escapeHtml(
+                    reservation.gameName ||
+                    reservation.gameId
+                  )}
+                  (${escapeHtml(
+                    reservation.gameId
+                  )})
+                </div>
+              </div>
+
+              <div class="reservation-actions">
+                ${
+                  reservation.status ===
+                  'pending'
+                    ? `
                         <button
                           type="button"
                           class="btn small"
@@ -1971,13 +1981,13 @@
                           產生出碼
                         </button>
                       `
-                      : ''
-                  }
+                    : ''
+                }
 
-                  ${
-                    reservation.status ===
-                    'borrowed'
-                      ? `
+                ${
+                  reservation.status ===
+                  'borrowed'
+                    ? `
                         <button
                           type="button"
                           class="btn small"
@@ -1989,15 +1999,15 @@
                           辦理歸還
                         </button>
                       `
-                      : ''
-                  }
+                    : ''
+                }
 
-                  ${
-                    ['pending', 'code_ready']
-                      .includes(
-                        reservation.status
-                      )
-                      ? `
+                ${
+                  ['pending', 'code_ready']
+                    .includes(
+                      reservation.status
+                    )
+                    ? `
                         <button
                           type="button"
                           class="btn-danger small"
@@ -2009,65 +2019,67 @@
                           取消預約
                         </button>
                       `
-                      : ''
-                  }
+                    : ''
+                }
 
-                  <button
-                    type="button"
-                    class="btn-secondary small"
-                    data-action="deleteRes"
-                    data-id="${escapeHtml(
-                      reservation.reservationId
-                    )}"
-                  >
-                    刪除紀錄
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  class="btn-secondary small"
+                  data-action="deleteRes"
+                  data-id="${escapeHtml(
+                    reservation.reservationId
+                  )}"
+                >
+                  刪除紀錄
+                </button>
+              </div>
+            </div>
+
+            <div class="reservation-meta">
+              <div>
+                會員編號：
+                <strong style="color: var(--primary);">
+                  ${escapeHtml(
+                    displayMemberId
+                  )}
+                </strong>
+                ｜ 電話尾 4 位：
+                <strong>
+                  ${escapeHtml(
+                    reservation.contact || ''
+                  )}
+                </strong>
+                ｜ 借用天數：
+                ${escapeHtml(
+                  String(
+                    reservation.borrowDays ||
+                    7
+                  )
+                )} 天
               </div>
 
-              <div class="reservation-meta">
-                <div>
-                  會員編號：
-                  <strong style="color: var(--primary);">
-                    ${escapeHtml(
-                      displayMemberId
-                    )}
-                  </strong>
-                  ｜ 電話尾 4 位：
-                  <strong>
-                    ${escapeHtml(
-                      reservation.contact || ''
-                    )}
-                  </strong>
-                  ｜ 借用天數：
-                  ${escapeHtml(
-                    String(
-                      reservation.borrowDays ||
-                      7
-                    )
-                  )} 天
-                </div>
+              <div>
+                建立時間：
+                ${escapeHtml(
+                  formatDateTime(
+                    reservation.createdAt
+                  )
+                )}
+                ｜ 預計到期：
+                ${escapeHtml(
+                  formatDateOnly(
+                    reservation.dueAt
+                  )
+                )}
+              </div>
 
-                <div>
-                  建立時間：
-                  ${escapeHtml(
-                    formatDateTime(
-                      reservation.createdAt
-                    )
-                  )}
-                  ｜ 預計到期：
-                  ${escapeHtml(
-                    formatDateOnly(
-                      reservation.dueAt
-                    )
-                  )}
-                </div>
+              ${codeReadyByDisplay}
+              ${confirmedByDisplay}
+              ${returnedByDisplay}
 
-                ${confirmedByDisplay}
-
-                ${
-                  reservation.borrowCode
-                    ? `
+              ${
+                reservation.borrowCode
+                  ? `
                       <div>
                         借用碼：
                         <strong
@@ -2085,25 +2097,25 @@
                         )}）
                       </div>
                     `
-                    : ''
-                }
+                  : ''
+              }
 
-                ${
-                  reservation.remark
-                    ? `
+              ${
+                reservation.remark
+                  ? `
                       <div>
-                        預約備註：
+                        備註：
                         ${escapeHtml(
                           reservation.remark
                         )}
                       </div>
                     `
-                    : ''
-                }
+                  : ''
+              }
 
-                ${
-                  reservation.confirmRemark
-                    ? `
+              ${
+                reservation.confirmRemark
+                  ? `
                       <div>
                         確認備註：
                         ${escapeHtml(
@@ -2111,12 +2123,12 @@
                         )}
                       </div>
                     `
-                    : ''
-                }
+                  : ''
+              }
 
-                ${
-                  reservation.returnNote
-                    ? `
+              ${
+                reservation.returnNote
+                  ? `
                       <div>
                         歸還備註：
                         ${escapeHtml(
@@ -2124,32 +2136,54 @@
                         )}
                       </div>
                     `
-                    : ''
-                }
-              </div>
-            </article>
-          `;
-        }
-      ).join('');
+                  : ''
+              }
 
-    wrap
-      .querySelectorAll('[data-action]')
-      .forEach(button => {
-        button.addEventListener(
-          'click',
-          () => {
-            handleReservationActionPrompt(
-              button.getAttribute(
-                'data-action'
-              ),
-              button.getAttribute(
-                'data-id'
-              )
+              ${
+                reservation.cancelReason
+                  ? `
+                      <div>
+                        取消原因：
+                        ${escapeHtml(
+                          reservation.cancelReason
+                        )}
+                      </div>
+                    `
+                  : ''
+              }
+            </div>
+          </article>
+        `;
+      }
+    ).join('');
+
+  // 綁定按鈕事件
+  wrap
+    .querySelectorAll('[data-action]')
+    .forEach(button => {
+      button.addEventListener(
+        'click',
+        () => {
+          const action =
+            button.getAttribute(
+              'data-action'
+            );
+
+          const reservationId =
+            button.getAttribute(
+              'data-id'
+            );
+
+          if (action && reservationId) {
+            handleReservationAction(
+              action,
+              reservationId
             );
           }
-        );
-      });
-  }
+        }
+      );
+    });
+}
 
   function handleReservationActionPrompt(
     action,
