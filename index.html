@@ -609,29 +609,39 @@
       background: #f9f7f2;
     }
 
-    .agreement-checkbox {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      cursor: pointer;
-    }
+.agreement-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
 
-    .agreement-checkbox input {
-      width: 20px;
-      height: 20px;
-      margin-top: 2px;
-      accent-color: var(--primary);
-      flex-shrink: 0;
-    }
+.agreement-checkbox input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  margin-right: 4px;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+  cursor: pointer;
+  appearance: auto;
+  -webkit-appearance: auto;
+}
 
-    .agreement-checkbox span {
-      font-size: 14px;
-      line-height: 1.5;
-    }
+.agreement-checkbox input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
 
-    .agreement-checkbox strong {
-      color: var(--primary-hover);
-    }
+.agreement-checkbox span {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.agreement-checkbox strong {
+  color: var(--primary-hover);
+}
 
     .message-box {
       display: none;
@@ -1638,28 +1648,29 @@
             ></textarea>
           </div>
 
-          <div class="agreement-wrap">
-            <label class="agreement-checkbox">
-              <input
-                type="checkbox"
-                id="agreeRules"
-                required
-              >
+<div class="agreement-wrap">
+  <label class="agreement-checkbox">
+    <input
+      type="checkbox"
+      id="agreeRules"
+      required
+      style="width: 20px; height: 20px; accent-color: var(--primary);"
+    >
 
-              <span>
-                我已仔細閱讀並同意
-                <a
-                  href="#rulesSection"
-                  class="rules-link"
-                >
-                  <strong>《借用規則與聲明》</strong>
-                </a>
-                的所有條款，並確認本人符合
-                <strong>6-24 歲中心會員</strong>
-                的借用資格。
-              </span>
-            </label>
-          </div>
+    <span>
+      我已仔細閱讀並同意
+      <a
+        href="#rulesSection"
+        class="rules-link"
+      >
+        <strong>《借用規則與聲明》</strong>
+      </a>
+      的所有條款，並確認本人符合
+      <strong>6-24 歲中心會員</strong>
+      的借用資格。
+    </span>
+  </label>
+</div>
 
           <div class="rule-box">
             規則提醒：每位會員最多同時借用 2 款桌遊，
@@ -3703,167 +3714,170 @@
       }
     );
 
-    document.getElementById(
-      'reserveForm'
-    ).addEventListener(
-      'submit',
-      async event => {
-        event.preventDefault();
+document.getElementById(
+  'reserveForm'
+).addEventListener(
+  'submit',
+  async event => {
+    event.preventDefault();
 
-        const agreement =
-          document.getElementById(
-            'agreeRules'
-          );
+    const agreement =
+      document.getElementById(
+        'agreeRules'
+      );
 
-        if (!agreement.checked) {
-          showMessage(
-            'reserveMessage',
-            'error',
-            '請先閱讀並同意《借用規則與聲明》的所有條款。'
-          );
+    // 強制檢查勾選框
+    if (!agreement || !agreement.checked) {
+      showMessage(
+        'reserveMessage',
+        'error',
+        '請先閱讀並同意《借用規則與聲明》的所有條款。'
+      );
 
-          agreement.focus();
-          return;
-        }
-
-        const gameId =
-          document.getElementById(
-            'reserveGameId'
-          ).value;
-
-        const memberId =
-          digitsOnly(
-            document.getElementById(
-              'reserveMemberId'
-            ).value
-          );
-
-        const contact =
-          digitsOnly(
-            document.getElementById(
-              'reserveContact'
-            ).value
-          );
-
-        const borrowDays =
-          Number(
-            document.getElementById(
-              'reserveBorrowDays'
-            ).value
-          );
-
-        const remark =
-          document.getElementById(
-            'reserveRemark'
-          ).value.trim();
-
-        if (
-          !gameId ||
-          !memberId ||
-          contact.length !== 4
-        ) {
-          showMessage(
-            'reserveMessage',
-            'error',
-            '請填寫完整的預約資料。'
-          );
-
-          return;
-        }
-
-        try {
-          showMessage(
-            'reserveMessage',
-            'info',
-            '正在提交預約，請稍候……'
-          );
-
-          const result =
-            await apiPost(
-              'createReservation',
-              {
-                gameId,
-                memberId,
-                contact,
-                borrowDays,
-                remark
-              }
-            );
-
-          const reservation =
-            result.reservation ||
-            {};
-
-          const reservationId =
-            reservation.reservationId ||
-            '';
-
-          if (!reservationId) {
-            throw new Error(
-              'Worker 沒有回傳預約編號'
-            );
-          }
-
-          state.lastReservationId =
-            reservationId;
-
-          document.getElementById(
-            'confirmReservationId'
-          ).value =
-            reservationId;
-
-          const dueDate =
-            formatDateOnly(
-              reservation.dueAt
-            );
-
-          const reserveMessage =
-            document.getElementById(
-              'reserveMessage'
-            );
-
-          reserveMessage.className =
-            'message-box show message-success borrow-success-message';
-
-          reserveMessage.textContent =
-            `預約已成功提交！\n` +
-            `預約編號：${reservationId}\n` +
-            `請立即截圖或記錄此預約編號，以便確認借用。\n` +
-            `預計到期日：${dueDate}\n` +
-            `請於預約建立後 2 日內到中心完成借用確認。`;
-
-          document.getElementById(
-            'reserveForm'
-          ).reset();
-
-          updateBorrowDuePreview();
-
-          await loadGames();
-
-          document.getElementById(
-            'reserveSection'
-          ).classList.remove(
-            'hidden'
-          );
-
-          document.getElementById(
-            'reserveSection'
-          ).scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        } catch (error) {
-          showMessage(
-            'reserveMessage',
-            'error',
-            `提交預約失敗：${
-              error.message ||
-              '未知錯誤'
-            }`
-          );
-        }
+      if (agreement) {
+        agreement.focus();
       }
-    );
+      return;
+    }
+
+    const gameId =
+      document.getElementById(
+        'reserveGameId'
+      ).value;
+
+    const memberId =
+      digitsOnly(
+        document.getElementById(
+          'reserveMemberId'
+        ).value
+      );
+
+    const contact =
+      digitsOnly(
+        document.getElementById(
+          'reserveContact'
+        ).value
+      );
+
+    const borrowDays =
+      Number(
+        document.getElementById(
+          'reserveBorrowDays'
+        ).value
+      );
+
+    const remark =
+      document.getElementById(
+        'reserveRemark'
+      ).value.trim();
+
+    if (
+      !gameId ||
+      !memberId ||
+      contact.length !== 4
+    ) {
+      showMessage(
+        'reserveMessage',
+        'error',
+        '請填寫完整的預約資料。'
+      );
+
+      return;
+    }
+
+    try {
+      showMessage(
+        'reserveMessage',
+        'info',
+        '正在提交預約，請稍候……'
+      );
+
+      const result =
+        await apiPost(
+          'createReservation',
+          {
+            gameId,
+            memberId,
+            contact,
+            borrowDays,
+            remark
+          }
+        );
+
+      const reservation =
+        result.reservation ||
+        {};
+
+      const reservationId =
+        reservation.reservationId ||
+        '';
+
+      if (!reservationId) {
+        throw new Error(
+          'Worker 沒有回傳預約編號'
+        );
+      }
+
+      state.lastReservationId =
+        reservationId;
+
+      document.getElementById(
+        'confirmReservationId'
+      ).value =
+        reservationId;
+
+      const dueDate =
+        formatDateOnly(
+          reservation.dueAt
+        );
+
+      const reserveMessage =
+        document.getElementById(
+          'reserveMessage'
+        );
+
+      reserveMessage.className =
+        'message-box show message-success borrow-success-message';
+
+      reserveMessage.textContent =
+        `預約已成功提交！\n` +
+        `預約編號：${reservationId}\n` +
+        `請立即截圖或記錄此預約編號，以便確認借用。\n` +
+        `預計到期日：${dueDate}\n` +
+        `請於預約建立後 2 日內到中心完成借用確認。`;
+
+      document.getElementById(
+        'reserveForm'
+      ).reset();
+
+      updateBorrowDuePreview();
+
+      await loadGames();
+
+      document.getElementById(
+        'reserveSection'
+      ).classList.remove(
+        'hidden'
+      );
+
+      document.getElementById(
+        'reserveSection'
+      ).scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    } catch (error) {
+      showMessage(
+        'reserveMessage',
+        'error',
+        `提交預約失敗：${
+          error.message ||
+          '未知錯誤'
+        }`
+      );
+    }
+  }
+);
 
     document.getElementById(
       'confirmForm'
