@@ -2,7 +2,7 @@
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>BG 桌遊借用系統</title>
 
   <style>
@@ -33,6 +33,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -49,6 +50,7 @@
         #eeeae2 100%
       );
       line-height: 1.6;
+      -webkit-text-size-adjust: 100%;
     }
 
     button,
@@ -56,11 +58,15 @@
     select,
     textarea {
       font: inherit;
+      font-size: 16px;
+      -webkit-appearance: none;
+      appearance: none;
     }
 
     button,
     a {
       -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     .wrap {
@@ -484,10 +490,10 @@
       font-weight: 800;
       text-decoration: none;
       transition: 0.18s ease;
+      border: none;
     }
 
     .btn {
-      border: 0;
       background: var(--primary);
       color: #fff;
     }
@@ -543,7 +549,7 @@
       outline: none;
       background: #fff;
       color: var(--text);
-      font-size: 14px;
+      font-size: 16px;
     }
 
     .field input:focus,
@@ -790,66 +796,384 @@
       text-align: center;
     }
 
-    @media (max-width: 980px) {
-      .games-grid,
-      .top-actions {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 760px) {
+    /* ========== 手機版優化（768px 以下） ========== */
+    @media (max-width: 768px) {
       .wrap {
-        width: calc(100% - 18px);
-        padding: 16px 0 28px;
+        width: calc(100% - 16px);
+        padding: 12px 0 24px;
       }
 
-      .hero,
-      .section-body,
-      .rules-body {
-        padding: 18px;
-      }
-
-      .section-head,
-      .rules-head {
-        padding: 18px 18px 0;
-      }
-
-      .top-actions,
-      .games-grid,
-      .two-col,
-      .detail-info-grid {
-        grid-template-columns: 1fr;
+      .hero {
+        border-radius: 20px;
+        padding: 16px;
+        margin-bottom: 16px;
       }
 
       .hero-top {
         flex-direction: column;
-        align-items: flex-start;
+        gap: 16px;
       }
 
-      .hero h1 {
-        font-size: 32px;
+      .hero-main {
+        flex: 1 1 100%;
+        min-width: 0;
       }
 
       .hero-logo-wrap {
         width: 100%;
         justify-content: flex-start;
+        gap: 12px;
       }
 
       .hero-logo {
-        width: 110px;
+        width: 100px;
+        max-width: 45vw;
       }
 
       .hero-logo-swd {
-        width: 80px;
+        width: 70px;
+        max-width: 30vw;
+      }
+
+      .hero-badge {
+        font-size: 11px;
+        padding: 6px 10px;
+      }
+
+      .hero h1 {
+        font-size: 26px;
+        line-height: 1.2;
+        margin-bottom: 8px;
+      }
+
+      .hero p {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .top-actions {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .action-card {
+        border-radius: 18px;
+        padding: 16px;
+        gap: 8px;
+      }
+
+      .action-card h2 {
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .action-card p {
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .btn,
+      .btn-secondary,
+      .btn-ghost,
+      .view-rules-btn {
+        min-height: 48px;
+        padding: 12px 18px;
+        font-size: 15px;
+      }
+
+      .section-card,
+      .rules-section {
+        border-radius: 20px;
+        margin-bottom: 16px;
+      }
+
+      .section-head {
+        padding: 18px 18px 0;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .section-head h2,
+      .rules-head h2 {
+        font-size: 20px;
+        line-height: 1.2;
+      }
+
+      .section-head p,
+      .rules-head p {
+        font-size: 13px;
+      }
+
+      .section-body,
+      .rules-body {
+        padding: 18px;
+      }
+
+      .rules-head {
+        padding: 18px 18px 0;
+      }
+
+      .rules-list {
+        gap: 12px;
+      }
+
+      .rule-item {
+        padding: 12px;
+        border-radius: 14px;
+        flex-direction: row;
+        gap: 10px;
+      }
+
+      .rule-icon {
+        flex: 0 0 22px;
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+      }
+
+      .rule-title {
+        font-size: 14px;
+      }
+
+      .rule-desc {
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .games-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .game-card {
+        border-radius: 16px;
+      }
+
+      .game-content {
+        padding: 12px;
+      }
+
+      .game-title {
+        font-size: 16px;
+        margin-top: 8px;
+      }
+
+      .game-info-line {
+        font-size: 12px;
+        margin-top: 6px;
+      }
+
+      .game-age-badge {
+        font-size: 11px;
+        padding: 4px 8px;
+        margin-top: 6px;
+      }
+
+      .game-summary {
+        font-size: 13px;
+        line-height: 1.5;
+        margin-top: 8px;
+        height: calc(1.5em * 2);
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
       }
 
       .game-actions {
         grid-template-columns: 1fr;
+        gap: 8px;
+        padding-top: 12px;
       }
 
-      .rule-item {
-        flex-direction: column;
+      .game-actions button {
+        min-height: 44px;
+        font-size: 14px;
+      }
+
+      .chip {
+        font-size: 11px;
+        padding: 4px 8px;
+      }
+
+      .games-grid .chip-row {
         gap: 6px;
+      }
+
+      .two-col {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .field input,
+      .field select,
+      .field textarea {
+        font-size: 16px;
+        padding: 14px 16px;
+      }
+
+      .field label {
+        font-size: 14px;
+      }
+
+      .agreement-wrap,
+      .rule-box {
+        padding: 14px;
+        border-radius: 14px;
+      }
+
+      .agreement-checkbox {
+        gap: 8px;
+      }
+
+      .agreement-checkbox input {
+        width: 18px;
+        height: 18px;
+      }
+
+      .agreement-checkbox span {
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .detail-modal {
+        border-radius: 20px;
+        max-height: 95vh;
+      }
+
+      .detail-body {
+        padding: 18px;
+        gap: 14px;
+      }
+
+      .detail-title {
+        font-size: 22px;
+        line-height: 1.2;
+      }
+
+      .detail-cover {
+        aspect-ratio: 4 / 3;
+      }
+
+      .detail-info-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .detail-info-card {
+        padding: 10px;
+        font-size: 13px;
+      }
+
+      .detail-info-label {
+        font-size: 11px;
+      }
+
+      .detail-text {
+        font-size: 13px;
+      }
+
+      .item-row {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .item-key {
+        font-size: 11px;
+        padding: 3px 7px;
+      }
+
+      .message-box {
+        font-size: 13px;
+        padding: 12px 14px;
+      }
+
+      .borrow-success-message {
+        font-size: 14px;
+        line-height: 1.7;
+      }
+    }
+
+    /* ========== 極小手機（480px 以下） ========== */
+    @media (max-width: 480px) {
+      .wrap {
+        width: calc(100% - 12px);
+      }
+
+      .hero {
+        padding: 14px;
+        border-radius: 16px;
+      }
+
+      .hero-logo {
+        width: 80px;
+        max-width: 48vw;
+      }
+
+      .hero-logo-swd {
+        width: 60px;
+        max-width: 35vw;
+      }
+
+      .hero h1 {
+        font-size: 22px;
+      }
+
+      .hero p {
+        font-size: 13px;
+      }
+
+      .action-card {
+        padding: 14px;
+      }
+
+      .action-card h2 {
+        font-size: 16px;
+      }
+
+      .action-card p {
+        font-size: 12px;
+      }
+
+      .section-body,
+      .rules-body {
+        padding: 14px;
+      }
+
+      .games-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .game-content {
+        padding: 10px;
+      }
+
+      .game-title {
+        font-size: 15px;
+      }
+
+      .btn,
+      .btn-secondary,
+      .btn-ghost,
+      .view-rules-btn {
+        min-height: 50px;
+        font-size: 15px;
+      }
+
+      .detail-body {
+        padding: 14px;
+      }
+
+      .detail-title {
+        font-size: 20px;
+      }
+    }
+
+    /* ========== 平板版（769px - 980px） ========== */
+    @media (min-width: 769px) and (max-width: 980px) {
+      .games-grid,
+      .top-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
   </style>
