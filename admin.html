@@ -39,14 +39,6 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      min-height: 100vh;
-      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-      color: var(--text);
-      background: linear-gradient(180deg, #f8f6f2 0%, #eeeae2 100%);
-      line-height: 1.6;
-    }
-
     button, input, select, textarea {
       font: inherit;
     }
@@ -725,8 +717,8 @@
           <div id="heroLoginMessage" class="message-box message-info"></div>
 
           <div class="field">
-            <label for="staffName">同事名稱</label>
-            <input id="staffName" type="text" placeholder="例如：Danny / Amy / Admin A">
+            <label for="staffName">同事名稱 <span style="color: var(--danger);">*</span></label>
+            <input id="staffName" type="text" placeholder="例如：Danny / Amy / Admin A" required>
           </div>
 
           <div class="field" id="passwordFieldWrap">
@@ -1117,12 +1109,12 @@
 
   function applyLoggedInLayout() {
     document
-      .getElementById('heroIntro')
+      .getElementById('heroSection')
       ?.classList.add('hidden');
 
     document
-      .getElementById('staffPanel')
-      ?.classList.add('hidden');
+      .getElementById('adminApp')
+      ?.classList.remove('hidden');
 
     document
       .getElementById('logoutBtn')
@@ -1131,12 +1123,12 @@
 
   function applyLoggedOutLayout() {
     document
-      .getElementById('heroIntro')
+      .getElementById('heroSection')
       ?.classList.remove('hidden');
 
     document
-      .getElementById('staffPanel')
-      ?.classList.remove('hidden');
+      .getElementById('adminApp')
+      ?.classList.add('hidden');
 
     document
       .getElementById('logoutBtn')
@@ -1347,12 +1339,29 @@
   async function loginAdmin() {
     clearMessage('heroLoginMessage');
 
+    const staffName =
+      normalizeText(
+        document
+          .getElementById('staffName')
+          ?.value || ''
+      );
+
     const password =
       normalizeText(
         document
           .getElementById('adminPassword')
           ?.value || ''
       );
+
+    if (!staffName) {
+      showMessage(
+        'heroLoginMessage',
+        'error',
+        '請先輸入處理同事名稱。'
+      );
+
+      return;
+    }
 
     if (!password) {
       showMessage(
@@ -1379,13 +1388,11 @@
 
       state.token = data.token;
       state.isLoggedIn = true;
+      state.staffName = staffName;
 
-      state.staffName =
-        normalizeText(
-          document
-            .getElementById('staffName')
-            ?.value || ''
-        );
+      document
+        .getElementById('staffName')
+        .disabled = true;
 
       document
         .getElementById('adminApp')
@@ -1396,7 +1403,7 @@
       showMessage(
         'heroLoginMessage',
         'success',
-        '已登入成功，正在載入資料。'
+        `歡迎，${staffName}！已登入成功，正在載入資料。`
       );
 
       await loadAllAdminData();
@@ -1426,6 +1433,14 @@
       .getElementById('adminApp')
       ?.classList.add('hidden');
 
+    document
+      .getElementById('heroSection')
+      ?.classList.remove('hidden');
+
+    document
+      .getElementById('staffName')
+        .disabled = false;
+
     const gamesList =
       document.getElementById('adminGamesList');
 
@@ -1448,6 +1463,13 @@
 
     if (passwordInput) {
       passwordInput.value = '';
+    }
+
+    const staffNameInput =
+      document.getElementById('staffName');
+
+    if (staffNameInput) {
+      staffNameInput.value = '';
     }
 
     showMessage(
@@ -1886,16 +1908,13 @@
               reservation.memberId || ''
             );
 
-          const maskedMemberId =
-            reservation.memberIdMasked ||
-            (
-              memberId.length > 4
-                ? `${memberId.slice(
-                    0,
-                    2
-                  )}****${memberId.slice(-2)}`
-                : '****'
-            );
+          // 顯示完整會員號碼，不再遮罩
+          const displayMemberId = memberId;
+
+          // 顯示處理職員名稱
+          const confirmedByDisplay = reservation.confirmedBy
+            ? `<div class="meta-line">處理職員：<strong style="color: var(--primary);">${escapeHtml(reservation.confirmedBy)}</strong></div>`
+            : '';
 
           return `
             <article class="reservation-card">
@@ -2009,9 +2028,9 @@
               <div class="reservation-meta">
                 <div>
                   會員編號：
-                  <strong>
+                  <strong style="color: var(--primary);">
                     ${escapeHtml(
-                      maskedMemberId
+                      displayMemberId
                     )}
                   </strong>
                   ｜ 電話尾 4 位：
@@ -2043,6 +2062,8 @@
                     )
                   )}
                 </div>
+
+                ${confirmedByDisplay}
 
                 ${
                   reservation.borrowCode
@@ -2170,22 +2191,7 @@
 
     fields.innerHTML = '';
 
-    const staffField = `
-      <div class="field">
-        <label for="dialogStaffInput">
-          處理職員名稱
-        </label>
-
-        <input
-          id="dialogStaffInput"
-          type="text"
-          value="${escapeHtml(
-            state.staffName
-          )}"
-        >
-      </div>
-    `;
-
+    // 不再顯示職員輸入欄，直接使用登入時儲存的 staffName
     if (action === 'readyCode') {
       title.textContent =
         '產生借用碼（待盤點 → 已出碼）';
@@ -2193,8 +2199,11 @@
       note.textContent =
         `請確認預約 ${reservationId} 的桌遊及配件無誤，系統將產生 6 位數借用碼。`;
 
-      fields.innerHTML =
-        staffField;
+      fields.innerHTML = `
+        <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover);">
+          處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
+        </div>
+      `;
     }
 
     if (action === 'returnGame') {
@@ -2205,7 +2214,9 @@
         `點算預約 ${reservationId} 的配件後辦理歸還。`;
 
       fields.innerHTML = `
-        ${staffField}
+        <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover); margin-bottom: 12px;">
+          處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
+        </div>
 
         <div class="field">
           <label for="dialogReturnNote">
@@ -2228,7 +2239,9 @@
         `確定要取消預約 ${reservationId} 嗎？`;
 
       fields.innerHTML = `
-        ${staffField}
+        <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover); margin-bottom: 12px;">
+          處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
+        </div>
 
         <div class="field">
           <label for="dialogCancelReason">
@@ -2250,8 +2263,11 @@
       note.textContent =
         `警告：刪除後將無法在管理頁查看此紀錄。`;
 
-      fields.innerHTML =
-        staffField;
+      fields.innerHTML = `
+        <div class="rule-box" style="background: var(--primary-soft); color: var(--primary-hover);">
+          處理職員：<strong>${escapeHtml(state.staffName || '未設定')}</strong>
+        </div>
+      `;
     }
 
     document
@@ -2266,31 +2282,20 @@
     const reservationId =
       state.dialogReservationId;
 
-    const staffInput =
-      document.getElementById(
-        'dialogStaffInput'
+    // 直接使用登入時儲存的 staffName，不再從 dialog 獲取
+    const staffName = state.staffName;
+
+    if (!staffName) {
+      showMessage(
+        'reservationsMessage',
+        'error',
+        '請先登入以確認處理職員。'
       );
 
-    if (staffInput) {
-      const value =
-        normalizeText(
-          staffInput.value
-        );
-
-      if (value) {
-        state.staffName = value;
-
-        document
-          .getElementById(
-            'staffName'
-          ).value = value;
-      }
+      return;
     }
 
     try {
-      const staffName =
-        getStaffNameRequired();
-
       if (action === 'readyCode') {
         const result =
           await apiPost(
@@ -3065,7 +3070,10 @@
             ),
 
           '取消原因':
-            reservation.cancelReason || ''
+            reservation.cancelReason || '',
+
+          '處理職員':
+            reservation.confirmedBy || ''
         })
       );
 
@@ -3166,6 +3174,6 @@
       showEmptyEditor();
     }
   );
-</script>
+  </script>
 </body>
 </html>
